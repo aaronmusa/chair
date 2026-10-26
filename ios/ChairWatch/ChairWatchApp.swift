@@ -7,11 +7,19 @@
 
 import SwiftUI
 
+import ChairKit
+
 @main
 struct ChairWatchApp: App {
+    private let link = WatchLink()
+
+    init() {
+        link.activate()
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(link: link)
         }
     }
 }
