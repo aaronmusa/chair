@@ -12,6 +12,11 @@ import ChairKit
 @main
 struct ChairApp: App {
     private let environment = AppEnvironment.make()
+    private let watchLink = WatchLink()
+
+    init() {
+        watchLink.activate()
+    }
 
     var body: some Scene {
         WindowGroup {
