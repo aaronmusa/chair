@@ -64,18 +64,28 @@ if ! $fast; then
     status=1
   else
     destination="platform=iOS Simulator,id=$udid"
-    uitest() { (cd "$ui" && xcodebuild test -quiet -scheme ChairUI -destination "$destination"); }
+    signing=()
+    [ -n "${CI:-}" ] && signing=(CODE_SIGNING_ALLOWED=NO)
+    bundle() { rm -rf "$logs/$1.xcresult"; echo "$logs/$1.xcresult"; }
+    uitest() {
+      (cd "$ui" && xcodebuild test -quiet -scheme ChairUI -destination "$destination" \
+        -resultBundlePath "$(bundle ChairUI)" ${signing[@]+"${signing[@]}"})
+    }
     run ChairUI uitest
-    xcodetest() { xcodebuild test -quiet -project "$project" -scheme Chair -destination "$destination" "$@"; }
+    xcodetest() {
+      local name=$1; shift
+      xcodebuild test -quiet -project "$project" -scheme Chair -destination "$destination" \
+        -resultBundlePath "$(bundle "$name")" ${signing[@]+"${signing[@]}"} "$@"
+    }
     if $all; then
-      run ChairAllTests xcodetest
+      run ChairAllTests xcodetest ChairAllTests
     else
-      run ChairTests xcodetest -only-testing:ChairTests
+      run ChairTests xcodetest ChairTests -only-testing:ChairTests
       if [ -n "$ui_suites" ]; then
         only=()
         IFS=',' read -ra suites <<<"$ui_suites"
         for suite in "${suites[@]}"; do only+=("-only-testing:ChairUITests/$suite"); done
-        run "ChairUITests($ui_suites)" xcodetest "${only[@]}"
+        run "ChairUITests($ui_suites)" xcodetest ChairUITests "${only[@]}"
       else
         summary+=("ChairUITests skipped (set UI= or use test-all)")
       fi
