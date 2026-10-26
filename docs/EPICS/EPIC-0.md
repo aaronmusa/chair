@@ -1,14 +1,14 @@
 # Epic 0: Setup and design system
 
-Mirrors the [Epic 0 doc](https://claude.ai/artifact/NQi2XJEWVDpNDoV2ZE5mgP) (rev 40). Each ticket is a GitHub issue labelled `epic-0`, with native blocked-by links.
+Mirrors the [Epic 0 doc](https://claude.ai/artifact/NQi2XJEWVDpNDoV2ZE5mgP) (rev 54). Each ticket is a GitHub issue labelled `epic-0`, with native blocked-by links.
 
 ## Epic goal
 
-When Epic 0 is done, `aaronmusa/chair` builds and tests on a fresh clone and in CI, the `ChairKit` and `ChairUI` packages exist with their folder layout, every design token and base component renders in a gallery in light, dark and the largest accessibility size, the Supabase project has its first migration with RLS tests and a Claude proxy stub, the SwiftData offline cache and repository are wired, and auth, StoreKit and coach clients exist as protocols with test doubles. No feature screen or scoring rule is built.
+When Epic 0 is done, `aaronmusa/chair` builds and tests on a fresh clone, the `ChairKit` and `ChairUI` packages exist with their folder layout, every design token and base component renders in a gallery in light, dark and the largest accessibility size, the Supabase project has its first migration with RLS tests and a Claude proxy stub, the SwiftData offline cache and repository are wired, and auth, StoreKit and coach clients exist as protocols with test doubles. No feature screen or scoring rule is built.
 
 **Definition of done**
 
-- [ ] `make test` exits 0 on a fresh clone; GitHub Actions runs it on every PR and is green
+- [ ] `make test` exits 0 on a fresh clone; git hooks refuse a commit that fails lint and a push that fails ChairKit tests
 - [ ] `ChairKit` builds for iOS 18, iPadOS 18 and watchOS 11; `ChairUI` builds for iOS, iPadOS and watchOS
 - [ ] The design gallery shows every token and component in light, dark, AX5 text size and Reduce Motion
 - [ ] A `Match` saved offline on one simulator reaches `chair-dev` and a second simulator on the same account after reconnecting
@@ -16,7 +16,7 @@ When Epic 0 is done, `aaronmusa/chair` builds and tests on a fresh clone and in 
 
 **Out of scope.** Scoring rules (Epic 1). Tab shell, new-match flow and any screen (Epic 2). Camera pipeline (Epic 4). Paywall UI (Epic 8).
 
-**References.** [Chair — Epic roadmap](https://claude.ai/artifact/2fzCeoqNLuP8Dd29BPoXrB) for locked decisions. [Tennis AI Wireframes](https://claude.ai/artifact/JZ2gzgF491dKiy1h6tBfqN) for the visual language (monochrome ink on white, 1.5 px outlines, 10–12 px radii, system font). PicklGo Epic 0 for the package and CI shape.
+**References.** [Chair — Epic roadmap](https://claude.ai/artifact/2fzCeoqNLuP8Dd29BPoXrB) for locked decisions. [Tennis AI Wireframes](https://claude.ai/artifact/JZ2gzgF491dKiy1h6tBfqN) for the visual language (monochrome ink on white, 1.5 px outlines, 10–12 px radii, system font). PicklGo and Chorito Epic 0 for the package, Makefile and hooks shape.
 
 ## Repo and tooling tickets
 
@@ -28,7 +28,7 @@ Create the Xcode project, two local packages and the Makefile.
 - Local Swift packages under `ios/Packages/`: `ChairKit` (models, engine, services; platforms iOS 18, watchOS 11, macOS 15 so `swift test` runs on the Mac without a simulator) and `ChairUI` (tokens, components; iOS 18 and watchOS 11, so the watch app shares tokens and the court view). `ChairUI` depends on `ChairKit`. App targets depend on both. Anything iOS-only inside `ChairUI` (camera preview, `UIKit` bridges) is wrapped in `#if os(iOS)` — not `canImport(UIKit)`, which is true on watchOS; anything using `WatchConnectivity` in `ChairKit` is wrapped in `#if canImport(WatchConnectivity)` so the macOS build stays clean.
 - Folder layout in the app target: `App/`, `Features/`, `Resources/`. In `ChairKit`: `Models/`, `Engine/`, `Services/`, `Persistence/`. In `ChairUI`: `Tokens/`, `Components/`, `Gallery/`.
 - Swift 6 language mode, strict concurrency `complete`, plain `@Observable` MVVM the way Chorito does it (no BaseplateMacros; that package is Appetiser work code); one example `ExampleViewModel` in `Features/Example/` showing the pattern, deleted in Epic 2.
-- `Makefile` targets: `make build`, `make test` (runs both package test suites and `ChairTests` on the newest iPhone simulator Xcode ships, resolved by name at run time, not hard-coded), `make lint`, `make gallery` (builds the gallery scheme). Xcode version is whatever is installed locally (26.5 as of writing); CI pins the same major via `xcode-select` and the `.xcode-version` file at the repo root.
+- `Makefile` targets: `make build`, `make test` (runs both package test suites and `ChairTests` on the newest iPhone simulator Xcode ships, resolved by name at run time, not hard-coded), `make lint`, `make gallery` (builds the gallery scheme). Xcode version is whatever is installed locally (26.5 as of writing); recorded in `xcode-select` and the `.xcode-version` file at the repo root.
 - Bundle id `com.aaronmusa.chair`; display name `Chair`.
 
 Acceptance:
@@ -37,19 +37,18 @@ Acceptance:
 - [ ] Given the watch scheme, when it builds, then `ChairKit` compiles for watchOS with no `UIKit` import
 - [ ] `ExampleViewModel` uses `@Observable` with no macros and has one passing unit test
 
-### E0-2 CI and lint (#3)
+### E0-2 Lint and git hooks (#3)
 
-GitHub Actions runs build, lint and tests on every PR; SwiftLint and SwiftFormat enforce house style.
+No hosted CI, same as Peydi and Chorito: SwiftLint and SwiftFormat enforce house style, and local git hooks run them before every commit.
 
-- `.github/workflows/ci.yml`: macOS runner, Xcode version read from `.xcode-version` (must match local, 26.x), caches SwiftPM, runs `make lint` and `make test`, uploads the xcresult on failure.
-- `.swiftlint.yml` with the PicklGo rule set plus a custom rule `no_raw_color` that flags `Color(red:` and `Color(hex:` outside `ios/Packages/ChairUI/Sources/ChairUI/Tokens/`.
-- `.swiftformat` matching PicklGo.
-- PR template `.github/pull_request_template.md` with sections What, Ticket, Screenshots, Checklist.
-- Branch protection on `main`: PR required, CI must pass (human step noted in the ticket, not blocking).
+- `hooks/pre-commit` runs SwiftLint and SwiftFormat on the staged Swift files only (same rules as `make lint`, which checks the whole tree); installed by `make hooks` (the same target E0-14 extends with `pre-push`). `.xcode-version` at the repo root records the Xcode the project is built with (26.5 now) so `make build` can warn on a mismatch.
+- `.swiftlint.yml` and `.swiftformat` as already committed in the repo (Chair's own; PicklGo has neither file), plus a custom SwiftLint rule `no_raw_color` that flags `Color(red:` and `Color(hex:` outside `ios/Packages/ChairUI/Sources/ChairUI/Tokens/`.
+- `CONTRIBUTING.md` with the branch and commit convention (`feat/E0-2-lint`, one PR per ticket, squash merge).
+- Branch protection on `main`: PR required, no status checks (human, not blocking).
 
 Acceptance:
 
-- [ ] A PR with a failing test shows a red check within 15 min
+- [ ] Given a staged file with a lint error, when git commit runs with hooks installed, then the commit is refused and the rule is named
 - [ ] Given a file in `Features/` containing `Color(red:`, when `make lint` runs, then it fails naming the rule `no_raw_color`
 - [ ] `make lint` exits 0 on the scaffold
 
@@ -59,14 +58,14 @@ Blocked by: E0-1 (#2)
 
 Shared test helpers so every later epic can write Given/When/Then tests without boilerplate.
 
-- `ChairTestSupport` target inside `ChairKit` (test-only): `InMemoryModelContainer()` for SwiftData, `FixedClock` conforming to a `Clock` protocol, `Fixtures` with `Match.sample`, `Player.sample`.
-- Snapshot testing via `swift-snapshot-testing` for `ChairUI`; stored under `__Snapshots__` per test file; CI diffs them.
+- `ChairTestSupport` target inside `ChairKit` (test-only). `ChairKit` itself defines `ClockProvider { var now: Date }` (Chair's own protocol; not named `Clock`, which would shadow Swift's instant-based one), with `SystemClock` as the production conformer; `ChairTestSupport` adds `FixedClock: ClockProvider`, `TestBundle` helpers for loading JSON fixtures, and a `Fixtures` namespace that is empty until E0-9b adds `Match.sample` and `MatchPlayer.sample` (no model types exist yet, so none are referenced here).
+- Snapshot testing via `swift-snapshot-testing` for `ChairUI`; stored under `__Snapshots__` per test file and committed; `make test` fails on a diff.
 - `XCTestCase` extension `assertGivenWhenThen(_:)` is not required; plain `XCTest` with descriptive names.
 
 Acceptance:
 
-- [ ] Given `InMemoryModelContainer()`, when a `Match` is inserted and fetched, then the fetch returns it and nothing touches disk
-- [ ] A snapshot test for one `ChairUI` component passes locally and in CI on the same simulator
+- [ ] Given `FixedClock` set to a date, when a test reads `clock.now`, then it returns that date and never advances on its own
+- [ ] A snapshot test for one placeholder `ChairUI` view passes twice in a row on the same simulator and fails when the view changes
 
 Blocked by: E0-1 (#2)
 
@@ -187,7 +186,7 @@ SwiftData cache plus the repository layer every feature writes through.
 - `@Model` types in `ChairKit/Persistence` mirroring the Supabase tables: `Match`, `MatchPlayer`, `PointEvent`, `SavedCourt`, `TrainingSession`, plus `Profile`; each carries `remoteID`, `updatedAt` and `syncState` (`.synced`, `.pendingUpload`, `.pendingDelete`).
 - `MatchRules` as a `Codable` struct: `sets` (bestOf3/bestOf5), `deuce` (advantage/noAd), `finalSet` (tiebreak7/tiebreak10/advantage), `firstServer`. `PointOutcome` enum: `ace`, `doubleFault`, `winner`, `unforcedError`, `forcedError`, `let`.
 - `MatchRepository` protocol: `save`, `fetch`, `observe`, `delete`; `LocalMatchRepository` (SwiftData only) and `SyncingMatchRepository` (SwiftData + `supabase-swift` client with an upload queue, last-write-wins by `updatedAt`).
-- Clips are files in Application Support referenced by path; never uploaded by this layer (Epic 6 owns opt-in upload).
+- Clips are files in Application Support referenced by path; never uploaded by this layer (Epic 6 owns opt-in upload). Adds InMemoryModelContainer() and the Match.sample / MatchPlayer.sample fixtures to ChairTestSupport (the namespace E0-3 left empty).
 - `ChairContainer.make(inMemory:)` factory.
 
 Acceptance:
@@ -202,7 +201,7 @@ Blocked by: E0-1 (#2), E0-3 (#4), E0-9 (#10)
 
 Protocol seams for everything Chair talks to, so features build against doubles.
 
-- `ChairKit/Services`: `AuthService` (Sign in with Apple via Supabase Auth, session, sign out, delete account), `SpeechOutput` (speak, stop, route), `SpeechInput` (start listening with a grammar, events), `CoachService` (`summarize(match:) async throws -> CoachCard`), `SubscriptionService` (entitlement, products, purchase, restore, trial state), `ClockProvider`, `Haptics`.
+- `ChairKit/Services`: `AuthService` (Sign in with Apple via Supabase Auth, session, sign out, delete account), `SpeechOutput` (speak, stop, route), `SpeechInput` (start listening with a grammar, events), `CoachService` (`summarize(match:) async throws -> CoachCard`), `SubscriptionService` (entitlement, products, purchase, restore, trial state), the `ClockProvider`, `Haptics`.
 - Each has a `Fake*` in `ChairTestSupport` that records calls and returns fixtures.
 - `CoachService` concrete `EdgeCoachService` calls the `coach` Edge Function with the user's JWT; no Anthropic key ever ships in the app. Supabase URL and anon key read from `Secrets.xcconfig` (gitignored) with a template `Secrets.example.xcconfig`.
 - `SubscriptionService` concrete `StoreKitSubscriptionService` is a stub that reads `Products.storekit`.
@@ -294,7 +293,7 @@ After E0-1, the tooling (E0-2, E0-3), tokens (E0-4, E0-5) and services (E0-10) r
 
 ```mermaid
 flowchart LR
-  A[E0-1 Scaffold] --> B[E0-2 CI and lint]
+  A[E0-1 Scaffold] --> B[E0-2 Lint and hooks]
   A --> C[E0-3 Test support]
   A --> D[E0-4 Colour tokens]
   A --> E[E0-5 Type and spacing]
