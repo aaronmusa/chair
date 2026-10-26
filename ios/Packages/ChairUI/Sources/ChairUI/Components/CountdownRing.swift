@@ -24,7 +24,8 @@ public struct CountdownRing: View {
     let duration: TimeInterval
     let size: Size
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.chairReduceMotionOverride) private var reduceMotionOverride
 
     public init(
         startedAt: Date,
@@ -44,8 +45,12 @@ public struct CountdownRing: View {
         }
     }
 
+    private var reduceMotion: Bool {
+        reduceMotionOverride ?? systemReduceMotion
+    }
+
     private var schedule: CountdownSchedule {
-        CountdownSchedule(startedAt: startedAt, stepped: reduceMotion)
+        CountdownSchedule(startedAt: startedAt, duration: duration, stepped: reduceMotion)
     }
 }
 
@@ -73,6 +78,7 @@ struct Countdown {
 
 struct CountdownSchedule: TimelineSchedule {
     let startedAt: Date
+    let duration: TimeInterval
     let stepped: Bool
 
     func entries(
@@ -81,10 +87,15 @@ struct CountdownSchedule: TimelineSchedule {
     ) -> AnyIterator<Date> {
         let interval: TimeInterval = stepped || mode == .lowFrequency ? 1 : 1.0 / 30
         let elapsed = max(startDate.timeIntervalSince(startedAt), 0)
-        var next = startedAt.addingTimeInterval((elapsed / interval).rounded(.down) * interval)
+        let end = startedAt.addingTimeInterval(duration)
+        var next = min(startedAt.addingTimeInterval((elapsed / interval).rounded(.down) * interval), end)
+        var isFinished = false
         return AnyIterator {
-            defer { next = next.addingTimeInterval(interval) }
-            return next
+            guard !isFinished else { return nil }
+            let entry = next
+            isFinished = entry >= end
+            next = min(next.addingTimeInterval(interval), end)
+            return entry
         }
     }
 }
@@ -114,28 +125,30 @@ struct CountdownRingFace: View {
     }
 }
 
-#Preview("Light") {
-    CountdownRingPreview()
-}
-
-#Preview("Dark") {
-    CountdownRingPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    CountdownRingPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct CountdownRingPreview: View {
-    var body: some View {
-        HStack(spacing: Spacing.chair.md) {
-            CountdownRingFace(progress: 0.4, secondsLeft: 3, size: .small)
-            CountdownRingFace(progress: 0.7, secondsLeft: 3, size: .regular)
-            CountdownRing(startedAt: .now, duration: 10)
-        }
-        .padding(Spacing.chair.md)
-        .background(Color.chair.surface)
+#if DEBUG
+    #Preview("Light") {
+        CountdownRingPreview()
     }
-}
+
+    #Preview("Dark") {
+        CountdownRingPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        CountdownRingPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct CountdownRingPreview: View {
+        var body: some View {
+            HStack(spacing: Spacing.chair.md) {
+                CountdownRingFace(progress: 0.4, secondsLeft: 3, size: .small)
+                CountdownRingFace(progress: 0.7, secondsLeft: 3, size: .regular)
+                CountdownRing(startedAt: .now, duration: 10)
+            }
+            .padding(Spacing.chair.md)
+            .background(Color.chair.surface)
+        }
+    }
+#endif

@@ -98,27 +98,29 @@ public struct ChairRow: View {
     }
 }
 
-#Preview("Light") {
-    ChairRowPreview()
-}
-
-#Preview("Dark") {
-    ChairRowPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    ChairRowPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct ChairRowPreview: View {
-    var body: some View {
-        VStack(spacing: 0) {
-            ChairRow("Voice", systemImage: "speaker.wave.2", value: "Daniel", showsChevron: true, onTap: {})
-            ChairRow("Home court", systemImage: "mappin", value: "Rizal Park")
-            ChairRow("Subscription", showsChevron: true, onTap: {})
-        }
-        .background(Color.chair.surface)
+#if DEBUG
+    #Preview("Light") {
+        ChairRowPreview()
     }
-}
+
+    #Preview("Dark") {
+        ChairRowPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        ChairRowPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct ChairRowPreview: View {
+        var body: some View {
+            VStack(spacing: 0) {
+                ChairRow("Voice", systemImage: "speaker.wave.2", value: "Daniel", showsChevron: true, onTap: {})
+                ChairRow("Home court", systemImage: "mappin", value: "Rizal Park")
+                ChairRow("Subscription", showsChevron: true, onTap: {})
+            }
+            .background(Color.chair.surface)
+        }
+    }
+#endif
