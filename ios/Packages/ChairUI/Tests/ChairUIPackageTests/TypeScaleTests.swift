@@ -32,7 +32,7 @@ final class TypeScaleTests: XCTestCase {
 
     func testScaleValuesMatchTheTokens() {
         XCTAssertEqual(Spacing.chair.scale.map(\.value), [4, 8, 12, 16, 20, 24, 32])
-        XCTAssertEqual(Radius.chair.scale.map(\.value), [8, 10, 12, 16])
+        XCTAssertEqual(Radius.chair.scale.map(\.value), [8, 10, 12, 16, 20])
         XCTAssertEqual(Stroke.chair.scale.map(\.value), [1, 1.5, 2])
     }
 
