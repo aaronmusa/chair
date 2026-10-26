@@ -7,11 +7,16 @@
 
 import SwiftUI
 
+import ChairKit
+
 @main
 struct ChairApp: App {
+    private let environment = AppEnvironment.make()
+
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(\.appEnvironment, environment)
         }
     }
 }

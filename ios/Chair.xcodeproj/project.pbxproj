@@ -12,6 +12,7 @@
 		1ED5FDDD308F307700DAC3F5 /* ChairWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		43C52E17AA98CD4B605C0CC5 /* ChairKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3FB08BB2CB4509A027C742EC /* ChairKit */; };
 		60D1B31B8889AE0CA47EB86F /* ChairKit in Frameworks */ = {isa = PBXBuildFile; productRef = B38D2F6ED39C09E6029FE5A0 /* ChairKit */; };
+		81B46B8FF701B16DA3C1DFEB /* ChairTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 72F29F76F2294AF3A321B770 /* ChairTestSupport */; };
 		882A257E17EA14145D4F17DD /* ChairUI in Frameworks */ = {isa = PBXBuildFile; productRef = AD281D2DF567DC19A77E913E /* ChairUI */; };
 /* End PBXBuildFile section */
 
@@ -59,6 +60,9 @@
 		1ED5FDA2308F2E6B00DAC3F5 /* ChairUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChairUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChairWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		B723CE00549C496EF70DD1FA /* Chair-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Chair-Info.plist"; sourceTree = "<group>"; };
+		C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -100,6 +104,7 @@
 				1ED5FDB8308F2F4600DAC3F5 /* StoreKit.framework in Frameworks */,
 				60D1B31B8889AE0CA47EB86F /* ChairKit in Frameworks */,
 				00618E7EB6D21B02F063B6B1 /* ChairUI in Frameworks */,
+				81B46B8FF701B16DA3C1DFEB /* ChairTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +143,7 @@
 				1ED5FDBE308F307500DAC3F5 /* ChairWatch */,
 				1ED5FDB6308F2F4500DAC3F5 /* Frameworks */,
 				1ED5FD8A308F2E6900DAC3F5 /* Products */,
+				D7F9C75477339F78010B9702 /* Config */,
 			);
 			sourceTree = "<group>";
 		};
@@ -158,6 +164,17 @@
 				1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D7F9C75477339F78010B9702 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */,
+				1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */,
+				B723CE00549C496EF70DD1FA /* Chair-Info.plist */,
+			);
+			name = Config;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -184,6 +201,7 @@
 			packageProductDependencies = (
 				B38D2F6ED39C09E6029FE5A0 /* ChairKit */,
 				7CD2DFA71C1C72D48FA2F025 /* ChairUI */,
+				72F29F76F2294AF3A321B770 /* ChairTestSupport */,
 			);
 			productName = Chair;
 			productReference = 1ED5FD89308F2E6900DAC3F5 /* Chair.app */;
@@ -398,6 +416,7 @@
 /* Begin XCBuildConfiguration section */
 		1ED5FDAA308F2E6B00DAC3F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -465,6 +484,7 @@
 		};
 		1ED5FDAB308F2E6B00DAC3F5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -534,6 +554,7 @@
 				DEVELOPMENT_TEAM = L537769T9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Chair-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Chair;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -571,6 +592,7 @@
 				DEVELOPMENT_TEAM = L537769T9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Chair-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Chair;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -825,6 +847,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
 			productName = ChairKit;
+		};
+		72F29F76F2294AF3A321B770 /* ChairTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
+			productName = ChairTestSupport;
 		};
 		7CD2DFA71C1C72D48FA2F025 /* ChairUI */ = {
 			isa = XCSwiftPackageProductDependency;

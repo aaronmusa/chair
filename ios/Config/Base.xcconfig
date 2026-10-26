@@ -1,0 +1,2 @@
+// Copy Secrets.example.xcconfig to Secrets.xcconfig (gitignored) to point the app at a Supabase project.
+#include? "Secrets.xcconfig"
