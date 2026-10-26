@@ -1,0 +1,25 @@
+{
+  "canvas": {
+    "width": 1320,
+    "height": 2868
+  },
+  "device": "phone",
+  "palette": {
+    "gradientTop": "#FFFFFF",
+    "gradientBottom": "#F5F5F5",
+    "accent": "#1A1A1A",
+    "caption": "#1A1A1A",
+    "bezel": "#1A1A1A",
+    "lines": "#1A1A1A14",
+    "edge": "#FFFFFF29"
+  },
+  "captionSize": 92,
+  "deviceWidthFraction": 0.72,
+  "shots": [
+    {
+      "capture": "01.png",
+      "output": "01-umpire.png",
+      "caption": "Your umpire\non the net post"
+    }
+  ]
+}

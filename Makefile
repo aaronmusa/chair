@@ -1,4 +1,4 @@
-.PHONY: build test test-kit test-all lint gallery db-reset test-db functions-serve test-functions db-types
+.PHONY: build test test-kit test-all lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
 
 project := ios/Chair.xcodeproj
 
@@ -37,3 +37,23 @@ test-functions:
 
 db-types:
 	supabase gen types --local --lang swift --swift-access-control public > ios/Packages/ChairKit/Sources/ChairKit/Persistence/Generated/Database.swift
+
+hooks:
+	hooks/install-hooks.sh
+
+bump:
+	ios/Scripts/bump-build.sh $(if $(TAG),--tag $(TAG))
+
+testflight:
+	@test "$$(git rev-parse --abbrev-ref HEAD)" = main || { echo "switch to main first" >&2; exit 1; }
+	git pull --ff-only
+	@test -z "$$(git status --porcelain)" || { echo "main has uncommitted changes" >&2; exit 1; }
+	ios/Scripts/bump-build.sh --tag-only xcbuild/testflight
+
+check-listing:
+	xcrun swift ios/Scripts/check-listing.swift docs/APP_STORE_LISTING.md
+
+shots:
+	for device in iphone ipad watch; do \
+		xcrun swift ios/Scripts/make-store-shots.swift docs/store-shots/$$device.json docs/store-shots/captures/$$device .build/store-shots/$$device || exit 1; \
+	done

@@ -1,0 +1,25 @@
+{
+  "canvas": {
+    "width": 422,
+    "height": 514
+  },
+  "device": "watch",
+  "palette": {
+    "gradientTop": "#FFFFFF",
+    "gradientBottom": "#F5F5F5",
+    "accent": "#1A1A1A",
+    "caption": "#1A1A1A",
+    "bezel": "#1A1A1A",
+    "lines": "#1A1A1A14",
+    "edge": "#FFFFFF29"
+  },
+  "captionSize": 28,
+  "deviceWidthFraction": 0.45,
+  "shots": [
+    {
+      "capture": "01.png",
+      "output": "01-score.png",
+      "caption": "Score on your wrist"
+    }
+  ]
+}
