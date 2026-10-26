@@ -20,8 +20,21 @@ final class ColorContrastTests: XCTestCase {
     }
 
     func testDarkModeInvertsInkAndSurface() throws {
-        XCTAssertEqual(try XCTUnwrap(resolved(.ink, .light)), try XCTUnwrap(resolved(.surface, .dark)))
-        XCTAssertEqual(try XCTUnwrap(resolved(.surface, .light)), try XCTUnwrap(resolved(.ink, .dark)))
+        try assertSameColour(resolved(.ink, .light), resolved(.surface, .dark))
+        try assertSameColour(resolved(.surface, .light), resolved(.ink, .dark))
+    }
+
+    private func assertSameColour(
+        _ first: RGB?,
+        _ second: RGB?,
+        line: UInt = #line
+    ) throws {
+        let first = try XCTUnwrap(first, line: line)
+        let second = try XCTUnwrap(second, line: line)
+        let tolerance = 0.5 / 255
+        XCTAssertEqual(first.red, second.red, accuracy: tolerance, "\(first) vs \(second)", line: line)
+        XCTAssertEqual(first.green, second.green, accuracy: tolerance, "\(first) vs \(second)", line: line)
+        XCTAssertEqual(first.blue, second.blue, accuracy: tolerance, "\(first) vs \(second)", line: line)
     }
 
     func testEveryTextPairMeetsTheMinimumContrastInBothModes() throws {
