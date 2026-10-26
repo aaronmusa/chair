@@ -17,7 +17,7 @@ test-all:
 
 lint:
 	swiftlint lint --quiet --strict
-	swiftformat --lint --quiet ios
+	swiftformat --lint ios
 
 gallery:
 	@echo "the gallery scheme lands with E0-8 (#9)" >&2; exit 1
