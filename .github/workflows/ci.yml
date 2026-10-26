@@ -36,7 +36,20 @@ jobs:
           restore-keys: spm-${{ runner.os }}-${{ steps.xcode.outputs.version }}-
 
       - name: Install SwiftLint and SwiftFormat
-        run: brew install swiftlint swiftformat
+        env:
+          SWIFTLINT_VERSION: 0.57.0
+          SWIFTFORMAT_VERSION: 0.61.1
+        run: |
+          mkdir -p "$RUNNER_TEMP/lint-tools"
+          cd "$RUNNER_TEMP/lint-tools"
+          curl -fsSL -o swiftlint.zip "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT_VERSION/portable_swiftlint.zip"
+          curl -fsSL -o swiftformat.zip "https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT_VERSION/swiftformat.zip"
+          unzip -oq swiftlint.zip
+          unzip -oq swiftformat.zip
+          chmod +x swiftlint swiftformat
+          echo "$RUNNER_TEMP/lint-tools" >> "$GITHUB_PATH"
+          ./swiftlint version
+          ./swiftformat --version
 
       # Simulator test builds never need a signing identity; test.sh turns signing off when CI is set.
       - run: make lint
