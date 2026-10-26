@@ -17,7 +17,8 @@ let package = Package(
     targets: [
         .target(
             name: "ChairUI",
-            dependencies: ["ChairKit"]
+            dependencies: ["ChairKit"],
+            resources: [.process("Tokens/Colors.xcassets")]
         ),
         .testTarget(
             name: "ChairUIPackageTests",
