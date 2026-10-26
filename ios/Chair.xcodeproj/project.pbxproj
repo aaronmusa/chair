@@ -10,6 +10,7 @@
 		00618E7EB6D21B02F063B6B1 /* ChairUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7CD2DFA71C1C72D48FA2F025 /* ChairUI */; };
 		1ED5FDB8308F2F4600DAC3F5 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */; };
 		1ED5FDDD308F307700DAC3F5 /* ChairWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		267641366C354DB5ACB5B5F5 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = BEE01943ED6B99F2161C79FC /* Products.storekit */; };
 		43C52E17AA98CD4B605C0CC5 /* ChairKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3FB08BB2CB4509A027C742EC /* ChairKit */; };
 		60D1B31B8889AE0CA47EB86F /* ChairKit in Frameworks */ = {isa = PBXBuildFile; productRef = B38D2F6ED39C09E6029FE5A0 /* ChairKit */; };
 		81B46B8FF701B16DA3C1DFEB /* ChairTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 72F29F76F2294AF3A321B770 /* ChairTestSupport */; };
@@ -62,6 +63,7 @@
 		1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChairWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
 		B723CE00549C496EF70DD1FA /* Chair-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Chair-Info.plist"; sourceTree = "<group>"; };
+		BEE01943ED6B99F2161C79FC /* Products.storekit */ = {isa = PBXFileReference; includeInIndex = 1; path = Products.storekit; sourceTree = "<group>"; };
 		C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -144,6 +146,7 @@
 				1ED5FDB6308F2F4500DAC3F5 /* Frameworks */,
 				1ED5FD8A308F2E6900DAC3F5 /* Products */,
 				D7F9C75477339F78010B9702 /* Config */,
+				BEE01943ED6B99F2161C79FC /* Products.storekit */,
 			);
 			sourceTree = "<group>";
 		};
@@ -345,6 +348,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				267641366C354DB5ACB5B5F5 /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

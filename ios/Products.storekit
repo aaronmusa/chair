@@ -1,0 +1,79 @@
+{
+  "identifier" : "C4A1R001",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_applicationInternalID" : "C4A1R002",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "C4A1R010",
+      "localizations" : [],
+      "name" : "Chair Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C4A1R011",
+          "introductoryOffer" : {
+            "internalID" : "C4A1R012",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlimited matches, AI coach, training and clip export.",
+              "displayName" : "Chair Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "chair.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Chair Pro Monthly",
+          "subscriptionGroupID" : "C4A1R010",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "C4A1R013",
+          "introductoryOffer" : {
+            "internalID" : "C4A1R014",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "A year of unlimited matches, coaching and training.",
+              "displayName" : "Chair Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "chair.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Chair Pro Yearly",
+          "subscriptionGroupID" : "C4A1R010",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
