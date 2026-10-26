@@ -3,6 +3,8 @@
 project := ios/Chair.xcodeproj
 
 build:
+	@installed=$$(xcodebuild -version | awk 'NR == 1 { print $$2 }'); expected=$$(cat .xcode-version); \
+	[ "$$installed" = "$$expected" ] || echo "warning: building with Xcode $$installed, but .xcode-version says $$expected" >&2
 	xcodebuild build -quiet -project $(project) -scheme Chair -destination 'generic/platform=iOS Simulator'
 	xcodebuild build -quiet -project $(project) -scheme ChairWatch -destination 'generic/platform=watchOS Simulator'
 
