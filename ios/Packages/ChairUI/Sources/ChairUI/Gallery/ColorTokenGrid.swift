@@ -11,12 +11,12 @@ public struct ColorTokenGrid: View {
     public init() {}
 
     public var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: Spacing.chair.sm)], spacing: Spacing.chair.sm) {
             ForEach(ChairColorToken.allCases, id: \.self) { token in
                 ColorTokenSwatch(token: token)
             }
         }
-        .padding(16)
+        .padding(Spacing.chair.md)
         .background(Color.chair.surface)
     }
 }
@@ -25,17 +25,17 @@ private struct ColorTokenSwatch: View {
     let token: ChairColorToken
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: Spacing.chair.xs) {
             HStack(spacing: 0) {
                 swatch(.light)
                 swatch(.dark)
             }
             .frame(height: 44)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.chair.outline, lineWidth: 1.5))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.chair.medium))
+            .overlay(RoundedRectangle(cornerRadius: Radius.chair.medium).stroke(Color.chair.outline, lineWidth: Stroke.chair.regular))
 
             Text(token.rawValue)
-                .font(.caption.weight(.semibold))
+                .chairFont(.callout)
                 .foregroundStyle(Color.chair.ink)
         }
         .accessibilityElement(children: .combine)
