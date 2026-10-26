@@ -22,7 +22,7 @@ lint:
 	swiftformat --lint ios
 
 gallery:
-	@echo "the gallery scheme lands with E0-8 (#9)" >&2; exit 1
+	ios/Scripts/gallery.sh
 
 db-reset:
 	supabase start
