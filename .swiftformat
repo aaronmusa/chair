@@ -11,4 +11,4 @@
 --importgrouping alpha
 --header ignore
 --stripunusedargs closure-only
---disable blankLinesBetweenImports
+--disable blankLinesBetweenImports,sortImports
