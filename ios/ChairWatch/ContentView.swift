@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  ChairWatch Watch App
+//  ChairWatch
 //
 //  Created by Aaron Musa on 10/26/26.
 //

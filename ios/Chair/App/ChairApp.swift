@@ -1,6 +1,6 @@
 //
-//  ChairWatchApp.swift
-//  ChairWatch Watch App
+//  ChairApp.swift
+//  Chair
 //
 //  Created by Aaron Musa on 10/26/26.
 //
@@ -8,10 +8,10 @@
 import SwiftUI
 
 @main
-struct ChairWatch_Watch_AppApp: App {
+struct ChairApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ExampleView()
         }
     }
 }
