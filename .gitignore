@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Secrets
+*.p8
+**/*service_role*
+*.local.xcconfig
+Secrets.xcconfig
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# Local tooling
+mitm_mcp_traffic.db
+.xcodebuildmcp/
+
+# Claude Code agent worktrees
+.claude/worktrees/
