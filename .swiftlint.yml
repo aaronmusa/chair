@@ -1,0 +1,49 @@
+included:
+  - ios
+
+excluded:
+  - ios/Packages/ChairKit/.build
+  - ios/Packages/ChairUI/.build
+  - ios/build
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_first_not_nil
+  - empty_count
+  - empty_string
+  - explicit_init
+  - first_where
+  - modifier_order
+  - operator_usage_whitespace
+  - redundant_nil_coalescing
+  - sorted_imports
+  - toggle_bool
+  - vertical_whitespace_closing_braces
+  - yoda_condition
+
+disabled_rules:
+  - trailing_comma
+  - todo
+
+line_length:
+  warning: 140
+  error: 160
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length:
+    warning: 1
+  excluded:
+    - id
+
+type_name:
+  min_length: 3
+
+custom_rules:
+  no_raw_color:
+    name: "No raw colour"
+    regex: 'Color\((red|hex):'
+    excluded: "ios/Packages/ChairUI/Sources/ChairUI/Tokens/"
+    message: "Use a Color.chair token from ChairUI/Tokens instead of a raw colour."
+    severity: error
