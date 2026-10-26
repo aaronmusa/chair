@@ -68,12 +68,14 @@ guard arguments.count == 4 else {
     FileHandle.standardError.write(Data("usage: make-store-shots.swift <config.json> <captures-dir> <output-dir>\n".utf8))
     exit(2)
 }
+
 let configURL = URL(fileURLWithPath: arguments[1])
 let capturesDirectory = URL(fileURLWithPath: arguments[2])
 let outputDirectory = URL(fileURLWithPath: arguments[3])
 
 guard let configData = try? Data(contentsOf: configURL),
-      let config = try? JSONDecoder().decode(Configuration.self, from: configData) else {
+      let config = try? JSONDecoder().decode(Configuration.self, from: configData)
+else {
     FileHandle.standardError.write(Data("could not read \(configURL.path)\n".utf8))
     exit(1)
 }
@@ -137,7 +139,8 @@ func drawOverlay(
 
 func loadImage(_ url: URL) -> CGImage? {
     guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-          let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+          let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+    else {
         FileHandle.standardError.write(Data("skipping \(url.lastPathComponent): no capture at \(url.path)\n".utf8))
         return nil
     }
@@ -254,8 +257,11 @@ func drawDevice(_ screen: CGImage, in context: CGContext) {
     let bodyPath = CGPath(roundedRect: body, cornerWidth: bodyRadius, cornerHeight: bodyRadius, transform: nil)
 
     context.saveGState()
-    context.setShadow(offset: CGSize(width: 0, height: -28 * unit), blur: 64 * unit,
-                      color: CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 0.25))
+    context.setShadow(
+        offset: CGSize(width: 0, height: -28 * unit),
+        blur: 64 * unit,
+        color: CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 0.25)
+    )
     context.setFillColor(bezelColor)
     context.addPath(bodyPath)
     context.fillPath()
