@@ -5,11 +5,13 @@
 //  Created by Aaron Musa on 10/27/26.
 //
 
-import SwiftData
+#if DEBUG
+    import SwiftData
 
-import ChairKit
+    import ChairKit
 
-// swiftlint:disable:next identifier_name
-public func InMemoryModelContainer() throws -> ModelContainer {
-    try ChairContainer.make(inMemory: true)
-}
+    // swiftlint:disable:next identifier_name
+    public func InMemoryModelContainer() throws -> ModelContainer {
+        try ChairContainer.make(inMemory: true)
+    }
+#endif
