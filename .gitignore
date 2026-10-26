@@ -29,6 +29,7 @@ Secrets.xcconfig
 # Supabase
 supabase/.temp/
 supabase/.branches/
+supabase/functions/.env
 
 # Local tooling
 mitm_mcp_traffic.db
