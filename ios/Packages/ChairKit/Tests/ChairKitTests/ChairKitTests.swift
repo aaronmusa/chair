@@ -11,6 +11,6 @@ import ChairKit
 
 final class ChairKitTests: XCTestCase {
     func testPackageLinks() {
-        XCTAssertEqual(ChairKit.name, "ChairKit")
+        XCTAssertEqual(ChairKit.name, "deliberately wrong")
     }
 }
