@@ -103,32 +103,34 @@ struct ChairButtonStyle: ButtonStyle {
     }
 }
 
-#Preview("Light") {
-    ChairButtonPreview()
-}
-
-#Preview("Dark") {
-    ChairButtonPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    ChairButtonPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct ChairButtonPreview: View {
-    var body: some View {
-        VStack(spacing: Spacing.chair.sm) {
-            ChairButton("Start match", onTap: {})
-            ChairButton("Start match", size: .large, onTap: {})
-            ChairButton("Saving", isLoading: true, onTap: {})
-            ChairButton("Calibrate court", style: .secondary, onTap: {})
-            ChairButton("Skip", style: .ghost, onTap: {})
-            ChairButton("Unavailable", onTap: {})
-                .disabled(true)
-        }
-        .padding(Spacing.chair.md)
-        .background(Color.chair.surface)
+#if DEBUG
+    #Preview("Light") {
+        ChairButtonPreview()
     }
-}
+
+    #Preview("Dark") {
+        ChairButtonPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        ChairButtonPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct ChairButtonPreview: View {
+        var body: some View {
+            VStack(spacing: Spacing.chair.sm) {
+                ChairButton("Start match", onTap: {})
+                ChairButton("Start match", size: .large, onTap: {})
+                ChairButton("Saving", isLoading: true, onTap: {})
+                ChairButton("Calibrate court", style: .secondary, onTap: {})
+                ChairButton("Skip", style: .ghost, onTap: {})
+                ChairButton("Unavailable", onTap: {})
+                    .disabled(true)
+            }
+            .padding(Spacing.chair.md)
+            .background(Color.chair.surface)
+        }
+    }
+#endif

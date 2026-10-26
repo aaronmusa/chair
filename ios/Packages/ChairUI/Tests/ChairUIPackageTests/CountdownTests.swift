@@ -37,15 +37,31 @@ final class CountdownTests: XCTestCase {
     }
 
     func testReduceMotionScheduleTicksOnWholeSeconds() {
-        let schedule = CountdownSchedule(startedAt: start, stepped: true)
+        let schedule = CountdownSchedule(startedAt: start, duration: 5, stepped: true)
 
         let ticks = Array(schedule.entries(from: start.addingTimeInterval(0.3), mode: .normal).prefix(3))
 
         XCTAssertEqual(ticks.map { $0.timeIntervalSince(start) }, [0, 1, 2])
     }
 
+    func testScheduleStopsAtTheEndSoTheViewGoesIdle() {
+        let schedule = CountdownSchedule(startedAt: start, duration: 5, stepped: true)
+
+        let ticks = Array(schedule.entries(from: start, mode: .normal).prefix(20))
+
+        XCTAssertEqual(ticks.map { $0.timeIntervalSince(start) }, [0, 1, 2, 3, 4, 5])
+    }
+
+    func testAFinishedCountdownSchedulesOneLastTick() {
+        let schedule = CountdownSchedule(startedAt: start, duration: 5, stepped: false)
+
+        let ticks = Array(schedule.entries(from: start.addingTimeInterval(60), mode: .normal).prefix(5))
+
+        XCTAssertEqual(ticks.map { $0.timeIntervalSince(start) }, [5])
+    }
+
     func testSmoothScheduleTicksFasterThanOncePerSecond() {
-        let schedule = CountdownSchedule(startedAt: start, stepped: false)
+        let schedule = CountdownSchedule(startedAt: start, duration: 5, stepped: false)
 
         let ticks = Array(schedule.entries(from: start, mode: .normal).prefix(2))
 

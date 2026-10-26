@@ -75,33 +75,35 @@ public struct ChairSegmented<Value: Hashable>: View {
     }
 }
 
-#Preview("Light") {
-    ChairSegmentedPreview()
-}
-
-#Preview("Dark") {
-    ChairSegmentedPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    ChairSegmentedPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct ChairSegmentedPreview: View {
-    @State private var format = "singles"
-    @State private var input = "camera"
-
-    var body: some View {
-        VStack(spacing: Spacing.chair.sm) {
-            ChairSegmented([.init("singles", "Singles"), .init("doubles", "Doubles")], selection: $format)
-            ChairSegmented(
-                [.init("camera", "Camera"), .init("tap", "Tap"), .init("watch", "Watch"), .init("referee", "Referee")],
-                selection: $input
-            )
-        }
-        .padding(Spacing.chair.md)
-        .background(Color.chair.surface)
+#if DEBUG
+    #Preview("Light") {
+        ChairSegmentedPreview()
     }
-}
+
+    #Preview("Dark") {
+        ChairSegmentedPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        ChairSegmentedPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct ChairSegmentedPreview: View {
+        @State private var format = "singles"
+        @State private var input = "camera"
+
+        var body: some View {
+            VStack(spacing: Spacing.chair.sm) {
+                ChairSegmented([.init("singles", "Singles"), .init("doubles", "Doubles")], selection: $format)
+                ChairSegmented(
+                    [.init("camera", "Camera"), .init("tap", "Tap"), .init("watch", "Watch"), .init("referee", "Referee")],
+                    selection: $input
+                )
+            }
+            .padding(Spacing.chair.md)
+            .background(Color.chair.surface)
+        }
+    }
+#endif

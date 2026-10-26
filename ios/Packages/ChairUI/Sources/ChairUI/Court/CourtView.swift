@@ -145,40 +145,47 @@ struct CourtLines: Shape {
     }
 }
 
-#Preview("Portrait") {
-    CourtViewPreview(orientation: .portrait)
-        .frame(width: 340)
-}
-
-#Preview("Mini") {
-    CourtViewPreview(orientation: .portrait)
-        .frame(width: 110)
-}
-
-#Preview("Landscape dark") {
-    CourtViewPreview(orientation: .landscape)
-        .frame(width: 600)
-        .preferredColorScheme(.dark)
-}
-
-struct CourtViewPreview: View {
-    let orientation: CourtOrientation
-
-    var body: some View {
-        CourtView(
-            orientation: orientation,
-            players: [
-                PlayerMarker(id: "Musa", side: .near, position: .behindBaseline(.near, on: .deuce, by: 1), role: .server),
-                PlayerMarker(id: "Reyes", side: .far, position: .behindBaseline(.far, on: .deuce, by: 0.5, fromCentre: 3), role: .receiver),
-            ],
-            targetZones: [
-                CourtZone(
-                    id: "deuce box",
-                    from: CourtPoint(x: -CourtDimensions.halfSinglesWidth, y: 0),
-                    to: CourtPoint(x: 0, y: CourtDimensions.serviceLineFromNet)
-                ),
-            ],
-            ballMark: BallMark(CourtPoint(x: -2, y: 4.5), call: .in)
-        )
+#if DEBUG
+    #Preview("Portrait") {
+        CourtViewPreview(orientation: .portrait)
+            .frame(width: 340)
     }
-}
+
+    #Preview("Mini") {
+        CourtViewPreview(orientation: .portrait)
+            .frame(width: 110)
+    }
+
+    #Preview("Landscape dark") {
+        CourtViewPreview(orientation: .landscape)
+            .frame(width: 600)
+            .preferredColorScheme(.dark)
+    }
+
+    struct CourtViewPreview: View {
+        let orientation: CourtOrientation
+
+        var body: some View {
+            CourtView(
+                orientation: orientation,
+                players: [
+                    PlayerMarker(id: "Musa", side: .near, position: .behindBaseline(.near, on: .deuce, by: 1), role: .server),
+                    PlayerMarker(
+                        id: "Reyes",
+                        side: .far,
+                        position: .behindBaseline(.far, on: .deuce, by: 0.5, fromCentre: 3),
+                        role: .receiver
+                    ),
+                ],
+                targetZones: [
+                    CourtZone(
+                        id: "deuce box",
+                        from: CourtPoint(x: -CourtDimensions.halfSinglesWidth, y: 0),
+                        to: CourtPoint(x: 0, y: CourtDimensions.serviceLineFromNet)
+                    ),
+                ],
+                ballMark: BallMark(CourtPoint(x: -2, y: 4.5), call: .in)
+            )
+        }
+    }
+#endif

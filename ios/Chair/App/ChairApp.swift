@@ -11,7 +11,7 @@ import SwiftUI
 struct ChairApp: App {
     var body: some Scene {
         WindowGroup {
-            ExampleView()
+            RootView()
         }
     }
 }

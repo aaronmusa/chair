@@ -37,29 +37,31 @@ public struct ChairSheet<Content: View>: View {
     }
 }
 
-#Preview("Light") {
-    ChairSheetPreview()
-}
-
-#Preview("Dark") {
-    ChairSheetPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    ChairSheetPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct ChairSheetPreview: View {
-    var body: some View {
-        ChairSheet {
-            VStack(alignment: .leading, spacing: Spacing.chair.xs) {
-                Text("Point to Musa?").chairFont(.title).foregroundStyle(Color.chair.ink)
-                Text("Ball landed in, deep on the deuce side.").chairFont(.body).foregroundStyle(Color.chair.inkSecondary)
-            }
-        }
-        .padding(.top, Spacing.chair.xxl)
-        .background(Color.chair.surfaceRaised)
+#if DEBUG
+    #Preview("Light") {
+        ChairSheetPreview()
     }
-}
+
+    #Preview("Dark") {
+        ChairSheetPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        ChairSheetPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct ChairSheetPreview: View {
+        var body: some View {
+            ChairSheet {
+                VStack(alignment: .leading, spacing: Spacing.chair.xs) {
+                    Text("Point to Musa?").chairFont(.title).foregroundStyle(Color.chair.ink)
+                    Text("Ball landed in, deep on the deuce side.").chairFont(.body).foregroundStyle(Color.chair.inkSecondary)
+                }
+            }
+            .padding(.top, Spacing.chair.xxl)
+            .background(Color.chair.surfaceRaised)
+        }
+    }
+#endif

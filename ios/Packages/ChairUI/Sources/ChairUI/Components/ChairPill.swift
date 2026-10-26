@@ -55,31 +55,33 @@ public struct ChairPill: View {
     }
 }
 
-#Preview("Light") {
-    ChairPillPreview()
-}
-
-#Preview("Dark") {
-    ChairPillPreview()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("AX5") {
-    ChairPillPreview()
-        .environment(\.dynamicTypeSize, .accessibility5)
-}
-
-struct ChairPillPreview: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.chair.sm) {
-            HStack(spacing: Spacing.chair.xs) {
-                ChairPill("All", isSelected: true, onTap: {})
-                ChairPill("Singles", onTap: {})
-                ChairPill("Doubles", onTap: {})
-            }
-            ChairPill("Pro")
-        }
-        .padding(Spacing.chair.md)
-        .background(Color.chair.surface)
+#if DEBUG
+    #Preview("Light") {
+        ChairPillPreview()
     }
-}
+
+    #Preview("Dark") {
+        ChairPillPreview()
+            .preferredColorScheme(.dark)
+    }
+
+    #Preview("AX5") {
+        ChairPillPreview()
+            .environment(\.dynamicTypeSize, .accessibility5)
+    }
+
+    struct ChairPillPreview: View {
+        var body: some View {
+            VStack(alignment: .leading, spacing: Spacing.chair.sm) {
+                HStack(spacing: Spacing.chair.xs) {
+                    ChairPill("All", isSelected: true, onTap: {})
+                    ChairPill("Singles", onTap: {})
+                    ChairPill("Doubles", onTap: {})
+                }
+                ChairPill("Pro")
+            }
+            .padding(Spacing.chair.md)
+            .background(Color.chair.surface)
+        }
+    }
+#endif
