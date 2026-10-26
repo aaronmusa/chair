@@ -11,12 +11,18 @@ let package = Package(
     ],
     products: [
         .library(name: "ChairKit", targets: ["ChairKit"]),
+        .library(name: "ChairTestSupport", targets: ["ChairTestSupport"]),
     ],
     targets: [
         .target(name: "ChairKit"),
+        .target(
+            name: "ChairTestSupport",
+            dependencies: ["ChairKit"]
+        ),
         .testTarget(
             name: "ChairKitTests",
-            dependencies: ["ChairKit"]
+            dependencies: ["ChairKit", "ChairTestSupport"],
+            resources: [.copy("Fixtures")]
         ),
     ]
 )
