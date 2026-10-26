@@ -13,8 +13,14 @@ let package = Package(
         .library(name: "ChairKit", targets: ["ChairKit"]),
         .library(name: "ChairTestSupport", targets: ["ChairTestSupport"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/supabase/supabase-swift", exact: "2.55.4"),
+    ],
     targets: [
-        .target(name: "ChairKit"),
+        .target(
+            name: "ChairKit",
+            dependencies: [.product(name: "Supabase", package: "supabase-swift")]
+        ),
         .target(
             name: "ChairTestSupport",
             dependencies: ["ChairKit"]
