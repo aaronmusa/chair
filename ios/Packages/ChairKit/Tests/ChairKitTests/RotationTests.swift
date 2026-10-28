@@ -56,6 +56,15 @@ final class RotationTests: XCTestCase {
         XCTAssertEqual(next.doublesOrder?.serving, [.a2, .b1, .a1, .b2])
     }
 
+    func testSwapServerInSinglesHandsTheServeToTheReceiver() throws {
+        let state = MatchState.initial(rules: MatchRules(firstServer: .a))
+
+        let (next, _) = try ScoringEngine.apply(.swapServer, to: state)
+
+        XCTAssertEqual(next.server, .b1)
+        XCTAssertEqual(next.receiver, .a1)
+    }
+
     func testASetEndingOnAnEvenTotalKeepsEndsUntilAfterGameOne() throws {
         var state = MatchState.initial(rules: MatchRules())
         state.phase = .inProgress

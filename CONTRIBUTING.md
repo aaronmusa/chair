@@ -70,7 +70,7 @@ The body says why. No AI attribution trailers. Examples:
 | Backend tickets | `make test-db` and `make test-functions` too |
 | End of an epic | `make test-all` and `make test-db` |
 
-`make test-kit` runs ChairKit alone, with no simulator.
+`make test-kit` runs ChairKit alone, with no simulator. `make coverage` runs it with coverage and fails if any file in `ChairKit/Engine` is below 100 %. To re-record the announcement golden file after an intended change, run `CHAIR_RECORD_GOLDEN=1 make test-kit`.
 
 ## Releases
 

@@ -18,13 +18,14 @@ public extension MatchState {
     var positions: Positions {
         let isDoubles = doublesOrder != nil
         let slots: [PlayerSlot] = isDoubles ? PlayerSlot.allCases : [.a1, .b1]
+        let slotEnds = ends.flatMap { side, end in slots.filter { $0.side == side }.map { ($0, end) } }
         return Positions(
             server: server,
             serverCourtSide: serverCourtSide,
             receiver: receiver,
             serverPartner: isDoubles ? server.partner : nil,
             receiverPartner: isDoubles ? receiver.partner : nil,
-            ends: Dictionary(uniqueKeysWithValues: slots.map { ($0, ends[$0.side] ?? .near) })
+            ends: Dictionary(uniqueKeysWithValues: slotEnds)
         )
     }
 }

@@ -80,6 +80,7 @@ final class ScoreFixTests: XCTestCase {
             snapshot([], SetScore(a: 6, b: 6), .tiebreak(a: 7, b: 5, target: 7)),
             snapshot([], SetScore(a: 0, b: 0), .standard(a: .advantage, b: .thirty)),
             snapshot([SetScore(a: 6, b: 0), SetScore(a: 6, b: 0), SetScore(a: 0, b: 6)], SetScore(a: 0, b: 0), .loveAll),
+            snapshot([SetScore(a: 6, b: 0), SetScore(a: 6, b: 0)], SetScore(a: 1, b: 0), .loveAll),
         ]
         for fix in cases {
             XCTAssertThrowsError(try ScoringEngine.apply(.setScore(fix), to: start), "\(fix)") {
@@ -154,6 +155,67 @@ final class ScoreFixTests: XCTestCase {
         XCTAssertEqual(state.currentSet, SetScore(a: 8, b: 7))
     }
 
+    func testReachableFixesAreAccepted() throws {
+        for reachable in ReachableFix.all {
+            let (state, _) = try ScoringEngine.apply(.setScore(reachable.fix), to: .initial(rules: reachable.rules))
+            XCTAssertEqual(state.snapshot, reachable.fix)
+            XCTAssertEqual(state.phase, reachable.phase)
+        }
+    }
+
+    func testNoAdRejectsAdvantageToEitherSide() throws {
+        let start = MatchState.initial(rules: MatchRules(deuce: .noAd, firstServer: .a))
+        let fix = ScoreSnapshot(sets: [], currentSet: SetScore(a: 0, b: 0), currentGame: .standard(a: .forty, b: .advantage), server: .a1)
+
+        XCTAssertThrowsError(try ScoringEngine.apply(.setScore(fix), to: start))
+    }
+
+    func testAMatchWonInATiebreakCanBeReopenedInsideIt() throws {
+        var log = try MatchLog(rules: MatchRules(finalSet: .tiebreak10, firstServer: .a))
+        try log.append(timed(.setScore(ScoreSnapshot(
+            sets: [SetScore(a: 6, b: 4), SetScore(a: 3, b: 6)],
+            currentSet: SetScore(a: 6, b: 6),
+            currentGame: .tiebreak(a: 9, b: 7, target: 10),
+            server: .b1
+        ))))
+        try log.append(point(.a))
+        XCTAssertEqual(log.state.phase, .complete(winner: .a))
+
+        try log.append(timed(.setScore(ScoreSnapshot(
+            sets: [SetScore(a: 6, b: 4), SetScore(a: 3, b: 6)],
+            currentSet: SetScore(a: 6, b: 6),
+            currentGame: .tiebreak(a: 9, b: 7, target: 10),
+            server: .b1
+        ))))
+
+        XCTAssertEqual(log.state.phase, .inProgress)
+        XCTAssertEqual(log.state.currentGame, .tiebreak(a: 9, b: 7, target: 10))
+    }
+
+    func testASinglesFixRejectsASecondPlayer() throws {
+        let fix = ScoreSnapshot(sets: [], currentSet: SetScore(a: 0, b: 0), currentGame: .loveAll, server: .a2)
+
+        XCTAssertThrowsError(try ScoringEngine.apply(.setScore(fix), to: .initial(rules: rules))) {
+            XCTAssertEqual($0 as? EngineError, .invalidScore(reason: "A2 isn't playing singles"))
+        }
+    }
+
+    func testADoublesFixIntoATiebreakFindsTheOpeningReceiver() throws {
+        let start = MatchState.initial(rules: rules, format: .doubles)
+        let fix = ScoreSnapshot(
+            sets: [],
+            currentSet: SetScore(a: 6, b: 6),
+            currentGame: .tiebreak(a: 1, b: 2, target: 7),
+            server: .a2
+        )
+
+        let (state, _) = try ScoringEngine.apply(.setScore(fix), to: start)
+
+        XCTAssertEqual(state.server, .a2)
+        XCTAssertEqual(state.tiebreakOpeningReceiver, .b1)
+        XCTAssertEqual(state.serverCourtSide, .ad)
+    }
+
     private func snapshot(
         _ sets: [SetScore],
         _ current: SetScore,
@@ -178,4 +240,63 @@ final class ScoreFixTests: XCTestCase {
     private func timed(_ event: MatchEvent) -> TimedEvent {
         TimedEvent(event, at: Fixtures.matchDay)
     }
+}
+
+private struct ReachableFix {
+    let rules: MatchRules
+    let fix: ScoreSnapshot
+    let phase: MatchPhase
+
+    static let all: [ReachableFix] = [
+        ReachableFix(
+            rules: MatchRules(firstServer: .a),
+            fix: ScoreSnapshot(
+                sets: [],
+                currentSet: SetScore(a: 0, b: 0),
+                currentGame: .standard(a: .thirty, b: .fifteen),
+                server: .a1
+            ),
+            phase: .inProgress
+        ),
+        ReachableFix(
+            rules: MatchRules(firstServer: .a),
+            fix: ScoreSnapshot(
+                sets: [],
+                currentSet: SetScore(a: 0, b: 0),
+                currentGame: .standard(a: .forty, b: .advantage),
+                server: .a1
+            ),
+            phase: .inProgress
+        ),
+        ReachableFix(
+            rules: MatchRules(finalSet: .advantage, firstServer: .a),
+            fix: ScoreSnapshot(
+                sets: [SetScore(a: 6, b: 3), SetScore(a: 3, b: 6), SetScore(a: 8, b: 6)],
+                currentSet: SetScore(a: 0, b: 0),
+                currentGame: .loveAll,
+                server: .b1
+            ),
+            phase: .complete(winner: .a)
+        ),
+        ReachableFix(
+            rules: MatchRules(finalSet: .tiebreak10, firstServer: .a),
+            fix: ScoreSnapshot(
+                sets: [SetScore(a: 7, b: 5), SetScore(a: 6, b: 7)],
+                currentSet: SetScore(a: 6, b: 6),
+                currentGame: .tiebreak(a: 4, b: 3, target: 10),
+                server: .b1
+            ),
+            phase: .inProgress
+        ),
+        ReachableFix(
+            rules: MatchRules(firstServer: .a),
+            fix: ScoreSnapshot(
+                sets: [SetScore(a: 7, b: 5), SetScore(a: 5, b: 7)],
+                currentSet: SetScore(a: 6, b: 6),
+                currentGame: .tiebreak(a: 0, b: 0, target: 7),
+                server: .a1
+            ),
+            phase: .inProgress
+        ),
+    ]
 }
