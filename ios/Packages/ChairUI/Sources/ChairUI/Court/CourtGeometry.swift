@@ -7,6 +7,8 @@
 
 import CoreGraphics
 
+import ChairKit
+
 public struct CourtPoint: Equatable, Sendable {
     public let x: Double
     public let y: Double
@@ -18,11 +20,6 @@ public struct CourtPoint: Equatable, Sendable {
         self.x = x
         self.y = y
     }
-}
-
-public enum CourtSide: Sendable {
-    case near
-    case far
 }
 
 public enum CourtOrientation: Sendable {

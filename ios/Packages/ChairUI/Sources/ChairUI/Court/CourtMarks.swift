@@ -5,15 +5,12 @@
 //  Created by Aaron Musa on 10/27/26.
 //
 
-public enum ServiceCourt: Sendable {
-    case deuce
-    case ad
-}
+import ChairKit
 
 public extension CourtPoint {
     static func behindBaseline(
-        _ side: CourtSide,
-        on serviceCourt: ServiceCourt,
+        _ side: CourtEnd,
+        on serviceCourt: CourtSide,
         by metres: Double,
         fromCentre offset: Double = 1
     ) -> CourtPoint {
@@ -32,13 +29,13 @@ public struct PlayerMarker: Identifiable, Sendable {
     }
 
     public let id: String
-    public let side: CourtSide
+    public let side: CourtEnd
     public let position: CourtPoint
     public let role: Role
 
     public init(
         id: String,
-        side: CourtSide,
+        side: CourtEnd,
         position: CourtPoint,
         role: Role
     ) {

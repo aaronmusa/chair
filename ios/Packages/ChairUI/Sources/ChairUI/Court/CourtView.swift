@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import ChairKit
+
 public struct CourtView: View {
     let orientation: CourtOrientation
     let players: [PlayerMarker]
