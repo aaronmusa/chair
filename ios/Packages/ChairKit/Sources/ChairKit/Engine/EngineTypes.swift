@@ -121,6 +121,7 @@ public struct ScoreSnapshot: Codable, Equatable, Sendable {
 public struct MatchState: Codable, Equatable, Sendable {
     public var rules: MatchRules
     public var sets: [SetScore]
+    public var completedTiebreaks: [TiebreakSummary?]
     public var currentSet: SetScore
     public var currentGame: GameState
     public var server: PlayerSlot
@@ -139,6 +140,7 @@ public struct MatchState: Codable, Equatable, Sendable {
         return MatchState(
             rules: rules,
             sets: [],
+            completedTiebreaks: [],
             currentSet: SetScore(a: 0, b: 0),
             currentGame: .loveAll,
             server: first == .a ? .a1 : .b1,

@@ -18,6 +18,11 @@ public enum ScoringEngine {
         case .let:
             try requireInPlay(state)
             return (state, [.let(firstServe: state.faultCount == 0)])
+        case let .retire(side):
+            try requireInPlay(state)
+            var next = state
+            next.phase = .complete(winner: side.opponent)
+            return (next, [.retired(side)])
         default:
             throw EngineError.unsupported(event)
         }
@@ -59,15 +64,15 @@ public enum ScoringEngine {
             next.serverCourtSide = GameRules.servingSide(a: newA, b: newB)
             return (next, GameRules.calls(a: newA, b: newB, serverSide: state.server.side, noAd: state.rules.deuce == .noAd))
         case .won:
-            winGame(for: winner, in: &next)
-            return (next, [.game(winner)])
+            let calls = [.game(winner)] + winGame(for: winner, in: &next)
+            return (next, calls)
         }
     }
 
     static func winGame(
         for winner: Side,
         in state: inout MatchState
-    ) {
+    ) -> [Announcement] {
         if winner == .a {
             state.currentSet.a += 1
         } else {
@@ -76,6 +81,40 @@ public enum ScoringEngine {
         state.currentGame = .loveAll
         state.faultCount = 0
         state.serverCourtSide = .deuce
+        return settleSet(after: winner, in: &state)
+    }
+
+    static func settleSet(
+        after winner: Side,
+        in state: inout MatchState
+    ) -> [Announcement] {
+        let set = state.currentSet
+        let (mine, theirs) = winner == .a ? (set.a, set.b) : (set.b, set.a)
+        let playsAdvantageSet = state.isDecidingSet && state.rules.finalSet == .advantage
+        if mine == 6, theirs == 6, !playsAdvantageSet {
+            let target = state.isDecidingSet && state.rules.finalSet == .tiebreak10 ? 10 : 7
+            state.currentGame = .tiebreak(a: 0, b: 0, target: target)
+            return []
+        }
+        guard mine >= 6, mine - theirs >= 2 else { return [] }
+        return closeSet(won: winner, tiebreak: nil, in: &state)
+    }
+
+    static func closeSet(
+        won winner: Side,
+        tiebreak: TiebreakSummary?,
+        in state: inout MatchState
+    ) -> [Announcement] {
+        let set = state.currentSet
+        state.sets.append(set)
+        state.completedTiebreaks.append(tiebreak)
+        state.currentSet = SetScore(a: 0, b: 0)
+        state.currentGame = .loveAll
+        guard state.setsWon(by: winner) == state.setsToWin else {
+            return [.gameAndSet(winner, set)]
+        }
+        state.phase = .complete(winner: winner)
+        return [.gameSetMatch(winner, state.summary)]
     }
 }
 

@@ -14,6 +14,9 @@ public enum Announcement: Codable, Equatable, Sendable {
     case fault
     case doubleFault
     case `let`(firstServe: Bool)
+    case gameAndSet(Side, SetScore)
+    case gameSetMatch(Side, [SetSummary])
+    case retired(Side)
 
     public var serverFirstScores: (server: GameScore, receiver: GameScore)? {
         guard case let .score(a, b, serverSide) = self else { return nil }
