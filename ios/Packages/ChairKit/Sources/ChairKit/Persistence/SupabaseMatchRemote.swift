@@ -173,6 +173,9 @@ private struct PointRow: Codable {
     let confidence: Double?
     let corrected: Bool
     let clipPath: String?
+    let eventKind: String
+    let undone: Bool
+    let payload: AnyJSON?
 
     init(
         match: UUID,
@@ -188,6 +191,9 @@ private struct PointRow: Codable {
         confidence = point.confidence
         corrected = point.corrected
         clipPath = point.clipPath
+        eventKind = point.eventKind
+        undone = point.undone
+        payload = point.payload.flatMap { try? JSONDecoder().decode(AnyJSON.self, from: $0) }
     }
 
     var point: MatchRecord.Point {
@@ -200,14 +206,18 @@ private struct PointRow: Codable {
             source: source,
             confidence: confidence,
             corrected: corrected,
-            clipPath: clipPath
+            clipPath: clipPath,
+            eventKind: eventKind,
+            undone: undone,
+            payload: payload.flatMap { try? PayloadCoding.encoder.encode($0) }
         )
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, index, at, outcome, source, confidence, corrected
+        case id, index, at, outcome, source, confidence, corrected, undone, payload
         case matchID = "match_id"
         case winnerSide = "winner_side"
         case clipPath = "clip_path"
+        case eventKind = "event_kind"
     }
 }

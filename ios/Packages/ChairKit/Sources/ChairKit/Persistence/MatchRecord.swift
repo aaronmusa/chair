@@ -38,6 +38,9 @@ public struct MatchRecord: Codable, Equatable, Sendable {
         public var confidence: Double?
         public var corrected: Bool
         public var clipPath: String?
+        public var eventKind: String
+        public var undone: Bool
+        public var payload: Data?
 
         public init(
             id: UUID,
@@ -48,7 +51,10 @@ public struct MatchRecord: Codable, Equatable, Sendable {
             source: String,
             confidence: Double?,
             corrected: Bool,
-            clipPath: String?
+            clipPath: String?,
+            eventKind: String = "point",
+            undone: Bool = false,
+            payload: Data? = nil
         ) {
             self.id = id
             self.index = index
@@ -59,6 +65,9 @@ public struct MatchRecord: Codable, Equatable, Sendable {
             self.confidence = confidence
             self.corrected = corrected
             self.clipPath = clipPath
+            self.eventKind = eventKind
+            self.undone = undone
+            self.payload = payload
         }
     }
 
@@ -102,7 +111,10 @@ public extension Match {
                     source: $0.source,
                     confidence: $0.confidence,
                     corrected: $0.corrected,
-                    clipPath: $0.clipPath
+                    clipPath: $0.clipPath,
+                    eventKind: $0.eventKind,
+                    undone: $0.undone,
+                    payload: $0.payload
                 )
             }
         )
@@ -157,6 +169,9 @@ public extension Match {
                 confidence: $0.confidence,
                 corrected: $0.corrected,
                 clipPath: $0.clipPath,
+                eventKind: $0.eventKind,
+                undone: $0.undone,
+                payload: $0.payload,
                 updatedAt: record.updatedAt,
                 syncState: .synced
             )
