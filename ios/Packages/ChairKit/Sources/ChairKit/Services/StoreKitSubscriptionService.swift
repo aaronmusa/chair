@@ -14,17 +14,20 @@ public struct StoreKitSubscriptionService: SubscriptionService {
     public init() {}
 
     public func entitlement() async -> Entitlement {
+        await Self.entitlement(from: ownedSubscriptions())
+    }
+
+    public func entitlement(including transaction: Transaction) async -> Entitlement {
+        await Self.entitlement(from: ownedSubscriptions() + [OwnedSubscription(transaction)])
+    }
+
+    private func ownedSubscriptions() async -> [OwnedSubscription] {
         var owned: [OwnedSubscription] = []
         for await result in Transaction.currentEntitlements {
             guard case let .verified(transaction) = result else { continue }
-            owned.append(OwnedSubscription(
-                productID: transaction.productID,
-                expires: transaction.expirationDate,
-                isRevoked: transaction.revocationDate != nil,
-                isIntroductoryOffer: transaction.offer?.type == .introductory
-            ))
+            owned.append(OwnedSubscription(transaction))
         }
-        return Self.entitlement(from: owned)
+        return owned
     }
 
     public static func entitlement(from owned: [OwnedSubscription]) -> Entitlement {
@@ -56,7 +59,7 @@ public struct StoreKitSubscriptionService: SubscriptionService {
         switch try await product.purchase() {
         case let .success(.verified(transaction)):
             await transaction.finish()
-            return await entitlement()
+            return await entitlement(including: transaction)
         case .success(.unverified), .pending, .userCancelled:
             return await entitlement()
         @unknown default:
@@ -94,5 +97,16 @@ public struct OwnedSubscription: Equatable, Sendable {
         self.expires = expires
         self.isRevoked = isRevoked
         self.isIntroductoryOffer = isIntroductoryOffer
+    }
+}
+
+extension OwnedSubscription {
+    init(_ transaction: Transaction) {
+        self.init(
+            productID: transaction.productID,
+            expires: transaction.expirationDate,
+            isRevoked: transaction.revocationDate != nil,
+            isIntroductoryOffer: transaction.offer?.type == .introductory
+        )
     }
 }
