@@ -20,6 +20,7 @@ final class PointAndGameScoringTests: XCTestCase {
             .score(a: .thirty, b: .love, serverSide: .a),
             .score(a: .forty, b: .love, serverSide: .a),
             .game(.a),
+            .changeEnds,
         ])
     }
 
@@ -34,7 +35,7 @@ final class PointAndGameScoringTests: XCTestCase {
         let (state, calls) = try play([.a, .a, .a, .b, .b, .b, .b, .b])
 
         XCTAssertEqual(state.currentSet, SetScore(a: 0, b: 1))
-        XCTAssertEqual(calls.suffix(2), [.advantage(.b), .game(.b)])
+        XCTAssertEqual(calls.suffix(3), [.advantage(.b), .game(.b), .changeEnds])
     }
 
     func testNoAdDecidingPointWinsTheGame() throws {
@@ -45,7 +46,7 @@ final class PointAndGameScoringTests: XCTestCase {
         let (state, calls) = try ScoringEngine.apply(.pointWon(by: .b, outcome: nil, ending: nil), to: atDeuce)
 
         XCTAssertEqual(state.currentSet, SetScore(a: 0, b: 1))
-        XCTAssertEqual(calls, [.game(.b)])
+        XCTAssertEqual(calls, [.game(.b), .changeEnds])
     }
 
     func testAPointOnACompleteMatchThrowsAndChangesNothing() {
@@ -80,8 +81,8 @@ final class PointAndGameScoringTests: XCTestCase {
     func testEventsNotYetHandledAreRefused() {
         let state = MatchState.initial(rules: MatchRules())
 
-        XCTAssertThrowsError(try ScoringEngine.apply(.swapEnds, to: state)) { error in
-            XCTAssertEqual(error as? EngineError, .unsupported(.swapEnds))
+        XCTAssertThrowsError(try ScoringEngine.apply(.undo, to: state)) { error in
+            XCTAssertEqual(error as? EngineError, .unsupported(.undo))
         }
     }
 
