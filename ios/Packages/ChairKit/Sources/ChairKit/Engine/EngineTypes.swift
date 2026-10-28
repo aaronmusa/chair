@@ -38,6 +38,7 @@ public enum MatchEvent: Codable, Equatable, Sendable {
     case undo
     case setScore(ScoreSnapshot)
     case swapServer
+    case swapReceivers(Side)
     case swapEnds
     case retire(Side)
 }
