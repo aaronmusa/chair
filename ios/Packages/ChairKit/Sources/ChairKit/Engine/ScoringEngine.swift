@@ -32,7 +32,10 @@ public enum ScoringEngine {
             var next = state
             next.phase = .complete(winner: side.opponent)
             return (next, [.retired(side)])
-        default:
+        case let .setScore(snapshot):
+            let next = try ScoreFix.apply(snapshot, to: state)
+            return (next, [.correction(next.snapshot)])
+        case .undo:
             throw EngineError.unsupported(event)
         }
     }
