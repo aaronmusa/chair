@@ -18,6 +18,15 @@ public enum ScoringEngine {
         case .let:
             try requireInPlay(state)
             return (state, [.let(firstServe: state.faultCount == 0)])
+        case .swapServer:
+            return try swapServer(in: state)
+        case let .swapReceivers(side):
+            return try swapReceivers(of: side, in: state)
+        case .swapEnds:
+            try requireInPlay(state)
+            var next = state
+            Rotation.changeEnds(in: &next)
+            return (next, [.changeEnds])
         case let .retire(side):
             try requireInPlay(state)
             var next = state
@@ -46,6 +55,43 @@ public enum ScoringEngine {
         return (next, [.doubleFault] + calls)
     }
 
+    static func requireSetNotStarted(_ state: MatchState) throws {
+        try requireInPlay(state)
+        guard state.currentSet == SetScore(a: 0, b: 0), state.currentGame == .loveAll, state.faultCount == 0 else {
+            throw EngineError.setInProgress
+        }
+    }
+
+    static func swapServer(in state: MatchState) throws -> (MatchState, [Announcement]) {
+        try requireSetNotStarted(state)
+        var next = state
+        let partner = state.server.partner
+        if var order = state.doublesOrder,
+           let serverIndex = order.serving.firstIndex(of: state.server),
+           let partnerIndex = order.serving.firstIndex(of: partner) {
+            order.serving.swapAt(serverIndex, partnerIndex)
+            next.doublesOrder = order
+            next.server = partner
+        } else {
+            next.server = state.receiver
+        }
+        next.receiver = Rotation.receiver(serving: next.server, from: next.serverCourtSide, in: next)
+        return (next, [])
+    }
+
+    static func swapReceivers(
+        of side: Side,
+        in state: MatchState
+    ) throws -> (MatchState, [Announcement]) {
+        try requireSetNotStarted(state)
+        guard var order = state.doublesOrder, let deuceReceiver = order.deuceReceivers[side] else { return (state, []) }
+        var next = state
+        order.deuceReceivers[side] = deuceReceiver.partner
+        next.doublesOrder = order
+        next.receiver = Rotation.receiver(serving: next.server, from: next.serverCourtSide, in: next)
+        return (next, [])
+    }
+
     static func point(
         to winner: Side,
         in state: MatchState
@@ -62,6 +108,7 @@ public enum ScoringEngine {
         case let .continues(newA, newB):
             next.currentGame = .standard(a: newA, b: newB)
             next.serverCourtSide = GameRules.servingSide(a: newA, b: newB)
+            next.receiver = Rotation.receiver(serving: state.server, from: next.serverCourtSide, in: next)
             return (next, GameRules.calls(a: newA, b: newB, serverSide: state.server.side, noAd: state.rules.deuce == .noAd))
         case .won:
             let calls = [.game(winner)] + winGame(for: winner, in: &next)
@@ -89,10 +136,14 @@ public enum ScoringEngine {
             next.faultCount = 0
             next.serverCourtSide = .deuce
             next.tiebreakOpeningReceiver = nil
-            let calls = [.game(winner)] + closeSet(won: winner, tiebreak: TiebreakSummary(a: newA, b: newB), in: &next)
+            let setCalls = closeSet(won: winner, tiebreak: TiebreakSummary(a: newA, b: newB), in: &next)
+            if case .complete = next.phase {
+                return (next, [.game(winner)] + setCalls)
+            }
+            Rotation.changeEnds(in: &next)
             next.server = opening
             next.receiver = Rotation.receiver(serving: opening, from: .deuce, in: next)
-            return (next, calls)
+            return (next, [.game(winner), .changeEnds] + setCalls + choosingServer(in: next))
         }
 
         let played = newA + newB
@@ -115,15 +166,37 @@ public enum ScoringEngine {
         for winner: Side,
         in state: inout MatchState
     ) -> [Announcement] {
+        let gameServer = state.server
         if winner == .a {
             state.currentSet.a += 1
         } else {
             state.currentSet.b += 1
         }
+        let gamesInSet = state.currentSet.a + state.currentSet.b
+        let setsBefore = state.sets.count
         state.currentGame = .loveAll
         state.faultCount = 0
         state.serverCourtSide = .deuce
-        return settleSet(after: winner, in: &state)
+        let setCalls = settleSet(after: winner, in: &state)
+        if case .complete = state.phase {
+            return setCalls
+        }
+        var calls: [Announcement] = []
+        if !gamesInSet.isMultiple(of: 2) {
+            Rotation.changeEnds(in: &state)
+            calls.append(.changeEnds)
+        }
+        state.server = Rotation.nextServer(after: gameServer, in: state)
+        state.receiver = Rotation.receiver(serving: state.server, from: .deuce, in: state)
+        calls += setCalls
+        if state.sets.count > setsBefore {
+            calls += choosingServer(in: state)
+        }
+        return calls
+    }
+
+    static func choosingServer(in state: MatchState) -> [Announcement] {
+        state.doublesOrder == nil ? [] : [.chooseServer(state.server.side)]
     }
 
     static func settleSet(
