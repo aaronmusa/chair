@@ -6,6 +6,9 @@
 //
 
 public enum Announcement: Codable, Equatable, Sendable {
+    case ace
+    case out
+    case net
     case score(a: GameScore, b: GameScore, serverSide: Side)
     case deuce
     case advantage(Side)
@@ -21,6 +24,22 @@ public enum Announcement: Codable, Equatable, Sendable {
     case changeEnds
     case chooseServer(Side)
     case correction(ScoreSnapshot)
+
+    static func calls(
+        for outcome: PointOutcome?,
+        ending: PointEnding?
+    ) -> [Announcement] {
+        let call: [Announcement] = switch outcome {
+        case .ace: [.ace]
+        case .doubleFault: [.doubleFault]
+        default: []
+        }
+        return switch ending {
+        case .out: call + [.out]
+        case .net: call + [.net]
+        case nil: call
+        }
+    }
 
     public var serverFirstScores: (server: GameScore, receiver: GameScore)? {
         guard case let .score(a, b, serverSide) = self else { return nil }
