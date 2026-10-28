@@ -56,7 +56,7 @@ public enum ScoringEngine {
         next.faultCount = 0
 
         guard case let .standard(a, b) = state.currentGame else {
-            return (next, [])
+            return tiebreakPoint(to: winner, from: state, into: next)
         }
         switch GameRules.advance(a: a, b: b, winner: winner, noAd: state.rules.deuce == .noAd) {
         case let .continues(newA, newB):
@@ -67,6 +67,48 @@ public enum ScoringEngine {
             let calls = [.game(winner)] + winGame(for: winner, in: &next)
             return (next, calls)
         }
+    }
+
+    static func tiebreakPoint(
+        to winner: Side,
+        from state: MatchState,
+        into next: MatchState
+    ) -> (MatchState, [Announcement]) {
+        guard case let .tiebreak(a, b, target) = state.currentGame else { return (next, []) }
+        var next = next
+        let (newA, newB) = winner == .a ? (a + 1, b) : (a, b + 1)
+        let (mine, theirs) = winner == .a ? (newA, newB) : (newB, newA)
+        let opening = state.tiebreakOpeningReceiver ?? state.receiver
+
+        if mine >= target, mine - theirs >= 2 {
+            if winner == .a {
+                next.currentSet.a += 1
+            } else {
+                next.currentSet.b += 1
+            }
+            next.faultCount = 0
+            next.serverCourtSide = .deuce
+            next.tiebreakOpeningReceiver = nil
+            let calls = [.game(winner)] + closeSet(won: winner, tiebreak: TiebreakSummary(a: newA, b: newB), in: &next)
+            next.server = opening
+            next.receiver = Rotation.receiver(serving: opening, from: .deuce, in: next)
+            return (next, calls)
+        }
+
+        let played = newA + newB
+        next.currentGame = .tiebreak(a: newA, b: newB, target: target)
+        next.tiebreakOpeningReceiver = opening
+        if !played.isMultiple(of: 2) {
+            next.server = Rotation.nextServer(after: state.server, in: state)
+        }
+        next.serverCourtSide = played.isMultiple(of: 2) ? .deuce : .ad
+        next.receiver = Rotation.receiver(serving: next.server, from: next.serverCourtSide, in: next)
+        var calls: [Announcement] = [.tiebreakScore(a: newA, b: newB, serverSide: next.server.side)]
+        if played.isMultiple(of: 6) {
+            Rotation.changeEnds(in: &next)
+            calls.append(.changeEnds)
+        }
+        return (next, calls)
     }
 
     static func winGame(

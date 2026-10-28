@@ -131,6 +131,7 @@ public struct MatchState: Codable, Equatable, Sendable {
     public var faultCount: Int
     public var phase: MatchPhase
     public var doublesOrder: DoublesOrder?
+    public var tiebreakOpeningReceiver: PlayerSlot?
 
     public static func initial(
         rules: MatchRules,
@@ -149,7 +150,8 @@ public struct MatchState: Codable, Equatable, Sendable {
             ends: [.a: .near, .b: .far],
             faultCount: 0,
             phase: .notStarted,
-            doublesOrder: format == .doubles ? .starting(with: first) : nil
+            doublesOrder: format == .doubles ? .starting(with: first) : nil,
+            tiebreakOpeningReceiver: nil
         )
     }
 }
