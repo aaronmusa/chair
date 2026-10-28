@@ -124,6 +124,9 @@ public final class PointEvent {
     public var confidence: Double?
     public var corrected: Bool
     public var clipPath: String?
+    public var eventKind: String = "point"
+    public var undone: Bool = false
+    public var payload: Data?
     public var updatedAt: Date
     public var syncState: SyncState
     public var match: Match?
@@ -138,6 +141,9 @@ public final class PointEvent {
         confidence: Double? = nil,
         corrected: Bool = false,
         clipPath: String? = nil,
+        eventKind: String = "point",
+        undone: Bool = false,
+        payload: Data? = nil,
         updatedAt: Date,
         syncState: SyncState = .pendingUpload
     ) {
@@ -150,6 +156,9 @@ public final class PointEvent {
         self.confidence = confidence
         self.corrected = corrected
         self.clipPath = clipPath
+        self.eventKind = eventKind
+        self.undone = undone
+        self.payload = payload
         self.updatedAt = updatedAt
         self.syncState = syncState
     }

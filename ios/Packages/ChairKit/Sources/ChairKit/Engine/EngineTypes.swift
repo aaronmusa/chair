@@ -47,15 +47,18 @@ public struct TimedEvent: Codable, Equatable, Sendable {
     public var event: MatchEvent
     public var at: Date
     public var source: EventSource
+    public var undone: Bool
 
     public init(
         _ event: MatchEvent,
         at: Date,
-        source: EventSource = .manual
+        source: EventSource = .manual,
+        undone: Bool = false
     ) {
         self.event = event
         self.at = at
         self.source = source
+        self.undone = undone
     }
 }
 

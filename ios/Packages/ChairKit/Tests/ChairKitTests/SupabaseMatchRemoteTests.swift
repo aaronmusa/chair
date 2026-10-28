@@ -32,6 +32,26 @@ final class SupabaseMatchRemoteTests: XCTestCase {
     func testARecordRoundTripsThroughTheLocalStack() async throws {
         let remote = try await SupabaseMatchRemote(client: Self.client(signedInAs: "aaron@chair.test"))
         var record = Match.sample().record
+        let snapshot = ScoreSnapshot(sets: [], currentSet: SetScore(a: 1, b: 0), currentGame: .loveAll, server: .b1)
+        record.points[1].undone = true
+        record.points.append(contentsOf: MatchLog.pointEvents(
+            [TimedEvent(.setScore(snapshot), at: Fixtures.matchDay), TimedEvent(.retire(.b), at: Fixtures.matchDay)],
+            updatedAt: Fixtures.matchDay
+        ).enumerated().map { offset, row in
+            MatchRecord.Point(
+                id: UUID(),
+                index: 3 + offset,
+                at: row.at,
+                winnerSide: nil,
+                outcome: nil,
+                source: row.source,
+                confidence: nil,
+                corrected: false,
+                clipPath: nil,
+                eventKind: row.eventKind,
+                payload: row.payload
+            )
+        })
 
         try await remote.upsert(record)
         let stored = try await remote.match(id: record.id)
