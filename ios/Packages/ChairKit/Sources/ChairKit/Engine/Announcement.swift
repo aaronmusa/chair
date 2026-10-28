@@ -17,6 +17,8 @@ public enum Announcement: Codable, Equatable, Sendable {
     case gameAndSet(Side, SetScore)
     case gameSetMatch(Side, [SetSummary])
     case retired(Side)
+    case tiebreakScore(a: Int, b: Int, serverSide: Side)
+    case changeEnds
 
     public var serverFirstScores: (server: GameScore, receiver: GameScore)? {
         guard case let .score(a, b, serverSide) = self else { return nil }
