@@ -11,8 +11,9 @@ public enum ScoringEngine {
         to state: MatchState
     ) throws -> (MatchState, [Announcement]) {
         switch event {
-        case let .pointWon(winner, _, _):
-            return try point(to: winner, in: state)
+        case let .pointWon(winner, outcome, ending):
+            let (next, calls) = try point(to: winner, in: state)
+            return (next, Announcement.calls(for: outcome, ending: ending) + calls)
         case .fault:
             return try fault(in: state)
         case .let:
