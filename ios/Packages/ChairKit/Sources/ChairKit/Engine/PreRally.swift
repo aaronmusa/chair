@@ -36,14 +36,21 @@ public struct EngineOutput: Codable, Equatable, Sendable {
 
 public extension MatchState {
     var preRally: PreRally {
-        let slots: [PlayerSlot] = doublesOrder == nil ? [.a1, .b1] : PlayerSlot.allCases
-        return PreRally(
+        PreRally(
             server: server,
-            serverNameIndex: slots.firstIndex(of: server) ?? 0,
+            serverNameIndex: server.nameIndex(doubles: doublesOrder != nil),
             receiver: receiver,
             serverCourtSide: serverCourtSide,
             ends: ends,
             serve: faultCount == 0 ? .first : .second
         )
+    }
+}
+
+extension PlayerSlot {
+    func nameIndex(doubles: Bool) -> Int {
+        let team = side == .a ? 0 : 1
+        let member = self == .a2 || self == .b2 ? 1 : 0
+        return doubles ? team * 2 + member : team
     }
 }

@@ -1,0 +1,269 @@
+0 point A: score fifteen-love server A
+1 point A: score thirty-love server A
+2 point A out: out, score forty-love server A
+3 point A net: net, game A, change ends
+4 fault: fault
+5 point A: score fifteen-love server B
+6 point B winner: score fifteen-fifteen server B
+7 point B ace: ace, score fifteen-thirty server B
+8 point B unforcedError net: net, score fifteen-forty server B
+9 point B out: out, game B
+10 fault: fault
+11 point B: score love-fifteen server A
+12 let: let first serve
+13 point A: score fifteen-fifteen server A
+14 point B winner: score fifteen-thirty server A
+15 point A: score thirty-thirty server A
+16 point A ace: ace, score forty-thirty server A
+17 fault: fault
+18 point A out: out, game A, change ends
+19 point B unforcedError net: net, score love-fifteen server B
+20 point A: score fifteen-fifteen server B
+21 point B winner: score fifteen-thirty server B
+22 point A: score thirty-thirty server B
+23 fault: fault
+24 point B net: net, score thirty-forty server B
+25 point A out: out, deuce
+26 let: let first serve
+27 point A: advantage A
+28 point B: deuce
+29 point B winner: advantage B
+30 fault: fault
+31 point B: game B
+32 fault: fault
+33 fault: double fault, score love-fifteen server A
+34 point A out: out, score fifteen-fifteen server A
+35 point A ace: ace, score thirty-fifteen server A
+36 point A: score forty-fifteen server A
+37 fault: fault
+38 point A winner: game A, change ends
+39 point A: score fifteen-love server B
+40 point B unforcedError net: net, score fifteen-fifteen server B
+41 let: let first serve
+42 point A out: out, score thirty-fifteen server B
+43 point B: score thirty-thirty server B
+44 point B ace: ace, score thirty-forty server B
+45 point B winner: game B
+46 point A: score fifteen-love server A
+47 point A: score thirty-love server A
+48 point A out: out, score forty-love server A
+49 fault: fault
+50 point A unforcedError net: net, game A, change ends
+51 point B: score love-fifteen server B
+52 point A winner: score fifteen-fifteen server B
+53 point B: score fifteen-thirty server B
+54 let: let first serve
+55 point A net: net, score thirty-thirty server B
+56 fault: fault
+57 point B out: out, score thirty-forty server B
+58 point A: deuce
+59 point A: advantage A
+60 point B winner: deuce
+61 point B ace: ace, advantage B
+62 fault: fault
+63 point B: game B
+64 point B out: out, score love-fifteen server A
+65 point A net: net, score fifteen-fifteen server A
+66 point B: score fifteen-thirty server A
+67 point A winner: score thirty-thirty server A
+68 let: let first serve
+69 fault: fault
+70 point A: score forty-thirty server A
+71 point A ace: ace, game A, change ends
+72 point A out: out, score fifteen-love server B
+73 point A: score thirty-love server B
+74 point A: score forty-love server B
+75 fault: fault
+76 point A winner: game A, game and set A 6-4
+77 point A: score fifteen-love server A
+78 point B: score fifteen-fifteen server A
+79 point B out: out, score fifteen-thirty server A
+80 point B unforcedError net: net, score fifteen-forty server A
+81 fault: fault
+82 fault: double fault, game B, change ends
+83 let: let first serve
+84 point B winner: score love-fifteen server B
+85 point A: score fifteen-fifteen server B
+86 point B net: net, score fifteen-thirty server B
+87 point A out: out, score thirty-thirty server B
+88 fault: fault
+89 point A: score forty-thirty server B
+90 point A: game A
+91 point B winner: score love-fifteen server A
+92 point A: score fifteen-fifteen server A
+93 point B: score fifteen-thirty server A
+94 fault: fault
+95 point A out: out, score thirty-thirty server A
+96 point B net: net, score thirty-forty server A
+97 let: let first serve
+98 point A ace: ace, deuce
+99 point A winner: advantage A
+100 point B: deuce
+101 fault: fault
+102 point B unforcedError net: net, advantage B
+103 point B out: out, game B, change ends
+104 point B: score love-fifteen server B
+105 point A: score fifteen-fifteen server B
+106 point A winner: score thirty-fifteen server B
+107 fault: fault
+108 point A: score forty-fifteen server B
+109 point A: game A
+110 point A out: out, score fifteen-love server A
+111 let: let first serve
+112 point B unforcedError net: net, score fifteen-fifteen server A
+113 point A: score thirty-fifteen server A
+114 fault: fault
+115 point B winner: score thirty-thirty server A
+116 fault: fault
+117 fault: double fault, score thirty-forty server A
+118 point B net: net, game B, change ends
+119 point A out: out, score fifteen-love server B
+120 point A: score thirty-love server B
+121 fault: fault
+122 point A: score forty-love server B
+123 point A winner: game A
+124 point B: score love-fifteen server A
+125 point A ace: ace, score fifteen-fifteen server A
+126 let: let first serve
+127 point B out: out, score fifteen-thirty server A
+128 fault: fault
+129 point A net: net, score thirty-thirty server A
+130 point B: score thirty-forty server A
+131 point A winner: deuce
+132 point A: advantage A
+133 fault: fault
+134 fault: double fault, deuce
+135 fault: fault
+136 point B out: out, advantage B
+137 point B: game B, change ends
+138 point A: score fifteen-love server B
+139 point B winner: score fifteen-fifteen server B
+140 point A: score thirty-fifteen server B
+141 let: let first serve
+142 fault: fault
+143 point B: score thirty-thirty server B
+144 point B out: out, score thirty-forty server B
+145 point B ace: ace, game B
+146 point B: score love-fifteen server A
+147 point B winner: score love-thirty server A
+148 fault: fault
+149 point B: score love-forty server A
+150 point B net: net, game B, change ends, game and set B 3-6
+151 point B out: out, score love-fifteen server B
+152 point A: score fifteen-fifteen server B
+153 point A: score thirty-fifteen server B
+154 fault: fault
+155 point A winner: score forty-fifteen server B
+156 let: let first serve
+157 point A: game A, change ends
+158 point A: score fifteen-love server A
+159 point B out: out, score fifteen-fifteen server A
+160 point A net: net, score thirty-fifteen server A
+161 fault: fault
+162 point B: score thirty-thirty server A
+163 point B winner: score thirty-forty server A
+164 point B: game B
+165 point A unforcedError net: net, score fifteen-love server B
+166 point B out: out, score fifteen-fifteen server B
+167 fault: fault
+168 fault: double fault, score thirty-fifteen server B
+169 point B: score thirty-thirty server B
+170 let: let first serve
+171 point A winner: score forty-thirty server B
+172 point B ace: ace, deuce
+173 point B: advantage B
+174 fault: fault
+175 point A out: out, deuce
+176 point A unforcedError net: net, advantage A
+177 point A: game A, change ends
+178 point A winner: score fifteen-love server A
+179 point B: score fifteen-fifteen server A
+180 fault: fault
+181 point B net: net, score fifteen-thirty server A
+182 point B out: out, score fifteen-forty server A
+183 point B: game B
+184 let: let first serve
+185 point B: score love-fifteen server B
+186 point A winner: score fifteen-fifteen server B
+187 fault: fault
+188 point B: score fifteen-thirty server B
+189 point A: score thirty-thirty server B
+190 point A out: out, score forty-thirty server B
+191 point A net: net, game A, change ends
+192 point B: score love-fifteen server A
+193 fault: fault
+194 point B winner: score love-thirty server A
+195 point B: score love-forty server A
+196 point B unforcedError net: net, game B
+197 point A out: out, score fifteen-love server B
+198 let: let first serve
+199 point B ace: ace, score fifteen-fifteen server B
+200 fault: fault
+201 point A: score thirty-fifteen server B
+202 point B winner: score thirty-thirty server B
+203 point A: score forty-thirty server B
+204 point B: deuce
+205 point B out: out, advantage B
+206 fault: fault
+207 point A unforcedError net: net, deuce
+208 point A: advantage A
+209 point A winner: game A, change ends
+210 point A: score fifteen-love server A
+211 point B net: net, score fifteen-fifteen server A
+212 let: let first serve
+213 fault: fault
+214 point A out: out, score thirty-fifteen server A
+215 point B: score thirty-thirty server A
+216 point B: score thirty-forty server A
+217 point B winner: game B
+218 fault: fault
+219 fault: double fault, score fifteen-love server B
+220 fault: fault
+221 point A: score thirty-love server B
+222 point A out: out, score forty-love server B
+223 point A net: net, game A, change ends
+224 point A: score fifteen-love server A
+225 point B winner: score fifteen-fifteen server A
+226 fault: fault
+227 point B: score fifteen-thirty server A
+228 let: let first serve
+229 point B unforcedError net: net, score fifteen-forty server A
+230 point B out: out, game B
+231 point B: score love-fifteen server B
+232 point A: score fifteen-fifteen server B
+233 fault: fault
+234 point B winner: score fifteen-thirty server B
+235 point A: score thirty-thirty server B
+236 fault: fault
+237 fault: double fault, score forty-thirty server B
+238 point A out: out, game A, change ends
+239 point B unforcedError net: net, score love-fifteen server A
+240 fault: fault
+241 point A: score fifteen-fifteen server A
+242 point B winner: score fifteen-thirty server A
+243 let: let first serve
+244 point A: score thirty-thirty server A
+245 point B net: net, score thirty-forty server A
+246 point A ace: ace, deuce
+247 fault: fault
+248 point A: advantage A
+249 point B: deuce
+250 point B winner: advantage B
+251 point B: game B
+252 point A: tiebreak 1-0 server A
+253 point B: tiebreak 1-1 server A
+254 point A: tiebreak 2-1 server B
+255 point B: tiebreak 2-2 server B
+256 point A: tiebreak 3-2 server A
+257 point B: tiebreak 3-3 server A, change ends
+258 point A: tiebreak 4-3 server B
+259 point B: tiebreak 4-4 server B
+260 point A: tiebreak 5-4 server A
+261 point B: tiebreak 5-5 server A
+262 point A: tiebreak 6-5 server B
+263 point B: tiebreak 6-6 server B, change ends
+264 point A: tiebreak 7-6 server A
+265 point B: tiebreak 7-7 server A
+266 point A: tiebreak 8-7 server B
+267 point A: tiebreak 9-7 server B
+268 point A: game A, game set match A 6–4 3–6 7–6(10–7)

@@ -1,4 +1,4 @@
-.PHONY: build test test-kit test-all lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
+.PHONY: build test test-kit test-all coverage lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
 
 project := ios/Chair.xcodeproj
 
@@ -16,6 +16,9 @@ test-kit:
 
 test-all:
 	ios/Scripts/test.sh --all
+
+coverage:
+	ios/Scripts/coverage.sh
 
 lint:
 	swiftlint lint --quiet --strict
