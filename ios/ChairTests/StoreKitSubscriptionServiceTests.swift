@@ -42,17 +42,18 @@ final class StoreKitSubscriptionServiceTests: XCTestCase {
         let purchasedAt = Date()
 
         let result = try await withTimeout { try await Self.buyInHostScene("chair.pro.monthly") }
-        guard case .success(.verified) = result else {
+        guard case let .success(.verified(transaction)) = result else {
             return XCTFail("purchase did not succeed: \(result)")
         }
-        let entitlement = try await withTimeout { await service.entitlement() }
+        await transaction.finish()
+        let entitlement = try await withTimeout { await service.entitlement(including: transaction) }
 
         guard case let .trial(expires) = entitlement else {
             return XCTFail("expected a trial, got \(entitlement)")
         }
         XCTAssertEqual(expires.timeIntervalSince(purchasedAt), 7 * 24 * 60 * 60, accuracy: 120)
-        let trialAfter = await service.isTrialAvailable()
-        XCTAssertFalse(trialAfter)
+        let trialAfter = try await eventually { await service.isTrialAvailable() == false }
+        XCTAssertTrue(trialAfter, "the trial should stop being offered once it's used")
     }
 
     @MainActor
@@ -71,6 +72,20 @@ final class StoreKitSubscriptionServiceTests: XCTestCase {
 }
 
 private struct StoreKitTimedOut: Error {}
+
+private func eventually(
+    seconds: Double = 5,
+    _ condition: @escaping @Sendable () async -> Bool
+) async throws -> Bool {
+    let deadline = ContinuousClock.now + .seconds(seconds)
+    while ContinuousClock.now < deadline {
+        if await condition() {
+            return true
+        }
+        try await Task.sleep(for: .milliseconds(250))
+    }
+    return await condition()
+}
 
 private func withTimeout<T: Sendable>(
     seconds: Double = 30,
