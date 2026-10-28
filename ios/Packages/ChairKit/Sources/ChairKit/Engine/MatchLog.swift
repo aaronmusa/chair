@@ -44,12 +44,12 @@ public struct MatchLog: Codable, Equatable, Sendable {
     }
 
     public var snapshot: ScoreSnapshot {
-        ScoreSnapshot(sets: state.sets, currentSet: state.currentSet, currentGame: state.currentGame, server: state.server)
+        state.snapshot
     }
 
     private mutating func undo(_ timed: TimedEvent) throws -> [Announcement] {
         guard let target = events.lastIndex(where: { $0.isEffective && $0.event.isUndoable }),
-              try setsPlayed(before: target) == state.sets.count else {
+              try events[target].event.isScoreFix || setsPlayed(before: target) == state.sets.count else {
             throw EngineError.undoLimit
         }
         var updated = events
@@ -99,8 +99,15 @@ extension TimedEvent {
 extension MatchEvent {
     var isUndoable: Bool {
         switch self {
-        case .pointWon, .fault, .let, .swapServer, .swapReceivers: true
-        case .undo, .setScore, .swapEnds, .retire: false
+        case .pointWon, .fault, .let, .setScore, .swapServer, .swapReceivers: true
+        case .undo, .swapEnds, .retire: false
         }
+    }
+
+    var isScoreFix: Bool {
+        if case .setScore = self {
+            return true
+        }
+        return false
     }
 }

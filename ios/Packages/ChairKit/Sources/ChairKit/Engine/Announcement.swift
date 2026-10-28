@@ -32,6 +32,7 @@ public enum EngineError: Error, Equatable, Sendable {
     case matchOver
     case setInProgress
     case undoLimit
+    case invalidScore(reason: String)
     case unsupported(MatchEvent)
 }
 
