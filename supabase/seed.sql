@@ -19,4 +19,9 @@ where email in ('aaron@chair.test', 'juan@chair.test');
 
 insert into public.profiles (id, handle, display_name, hand, level) values
   ('00000000-0000-0000-0000-00000000000a', 'aaron', 'Aaron', 'right', 'intermediate'),
-  ('00000000-0000-0000-0000-00000000000b', 'juan', 'Juan', 'left', 'intermediate');
+  ('00000000-0000-0000-0000-00000000000b', 'juan', 'Juan', 'left', 'intermediate')
+on conflict (id) do update set
+  handle = excluded.handle,
+  display_name = excluded.display_name,
+  hand = excluded.hand,
+  level = excluded.level;

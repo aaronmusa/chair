@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(22);
+select plan(25);
 
 create function pg_temp.count_as(user_id uuid, statement text)
 returns integer
@@ -43,9 +43,24 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000001bb', 'opponent@chair.test'),
   ('00000000-0000-0000-0000-0000000001cc', 'stranger@chair.test');
 
-insert into public.profiles (id, handle, display_name) values
-  ('00000000-0000-0000-0000-0000000001aa', 'rls_owner', 'Owner'),
-  ('00000000-0000-0000-0000-0000000001bb', 'rls_juan', 'Juan');
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000001dd', 'named@chair.test', '{"full_name": "Maria Santos"}');
+
+-- Signing up creates a profile
+
+select is((select count(*)::integer from public.profiles where id in (
+  '00000000-0000-0000-0000-0000000001aa', '00000000-0000-0000-0000-0000000001bb',
+  '00000000-0000-0000-0000-0000000001cc', '00000000-0000-0000-0000-0000000001dd'
+)), 4, 'every new user gets a profile');
+select is((select display_name from public.profiles where id = '00000000-0000-0000-0000-0000000001dd'),
+  'Maria Santos', 'the profile takes the sign-up name');
+select is((select display_name from public.profiles where id = '00000000-0000-0000-0000-0000000001cc'),
+  '', 'a user without a name gets an empty display name');
+
+update public.profiles set handle = 'rls_owner', display_name = 'Owner'
+where id = '00000000-0000-0000-0000-0000000001aa';
+update public.profiles set handle = 'rls_juan', display_name = 'Juan'
+where id = '00000000-0000-0000-0000-0000000001bb';
 
 insert into public.matches (id, owner_id, format) values
   ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-0000000001aa', 'singles');
