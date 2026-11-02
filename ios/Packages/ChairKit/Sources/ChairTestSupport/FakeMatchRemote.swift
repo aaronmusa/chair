@@ -44,6 +44,11 @@
             return rows.values.filter { record in updatedSince.map { record.updatedAt > $0 } ?? true }
         }
 
+        public func visibleMatchIDs() async throws -> Set<UUID> {
+            try requireOnline()
+            return Set(rows.keys)
+        }
+
         private func requireOnline() throws {
             guard isOnline else { throw Offline() }
         }

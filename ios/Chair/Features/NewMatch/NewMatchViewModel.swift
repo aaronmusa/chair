@@ -14,20 +14,56 @@ import ChairKit
 @Observable
 final class NewMatchViewModel {
     var setup: NewMatchSetup
+    var pickerSlot: PlayerSlot?
+    var isShowingSignIn = false
     private(set) var showsErrors = false
     private(set) var startError: String?
+    private(set) var linkedProfiles: [PlayerSlot: PublicProfile] = [:]
 
     private let repository: (any MatchRepository)?
     private let clock: any ClockProvider
+    private let auth: (any AuthService)?
 
     init(
         defaults: MatchDefaults,
         repository: (any MatchRepository)?,
-        clock: any ClockProvider
+        clock: any ClockProvider,
+        auth: (any AuthService)? = nil
     ) {
         setup = NewMatchSetup(defaults: defaults)
         self.repository = repository
         self.clock = clock
+        self.auth = auth
+    }
+
+    func canLink(_ slot: PlayerSlot) -> Bool {
+        slot != .a1 && auth != nil
+    }
+
+    func requestLink(_ slot: PlayerSlot) async {
+        guard canLink(slot) else { return }
+        if await auth?.currentSession() == nil {
+            isShowingSignIn = true
+        } else {
+            pickerSlot = slot
+        }
+    }
+
+    func link(
+        _ slot: PlayerSlot,
+        to profile: PublicProfile
+    ) {
+        linkedProfiles[slot] = profile
+        setup.links[slot] = profile.id
+        if (setup.names[slot] ?? "").trimmingCharacters(in: .whitespaces).isEmpty {
+            setup.names[slot] = profile.displayName
+        }
+        pickerSlot = nil
+    }
+
+    func unlink(_ slot: PlayerSlot) {
+        linkedProfiles[slot] = nil
+        setup.links[slot] = nil
     }
 
     var isDoubles: Bool {

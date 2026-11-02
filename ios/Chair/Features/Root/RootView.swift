@@ -24,6 +24,13 @@ struct RootView: View {
         content
             .tint(Color.chair.accent)
             .onOpenURL(perform: handleOpenURL())
+            .sheet(isPresented: isShowingPublicProfile) {
+                NavigationStack {
+                    PublicProfileView(
+                        viewModel: PublicProfileViewModel(handle: router.publicProfileHandle ?? "", environment: environment)
+                    )
+                }
+            }
         #if DEBUG
             .fullScreenCover(isPresented: $isShowingGallery) {
                 GalleryView()
@@ -63,6 +70,13 @@ struct RootView: View {
                 sessionView(match)
             }
         }
+    }
+
+    private var isShowingPublicProfile: Binding<Bool> {
+        Binding(
+            get: { router.publicProfileHandle != nil },
+            set: { if !$0 { router.publicProfileHandle = nil } }
+        )
     }
 
     private var optionalSelection: Binding<AppSection?> {
@@ -114,7 +128,8 @@ struct RootView: View {
             viewModel: NewMatchViewModel(
                 defaults: environment.matchDefaults.load(),
                 repository: repository,
-                clock: environment.clock
+                clock: environment.clock,
+                auth: environment.auth
             ),
             onStart: handleStartSession()
         )

@@ -293,4 +293,5 @@ public protocol MatchRemote: Sendable {
     func upsert(_ record: MatchRecord) async throws
     func delete(id: UUID) async throws
     func matches(updatedSince: Date?) async throws -> [MatchRecord]
+    func visibleMatchIDs() async throws -> Set<UUID>
 }

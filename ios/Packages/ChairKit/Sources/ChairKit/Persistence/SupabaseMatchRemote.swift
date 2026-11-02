@@ -55,6 +55,15 @@ public struct SupabaseMatchRemote: MatchRemote {
         let rows: [MatchRow] = try await query.execute().value
         return rows.map(\.record)
     }
+
+    public func visibleMatchIDs() async throws -> Set<UUID> {
+        let rows: [VisibleRow] = try await client.from("my_matches").select("id").execute().value
+        return Set(rows.map(\.id))
+    }
+}
+
+private struct VisibleRow: Decodable {
+    let id: UUID
 }
 
 private struct MatchRow: Decodable {
