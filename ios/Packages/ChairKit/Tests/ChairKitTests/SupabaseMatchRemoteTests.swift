@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import XCTest
 
 import ChairKit
@@ -14,19 +15,66 @@ import Supabase
 
 final class SupabaseMatchRemoteTests: XCTestCase {
     private static func client(signedInAs email: String) async throws -> SupabaseClient {
+        let client = try client()
+        try await client.auth.signIn(email: email, password: "chair-local")
+        return client
+    }
+
+    private static func client() throws -> SupabaseClient {
         let environment = ProcessInfo.processInfo.environment
         guard let url = environment["CHAIR_SUPABASE_URL"].flatMap(URL.init(string:)),
               let key = environment["CHAIR_SUPABASE_ANON_KEY"] else {
             throw XCTSkip("set CHAIR_SUPABASE_URL and CHAIR_SUPABASE_ANON_KEY to run against the local stack")
         }
-        let client = SupabaseClient(
+        return SupabaseClient(
             supabaseURL: url,
             supabaseKey: key,
             options: SupabaseClientOptions(auth: .init(storage: InMemoryAuthStorage(), emitLocalSessionAsInitialSession: true))
         )
-        try await client.auth.signIn(email: email, password: "chair-local")
-        return client
     }
+
+    @MainActor
+    func testTwoDevicesSignedInAsTheSeedUserShareAMatchAndItsUndo() async throws {
+        let first = try await Self.device(signedInAs: "test@chair.local")
+        let second = try await Self.device(signedInAs: "test@chair.local")
+        let match = Match(playedAt: .now, format: .singles, createdAt: .now, updatedAt: .now)
+        match.players = [MatchPlayer.sample(.a1, name: "Aaron"), MatchPlayer.sample(.b1, name: "Juan")]
+        var log = try MatchLog(rules: MatchRules())
+        for side in [Side.a, .b, .a] {
+            try log.append(TimedEvent(.pointWon(by: side, outcome: nil, ending: nil), at: .now))
+        }
+        match.update(from: log, at: .now)
+        try first.repository.save(match)
+
+        try await first.repository.sync()
+        try await second.repository.sync()
+        let copy = try XCTUnwrap(second.repository.fetch().first { $0.remoteID == match.remoteID })
+        XCTAssertEqual(copy.orderedPoints.count, 3)
+        XCTAssertFalse(copy.orderedPoints[2].undone)
+
+        try log.append(TimedEvent(.undo, at: .now))
+        match.update(from: log, at: .now)
+        try first.repository.save(match)
+        try await first.repository.sync()
+        try await second.repository.sync()
+
+        let synced = try XCTUnwrap(second.repository.fetch().first { $0.remoteID == match.remoteID })
+        XCTAssertTrue(synced.orderedPoints[2].undone)
+        XCTAssertEqual(synced.orderedPoints.count, 4)
+        try await first.remote.delete(id: match.remoteID)
+    }
+
+    @MainActor
+    private static func device(signedInAs email: String) async throws -> (repository: SyncingMatchRepository, remote: SupabaseMatchRemote) {
+        let client = try client()
+        _ = try await SupabaseAuthService(client: client).signIn(email: email, password: "chair-local")
+        let container = try InMemoryModelContainer()
+        containers.append(container)
+        let remote = SupabaseMatchRemote(client: client)
+        return (SyncingMatchRepository(context: container.mainContext, remote: remote), remote)
+    }
+
+    @MainActor private static var containers: [ModelContainer] = []
 
     @MainActor
     func testARecordRoundTripsThroughTheLocalStack() async throws {
@@ -49,7 +97,8 @@ final class SupabaseMatchRemoteTests: XCTestCase {
                 corrected: false,
                 clipPath: nil,
                 eventKind: row.eventKind,
-                payload: row.payload
+                payload: row.payload,
+                updatedAt: row.updatedAt
             )
         })
 
@@ -62,10 +111,14 @@ final class SupabaseMatchRemoteTests: XCTestCase {
 
         record.status = .completed
         record.updatedAt = record.updatedAt.addingTimeInterval(60)
-        record.points.removeLast()
+        record.points[0].undone = true
         try await remote.upsert(record)
-        let edited = try await remote.match(id: record.id)
-        XCTAssertEqual(edited, record)
+        let fetched = try await remote.match(id: record.id)
+        let edited = try XCTUnwrap(fetched)
+        XCTAssertEqual(edited.status, .completed)
+        XCTAssertTrue(edited.points[0].undone)
+        XCTAssertGreaterThan(try XCTUnwrap(edited.points[0].updatedAt), try XCTUnwrap(record.points[0].updatedAt))
+        XCTAssertEqual(edited.points[1], record.points[1], "an unchanged point keeps its updated_at")
 
         let stranger = try await SupabaseMatchRemote(client: Self.client(signedInAs: "juan@chair.test"))
         let seenByStranger = try await stranger.match(id: record.id)
@@ -77,7 +130,7 @@ final class SupabaseMatchRemoteTests: XCTestCase {
     }
 }
 
-private final class InMemoryAuthStorage: AuthLocalStorage, @unchecked Sendable {
+final class InMemoryAuthStorage: AuthLocalStorage, @unchecked Sendable {
     private let lock = NSLock()
     private var values: [String: Data] = [:]
 

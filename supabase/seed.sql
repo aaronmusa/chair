@@ -9,13 +9,14 @@ select
   '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''
 from (values
   ('00000000-0000-0000-0000-00000000000a'::uuid, 'aaron@chair.test'),
-  ('00000000-0000-0000-0000-00000000000b'::uuid, 'juan@chair.test')
+  ('00000000-0000-0000-0000-00000000000b'::uuid, 'juan@chair.test'),
+  ('00000000-0000-0000-0000-00000000000c'::uuid, 'test@chair.local')
 ) as seed (id, email);
 
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, created_at, updated_at, last_sign_in_at)
 select gen_random_uuid(), id, id::text, jsonb_build_object('sub', id::text, 'email', email), 'email', now(), now(), now()
 from auth.users
-where email in ('aaron@chair.test', 'juan@chair.test');
+where email in ('aaron@chair.test', 'juan@chair.test', 'test@chair.local');
 
 insert into public.profiles (id, handle, display_name, hand, level) values
   ('00000000-0000-0000-0000-00000000000a', 'aaron', 'Aaron', 'right', 'intermediate'),

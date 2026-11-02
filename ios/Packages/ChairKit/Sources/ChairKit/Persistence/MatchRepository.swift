@@ -112,6 +112,13 @@ public final class SyncingMatchRepository: MatchRepository {
         try local.context.save()
     }
 
+    public func pendingCount() throws -> Int {
+        try local.allMatches().reduce(0) { count, match in
+            let rows = [match.syncState] + match.players.map(\.syncState) + match.points.map(\.syncState)
+            return count + rows.count { $0 != .synced }
+        }
+    }
+
     public func sync() async throws {
         try await pushDeletes()
         try await pushUploads()
@@ -134,6 +141,8 @@ public final class SyncingMatchRepository: MatchRepository {
             } else {
                 try await remote.upsert(snapshot)
                 match.syncState = .synced
+                match.players.forEach { $0.syncState = .synced }
+                match.points.forEach { $0.syncState = .synced }
             }
             try local.context.save()
         }
@@ -153,5 +162,11 @@ public final class SyncingMatchRepository: MatchRepository {
         }
         try local.context.save()
         lastPulledAt = changes.map(\.updatedAt).max() ?? lastPulledAt
+    }
+}
+
+public extension MatchRepository {
+    func matchesUsed() throws -> Int {
+        try FreeTier.matchesUsed(in: fetch().map(\.status))
     }
 }

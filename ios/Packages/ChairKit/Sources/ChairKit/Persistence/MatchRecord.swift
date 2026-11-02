@@ -41,6 +41,7 @@ public struct MatchRecord: Codable, Equatable, Sendable {
         public var eventKind: String
         public var undone: Bool
         public var payload: Data?
+        public var updatedAt: Date?
 
         public init(
             id: UUID,
@@ -54,7 +55,8 @@ public struct MatchRecord: Codable, Equatable, Sendable {
             clipPath: String?,
             eventKind: String = "point",
             undone: Bool = false,
-            payload: Data? = nil
+            payload: Data? = nil,
+            updatedAt: Date? = nil
         ) {
             self.id = id
             self.index = index
@@ -68,6 +70,7 @@ public struct MatchRecord: Codable, Equatable, Sendable {
             self.eventKind = eventKind
             self.undone = undone
             self.payload = payload
+            self.updatedAt = updatedAt
         }
     }
 
@@ -114,7 +117,8 @@ public extension Match {
                     clipPath: $0.clipPath,
                     eventKind: $0.eventKind,
                     undone: $0.undone,
-                    payload: $0.payload
+                    payload: $0.payload,
+                    updatedAt: $0.updatedAt
                 )
             }
         )
@@ -147,7 +151,6 @@ public extension Match {
         syncState = .synced
 
         players.forEach(context.delete)
-        points.forEach(context.delete)
         players = record.players.map {
             MatchPlayer(
                 slot: $0.slot,
@@ -158,7 +161,37 @@ public extension Match {
                 syncState: .synced
             )
         }
-        points = record.pointEvents
+        merge(record.pointEvents)
+    }
+
+    private func merge(_ incoming: [PointEvent]) {
+        let local = Dictionary(points.map { ($0.index, $0) }, uniquingKeysWith: { first, _ in first })
+        for row in incoming {
+            guard let existing = local[row.index] else {
+                points.append(row)
+                continue
+            }
+            guard existing.syncState == .synced || row.updatedAt > existing.updatedAt else { continue }
+            existing.copy(from: row)
+        }
+    }
+}
+
+extension PointEvent {
+    func copy(from row: PointEvent) {
+        remoteID = row.remoteID
+        at = row.at
+        winnerSide = row.winnerSide
+        outcome = row.outcome
+        source = row.source
+        confidence = row.confidence
+        corrected = row.corrected
+        clipPath = row.clipPath
+        eventKind = row.eventKind
+        undone = row.undone
+        payload = row.payload
+        updatedAt = row.updatedAt
+        syncState = .synced
     }
 }
 
@@ -178,7 +211,7 @@ public extension MatchRecord {
                 eventKind: $0.eventKind,
                 undone: $0.undone,
                 payload: $0.payload,
-                updatedAt: updatedAt,
+                updatedAt: $0.updatedAt ?? updatedAt,
                 syncState: .synced
             )
         }

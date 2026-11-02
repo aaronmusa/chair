@@ -33,6 +33,12 @@ public protocol AuthService: Sendable {
     ) async throws -> AuthSession
     func signOut() async throws
     func deleteAccount() async throws
+    #if DEBUG
+        func signIn(
+            email: String,
+            password: String
+        ) async throws -> AuthSession
+    #endif
 }
 
 public enum AudioRoute: String, Sendable {

@@ -15,15 +15,25 @@ struct ChairApp: App {
     private let environment: AppEnvironment
     private let watchLink = WatchLink()
     private let container: ModelContainer
-    private let repository: LocalMatchRepository
+    private let repository: any MatchRepository
+    private let sync: SyncCoordinator?
     @State private var router: AppRouter
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let environment = AppEnvironment.make()
         let container = MatchStore.makeContainer()
         self.environment = environment
         self.container = container
-        let repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
+        let repository: any MatchRepository
+        if let remote = environment.matchRemote {
+            let syncing = SyncingMatchRepository(context: container.mainContext, remote: remote, clock: environment.clock)
+            repository = syncing
+            sync = SyncCoordinator(repository: syncing, auth: environment.auth, network: SystemNetworkMonitor(), clock: environment.clock)
+        } else {
+            repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
+            sync = nil
+        }
         self.repository = repository
         _router = State(initialValue: AppRouter.make(repository: repository, clock: environment.clock))
         watchLink.activate()
@@ -35,7 +45,17 @@ struct ChairApp: App {
                 .environment(\.appEnvironment, environment)
                 .environment(\.appRouter, router)
                 .environment(\.matchRepository, repository)
+                .environment(\.syncCoordinator, sync)
                 .modelContainer(container)
+                .onChange(of: scenePhase, initial: true, handleScenePhase())
+        }
+    }
+
+    private func handleScenePhase() -> (ScenePhase, ScenePhase) -> Void {
+        { [sync] _, phase in
+            guard phase == .active, let sync else { return }
+            sync.start()
+            Task { await sync.syncNow() }
         }
     }
 }
