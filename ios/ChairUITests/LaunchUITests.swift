@@ -32,10 +32,11 @@ final class LaunchUITests: XCTestCase {
         app.launchArguments = ["-UseFakes", "-PresentSampleMatch"]
         app.launch()
 
-        let session = app.staticTexts["match.session"]
+        let session = app.buttons["getSet.playPoint"]
         XCTAssertTrue(session.waitForExistence(timeout: 10))
 
-        session.swipeDown(velocity: .fast)
+        let top = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15))
+        top.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)).tap()
 
         XCTAssertTrue(session.waitForExistence(timeout: 2))

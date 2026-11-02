@@ -5,7 +5,11 @@
 //  Created by Aaron Musa on 10/31/26.
 //
 
+import SwiftData
 import XCTest
+
+import ChairKit
+import ChairTestSupport
 
 @testable import Chair
 
@@ -13,11 +17,26 @@ import XCTest
 final class AppRouterTests: XCTestCase {
     private let matchID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
 
-    func testTheAppStartsOnPlayWithNoSession() {
-        let router = AppRouter.make(arguments: [])
+    func testTheAppStartsOnPlayWithNoSession() throws {
+        let container = try InMemoryModelContainer()
+        let repository = LocalMatchRepository(context: container.mainContext)
+
+        let router = AppRouter.make(arguments: [], repository: repository, clock: FixedClock(Fixtures.matchDay))
 
         XCTAssertEqual(router.selectedSection, .play)
         XCTAssertNil(router.presentedMatch)
+        XCTAssertTrue(try repository.fetch().isEmpty)
+    }
+
+    func testTheSampleMatchArgumentSavesAMatchAndPresentsIt() throws {
+        let container = try InMemoryModelContainer()
+        let repository = LocalMatchRepository(context: container.mainContext)
+
+        let router = AppRouter.make(arguments: ["-PresentSampleMatch"], repository: repository, clock: FixedClock(Fixtures.matchDay))
+
+        let saved = try XCTUnwrap(repository.fetch().first)
+        XCTAssertEqual(router.presentedMatch, PresentedMatch(id: saved.remoteID))
+        XCTAssertEqual(saved.status, .inProgress)
     }
 
     func testTheSectionsAreTheFiveInOrder() {

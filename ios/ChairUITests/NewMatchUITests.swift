@@ -19,7 +19,7 @@ final class NewMatchUITests: XCTestCase {
         app.buttons["newMatch.start"].tap()
 
         XCTAssertTrue(app.staticTexts["newMatch.error.B1"].waitForExistence(timeout: 2))
-        XCTAssertFalse(app.staticTexts["match.session"].exists)
+        XCTAssertFalse(app.buttons["getSet.playPoint"].exists)
     }
 
     @MainActor
@@ -31,7 +31,7 @@ final class NewMatchUITests: XCTestCase {
         opponent.typeText("Juan")
         app.buttons["newMatch.start"].tap()
 
-        XCTAssertTrue(app.staticTexts["match.session"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["getSet.playPoint"].waitForExistence(timeout: 5))
     }
 
     @MainActor
