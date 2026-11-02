@@ -15,6 +15,7 @@ import ChairUI
 
 struct SettingsView: View {
     @State private var viewModel: SettingsViewModel
+    @Environment(\.syncCoordinator) private var sync
 
     init(viewModel: SettingsViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -26,6 +27,7 @@ struct SettingsView: View {
                 matchDefaultsSection
                 umpireSection
                 accountSection
+                syncSection
                 aboutSection
             }
             .listRowBackground(Color.chair.surfaceRaised)
@@ -84,6 +86,27 @@ struct SettingsView: View {
         }
     }
 
+    private var syncSection: some View {
+        Section("Sync") {
+            if let sync {
+                LabeledContent("Last synced", value: SyncText.lastSynced(sync.lastSyncedAt))
+                    .accessibilityIdentifier("settings.lastSynced")
+                LabeledContent("Waiting to upload", value: "\(sync.pendingCount)")
+                    .accessibilityIdentifier("settings.pending")
+                if let error = sync.lastError {
+                    Text(error)
+                        .chairFont(.callout)
+                        .foregroundStyle(Color.chair.danger)
+                }
+                Button("Sync now", action: handleSyncNow(sync))
+                    .disabled(sync.isSyncing)
+                    .accessibilityIdentifier("settings.syncNow")
+            } else {
+                LabeledContent("Sync", value: "Matches stay on this device")
+            }
+        }
+    }
+
     private var aboutSection: some View {
         Section("About") {
             LabeledContent("Version", value: viewModel.version)
@@ -91,6 +114,10 @@ struct SettingsView: View {
             Link("Privacy policy", destination: SettingsViewModel.privacyURL)
             Link("Support", destination: SettingsViewModel.supportURL)
         }
+    }
+
+    private func handleSyncNow(_ sync: SyncCoordinator) -> () -> Void {
+        { Task { await sync.syncNow() } }
     }
 
     private func handleRefreshAccount() -> @MainActor @Sendable () async -> Void {
@@ -112,3 +139,10 @@ struct SettingsView: View {
         .environment(\.dynamicTypeSize, .accessibility5)
     }
 #endif
+
+enum SyncText {
+    static func lastSynced(_ date: Date?) -> String {
+        guard let date else { return "Never" }
+        return date.formatted(.relative(presentation: .named))
+    }
+}

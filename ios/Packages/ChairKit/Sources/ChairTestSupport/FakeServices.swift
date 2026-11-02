@@ -50,6 +50,15 @@
             calls.append("deleteAccount")
             session = nil
         }
+
+        public func signIn(
+            email _: String,
+            password _: String
+        ) async throws -> AuthSession {
+            calls.append("signIn")
+            session = Self.sampleSession
+            return Self.sampleSession
+        }
     }
 
     public actor FakeSpeechOutput: SpeechOutput {
@@ -199,6 +208,32 @@
             lock.withLock {
                 stored = defaults
                 saveCount += 1
+            }
+        }
+    }
+
+    public final class FakeNetworkMonitor: NetworkMonitor, @unchecked Sendable {
+        private let lock = NSLock()
+        private var continuations: [AsyncStream<Bool>.Continuation] = []
+        private var online: Bool
+
+        public init(online: Bool = true) {
+            self.online = online
+        }
+
+        public func reachability() -> AsyncStream<Bool> {
+            let (stream, continuation) = AsyncStream.makeStream(of: Bool.self)
+            lock.withLock {
+                continuations.append(continuation)
+                continuation.yield(online)
+            }
+            return stream
+        }
+
+        public func setOnline(_ value: Bool) {
+            lock.withLock {
+                online = value
+                continuations.forEach { $0.yield(value) }
             }
         }
     }

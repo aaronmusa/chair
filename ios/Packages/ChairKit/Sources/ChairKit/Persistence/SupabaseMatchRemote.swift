@@ -29,12 +29,16 @@ public struct SupabaseMatchRemote: MatchRemote {
     public func upsert(_ record: MatchRecord) async throws {
         try await client.from("matches").upsert(MatchFields(record)).execute()
         try await client.from("match_players").delete().eq("match_id", value: record.id).execute()
-        try await client.from("point_events").delete().eq("match_id", value: record.id).execute()
         if !record.players.isEmpty {
             try await client.from("match_players").insert(record.players.map { PlayerRow(match: record.id, $0) }).execute()
         }
         if !record.points.isEmpty {
-            try await client.from("point_events").insert(record.points.map { PointRow(match: record.id, $0) }).execute()
+            try await client.from("point_events")
+                .upsert(
+                    record.points.map { PointRow(match: record.id, $0, fallbackUpdatedAt: record.updatedAt) },
+                    onConflict: "match_id,index"
+                )
+                .execute()
         }
     }
 
@@ -176,10 +180,12 @@ private struct PointRow: Codable {
     let eventKind: String
     let undone: Bool
     let payload: AnyJSON?
+    let updatedAt: Date?
 
     init(
         match: UUID,
-        _ point: MatchRecord.Point
+        _ point: MatchRecord.Point,
+        fallbackUpdatedAt: Date
     ) {
         id = point.id
         matchID = match
@@ -194,6 +200,7 @@ private struct PointRow: Codable {
         eventKind = point.eventKind
         undone = point.undone
         payload = point.payload.flatMap { try? JSONDecoder().decode(AnyJSON.self, from: $0) }
+        updatedAt = point.updatedAt ?? fallbackUpdatedAt
     }
 
     var point: MatchRecord.Point {
@@ -209,7 +216,8 @@ private struct PointRow: Codable {
             clipPath: clipPath,
             eventKind: eventKind,
             undone: undone,
-            payload: payload.flatMap { try? PayloadCoding.encoder.encode($0) }
+            payload: payload.flatMap { try? PayloadCoding.encoder.encode($0) },
+            updatedAt: updatedAt
         )
     }
 
@@ -219,5 +227,6 @@ private struct PointRow: Codable {
         case winnerSide = "winner_side"
         case clipPath = "clip_path"
         case eventKind = "event_kind"
+        case updatedAt = "updated_at"
     }
 }

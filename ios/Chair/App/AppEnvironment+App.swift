@@ -60,7 +60,8 @@ extension AppEnvironment {
             subscription: StoreKitSubscriptionService(),
             clock: SystemClock(),
             haptics: SystemHaptics(),
-            matchDefaults: UserDefaultsMatchDefaultsStore()
+            matchDefaults: UserDefaultsMatchDefaultsStore(),
+            matchRemote: SupabaseMatchRemote(client: client)
         )
     }
 }

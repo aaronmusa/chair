@@ -38,6 +38,13 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertTrue(environment.subscription is StoreKitSubscriptionService)
         XCTAssertTrue(environment.speechOutput is SystemSpeechOutput)
         XCTAssertTrue(environment.clock is SystemClock)
+        XCTAssertTrue(environment.matchRemote is SupabaseMatchRemote)
+    }
+
+    func testFakesHaveNoRemoteSoMatchesStayLocal() {
+        let environment = AppEnvironment.make(arguments: ["Chair", "-UseFakes"], info: localInfo)
+
+        XCTAssertNil(environment.matchRemote)
     }
 
     func testWithoutSecretsTheAppFallsBackToUnavailableServices() {

@@ -38,4 +38,14 @@ public struct SupabaseAuthService: AuthService {
     public func deleteAccount() async throws {
         throw AuthError.accountDeletionUnavailable
     }
+
+    #if DEBUG
+        public func signIn(
+            email: String,
+            password: String
+        ) async throws -> AuthSession {
+            let session = try await client.auth.signIn(email: email, password: password)
+            return AuthSession(userID: session.user.id, accessToken: session.accessToken)
+        }
+    #endif
 }
