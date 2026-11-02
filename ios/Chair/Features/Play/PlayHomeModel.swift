@@ -63,8 +63,7 @@ struct PlayHomeModel: Equatable {
     }
 
     private static func opponent(in record: MatchRecord) -> String {
-        let names = record.players.filter { $0.slot.side == .b }.sorted { $0.slot < $1.slot }.map(\.name)
-        return names.isEmpty ? "Opponent" : names.joined(separator: " and ")
+        record.opponentNames.isEmpty ? "Opponent" : record.opponentNames
     }
 
     private static func lastMatch(_ record: MatchRecord) -> LastMatch {

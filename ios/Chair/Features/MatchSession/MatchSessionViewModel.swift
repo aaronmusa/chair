@@ -166,7 +166,7 @@ final class MatchSessionViewModel {
 
     var summary: MatchSummaryModel? {
         guard let match, let log else { return nil }
-        return MatchSummaryModel(match: match, log: log)
+        return MatchSummaryModel(record: match.record, log: log)
     }
 
     func delete() -> Bool {

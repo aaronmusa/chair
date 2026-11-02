@@ -42,6 +42,17 @@ final class AppRouter {
         playPath = [.newMatch]
     }
 
+    func openMatch(
+        _ matchID: UUID,
+        isInProgress: Bool
+    ) {
+        if isInProgress {
+            presentSession(for: matchID)
+        } else {
+            summaryMatchID = matchID
+        }
+    }
+
     func startSession(for matchID: UUID) {
         playPath = []
         presentSession(for: matchID)

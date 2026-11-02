@@ -18,7 +18,7 @@ final class MatchSummaryTests: XCTestCase {
     func testWithNoOutcomesOnlyPointsWonHasValues() throws {
         let (match, log) = try SummaryFixture.make(events: [.a, .b, .a].map(SummaryFixture.point))
 
-        let model = MatchSummaryModel(match: match, log: log)
+        let model = MatchSummaryModel(record: match.record, log: log)
 
         XCTAssertEqual(model.rows.first, .init(title: "Points won", a: "2", b: "1"))
         XCTAssertTrue(model.rows.dropFirst().allSatisfy { $0.a == "—" && $0.b == "—" })
@@ -30,7 +30,7 @@ final class MatchSummaryTests: XCTestCase {
             SummaryFixture.point(.b, .unforcedError),
         ])
 
-        let model = MatchSummaryModel(match: match, log: log)
+        let model = MatchSummaryModel(record: match.record, log: log)
 
         XCTAssertEqual(model.rows.first { $0.title == "Aces" }, .init(title: "Aces", a: "1", b: "0"))
         XCTAssertEqual(model.rows.first { $0.title == "Unforced errors" }, .init(title: "Unforced errors", a: "1", b: "0"))
@@ -42,7 +42,7 @@ final class MatchSummaryTests: XCTestCase {
         let events = Array(repeating: SummaryFixture.point(.a), count: 48)
         let (match, log) = try SummaryFixture.make(events: events)
 
-        let model = MatchSummaryModel(match: match, log: log)
+        let model = MatchSummaryModel(record: match.record, log: log)
 
         XCTAssertEqual(model.result, "Aaron def. Juan")
         XCTAssertEqual(model.setLine, "6–0 6–0")
@@ -62,7 +62,7 @@ final class MatchSummaryTests: XCTestCase {
         events += Array(repeating: SummaryFixture.point(.a), count: 10)
         let (match, log) = try SummaryFixture.make(events: events, rules: MatchRules(finalSet: .tiebreak10))
 
-        let model = MatchSummaryModel(match: match, log: log)
+        let model = MatchSummaryModel(record: match.record, log: log)
 
         XCTAssertEqual(model.shareText, "Aaron def. Juan 6–0 0–6 7–6(10–7) · Chair")
     }
