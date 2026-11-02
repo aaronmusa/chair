@@ -14,6 +14,8 @@ struct RootView: View {
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) private var environment
     @Environment(\.matchRepository) private var repository
+    @Environment(\.inviteCenter) private var invites
+    @Environment(\.syncCoordinator) private var sync
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     #if DEBUG
@@ -24,6 +26,13 @@ struct RootView: View {
         content
             .tint(Color.chair.accent)
             .onOpenURL(perform: handleOpenURL())
+            .task(handleRefreshInvites())
+            .onChange(of: sync?.lastSyncedAt, handleSynced())
+            .sheet(isPresented: isShowingInvites) {
+                if let invites {
+                    InvitesView(center: invites)
+                }
+            }
             .sheet(isPresented: isShowingPublicProfile) {
                 NavigationStack {
                     PublicProfileView(
@@ -45,6 +54,7 @@ struct RootView: View {
             NavigationSplitView {
                 List(AppSection.allCases, selection: optionalSelection) { section in
                     Label(section.title, systemImage: section.systemImage)
+                        .badge(badge(for: section))
                         .tag(section)
                         .accessibilityIdentifier("sidebar.\(section.rawValue)")
                 }
@@ -63,6 +73,7 @@ struct RootView: View {
                     Tab(section.title, systemImage: section.systemImage, value: section) {
                         stack(section)
                     }
+                    .badge(badge(for: section))
                     .accessibilityIdentifier("tab.\(section.rawValue)")
                 }
             }
@@ -70,6 +81,34 @@ struct RootView: View {
                 sessionView(match)
             }
         }
+    }
+
+    private func withInvitesBanner(_ content: some View) -> some View {
+        content.safeAreaInset(edge: .top) {
+            if let invites, !invites.invites.isEmpty {
+                InvitesBanner(center: invites)
+                    .padding(.horizontal, Spacing.chair.md)
+            }
+        }
+    }
+
+    private func badge(for section: AppSection) -> Int {
+        section == .matches ? invites?.count ?? 0 : 0
+    }
+
+    private var isShowingInvites: Binding<Bool> {
+        Binding(
+            get: { invites?.isShowingInvites ?? false },
+            set: { invites?.isShowingInvites = $0 }
+        )
+    }
+
+    private func handleRefreshInvites() -> @MainActor @Sendable () async -> Void {
+        { [invites] in await invites?.refresh() }
+    }
+
+    private func handleSynced() -> (Date?, Date?) -> Void {
+        { [invites] _, _ in Task { await invites?.refresh() } }
     }
 
     private var isShowingPublicProfile: Binding<Bool> {
@@ -105,7 +144,7 @@ struct RootView: View {
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
         case .play:
-            PlayHomeScreen(
+            withInvitesBanner(PlayHomeScreen(
                 viewModel: PlayHomeViewModel(repository: repository, clock: environment.clock),
                 actions: PlayHomeActions(
                     onNewMatch: handleNewMatch(),
@@ -113,9 +152,9 @@ struct RootView: View {
                     onQuickScore: handleNewMatch(),
                     onOpenMatch: handleOpenMatch()
                 )
-            )
+            ))
         case .matches:
-            MatchesScreen(viewModel: MatchListViewModel(repository: repository))
+            withInvitesBanner(MatchesScreen(viewModel: MatchListViewModel(repository: repository)))
         case .settings:
             SettingsView(viewModel: SettingsViewModel(environment: environment))
         default:

@@ -126,13 +126,21 @@ public final class SyncingMatchRepository: MatchRepository {
     }
 
     public func sync(as userID: UUID? = nil) async throws {
-        try await pushDeletes()
+        try await pushDeletes(as: userID)
         try await pushUploads(as: userID)
-        try await pull()
+        try await pull(as: userID)
     }
 
-    private func pushDeletes() async throws {
-        for match in try local.allMatches() where match.syncState == .pendingDelete {
+    private func isSomeoneElses(
+        _ match: Match,
+        for userID: UUID?
+    ) -> Bool {
+        guard let owner = match.ownerID, let userID else { return false }
+        return owner != userID
+    }
+
+    private func pushDeletes(as userID: UUID?) async throws {
+        for match in try local.allMatches() where match.syncState == .pendingDelete && !isSomeoneElses(match, for: userID) {
             try await remote.delete(id: match.remoteID)
             local.context.delete(match)
             try local.context.save()
@@ -140,7 +148,7 @@ public final class SyncingMatchRepository: MatchRepository {
     }
 
     private func pushUploads(as userID: UUID?) async throws {
-        for match in try local.allMatches() where match.syncState == .pendingUpload {
+        for match in try local.allMatches() where match.syncState == .pendingUpload && !isSomeoneElses(match, for: userID) {
             if match.ownerID == nil, let userID {
                 claim(match, for: userID)
             }
@@ -195,16 +203,20 @@ public final class SyncingMatchRepository: MatchRepository {
         lastPulledAt = nil
     }
 
-    private func pull() async throws {
+    private func pull(as userID: UUID?) async throws {
         let changes = try await remote.matches(updatedSince: lastPulledAt)
         for record in changes {
+            let match: Match
             if let existing = try local.match(remoteID: record.id) {
                 guard existing.syncState == .synced, record.updatedAt > existing.updatedAt else { continue }
-                existing.apply(record, in: local.context)
+                match = existing
             } else {
-                let match = Match(record: record)
+                match = Match(record: record)
                 local.context.insert(match)
-                match.apply(record, in: local.context)
+            }
+            match.apply(record, in: local.context)
+            if let mine = record.players.first(where: { $0.userID != nil && $0.userID == userID }) {
+                match.localUserSlot = mine.slot
             }
         }
         try local.context.save()

@@ -74,7 +74,8 @@ extension AppEnvironment {
             haptics: SystemHaptics(),
             matchDefaults: UserDefaultsMatchDefaultsStore(),
             matchRemote: SupabaseMatchRemote(client: client),
-            profileRemote: SupabaseProfileRemote(client: client)
+            profileRemote: SupabaseProfileRemote(client: client),
+            inviteRemote: SupabaseInviteRemote(client: client)
         )
     }
 }

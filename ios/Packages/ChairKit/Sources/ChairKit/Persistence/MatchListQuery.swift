@@ -46,7 +46,7 @@ public struct MatchListQuery: Equatable, Sendable {
 
 public extension MatchRecord {
     var opponentNames: String {
-        players.filter { $0.slot.side == .b }.sorted { $0.slot < $1.slot }.map(\.name).joined(separator: " and ")
+        players.filter { $0.slot.side == mySide.opponent }.sorted { $0.slot < $1.slot }.map(\.name).joined(separator: " and ")
     }
 }
 

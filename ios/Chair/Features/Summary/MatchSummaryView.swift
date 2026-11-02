@@ -26,7 +26,11 @@ struct MatchSummaryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.chair.md) {
                 header
-                MatchLinksSection(matchID: model.matchID)
+                if model.isReadOnly {
+                    ScoredByLine(ownerID: model.ownerID)
+                } else {
+                    MatchLinksSection(matchID: model.matchID)
+                }
                 ChairSegmented(
                     [.init(.stats, "Stats"), .init(.points, "Points"), .init(.coach, "Coach")],
                     selection: $tab

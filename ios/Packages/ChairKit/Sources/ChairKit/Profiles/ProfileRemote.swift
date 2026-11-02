@@ -85,6 +85,7 @@ public protocol ProfileRemote: Sendable {
     func publicProfile(handle: String) async throws -> PublicProfile?
     func linkedMatchCount(with userID: UUID) async throws -> Int
     func search(_ query: String) async throws -> [PublicProfile]
+    func publicProfile(id: UUID) async throws -> PublicProfile?
 }
 
 public struct SupabaseProfileRemote: ProfileRemote {
@@ -144,6 +145,16 @@ public struct SupabaseProfileRemote: ProfileRemote {
             .eq("link_status", value: LinkStatus.accepted.rawValue)
             .execute()
         return response.count ?? 0
+    }
+
+    public func publicProfile(id: UUID) async throws -> PublicProfile? {
+        let rows: [PublicProfile] = try await client.from("public_profiles")
+            .select("id, handle, display_name, level")
+            .eq("id", value: id)
+            .limit(1)
+            .execute()
+            .value
+        return rows.first
     }
 
     public func search(_ query: String) async throws -> [PublicProfile] {

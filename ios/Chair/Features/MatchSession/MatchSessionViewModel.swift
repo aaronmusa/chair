@@ -23,6 +23,7 @@ enum SessionPhase: Equatable {
 @Observable
 final class MatchSessionViewModel {
     private(set) var phase = SessionPhase.loading
+    private(set) var isReadOnly = false
     private(set) var state: MatchState?
     private(set) var announcements: [Announcement] = []
     private(set) var announcementID = 0
@@ -84,7 +85,8 @@ final class MatchSessionViewModel {
             session = MatchSession(log: log)
             self.log = log
             show(log.state, announcements: [])
-            if match.status != .inProgress {
+            isReadOnly = match.record.isReadOnly
+            if match.status != .inProgress || isReadOnly {
                 phase = .complete
             }
         } catch {

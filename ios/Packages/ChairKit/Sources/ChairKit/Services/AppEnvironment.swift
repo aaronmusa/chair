@@ -16,6 +16,7 @@ public struct AppEnvironment: Sendable {
     public var matchDefaults: any MatchDefaultsStore
     public var matchRemote: (any MatchRemote)?
     public var profileRemote: (any ProfileRemote)?
+    public var inviteRemote: (any InviteRemote)?
 
     public init(
         auth: any AuthService,
@@ -27,7 +28,8 @@ public struct AppEnvironment: Sendable {
         haptics: any Haptics,
         matchDefaults: any MatchDefaultsStore,
         matchRemote: (any MatchRemote)? = nil,
-        profileRemote: (any ProfileRemote)? = nil
+        profileRemote: (any ProfileRemote)? = nil,
+        inviteRemote: (any InviteRemote)? = nil
     ) {
         self.auth = auth
         self.speechOutput = speechOutput
@@ -39,6 +41,7 @@ public struct AppEnvironment: Sendable {
         self.matchDefaults = matchDefaults
         self.matchRemote = matchRemote
         self.profileRemote = profileRemote
+        self.inviteRemote = inviteRemote
     }
 
     public static let unavailable = AppEnvironment(

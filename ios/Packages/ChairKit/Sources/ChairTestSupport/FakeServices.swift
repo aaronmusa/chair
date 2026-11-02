@@ -268,7 +268,8 @@
                 clock: clock,
                 haptics: FakeHaptics(),
                 matchDefaults: FakeMatchDefaultsStore(),
-                profileRemote: FakeProfileRemote()
+                profileRemote: FakeProfileRemote(),
+                inviteRemote: FakeInviteRemote()
             )
         }
     }

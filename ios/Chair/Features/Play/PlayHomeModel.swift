@@ -32,25 +32,25 @@ struct PlayHomeModel: Equatable {
         now: Date
     ) {
         let sorted = records.sorted { $0.playedAt > $1.playedAt }
-        resume = sorted.first { $0.status == .inProgress }.map {
+        resume = sorted.first { $0.status == .inProgress && !$0.isReadOnly }.map {
             Resume(matchID: $0.id, title: "Resume match vs \(Self.opponent(in: $0))")
         }
         lastMatch = sorted.first { $0.status != .inProgress }.map(Self.lastMatch)
 
         let weekStart = now.addingTimeInterval(-7 * 24 * 60 * 60)
         let week = sorted.filter { $0.status != .inProgress && $0.playedAt >= weekStart }
-        let logs = week.compactMap { try? MatchLog(record: $0) }
+        let logs = week.compactMap { record in (try? MatchLog(record: record)).map { (log: $0, side: record.mySide) } }
         matchesPlayed = week.isEmpty ? "—" : "\(week.count)"
 
-        let serve = logs.map { MatchStats(log: $0)[.a] }
+        let serve = logs.map { MatchStats(log: $0.log)[$0.side] }
         let servePoints = serve.map(\.servePoints).reduce(0, +)
         let firstIn = serve.map(\.firstServesIn).reduce(0, +)
-        let tagged = logs.contains { MatchStats(log: $0).hasTaggedData }
+        let tagged = logs.contains { MatchStats(log: $0.log).hasTaggedData }
         firstServe = tagged && servePoints > 0 ? "\(Int((Double(firstIn) / Double(servePoints) * 100).rounded()))%" : "—"
 
-        let winners = logs.compactMap(Self.winner)
-        let wins = winners.count { $0 == .a }
-        winLoss = winners.isEmpty ? "—" : "\(wins)–\(winners.count - wins)"
+        let results = logs.compactMap { entry in Self.winner(entry.log).map { $0 == entry.side } }
+        let wins = results.count { $0 }
+        winLoss = results.isEmpty ? "—" : "\(wins)–\(results.count - wins)"
     }
 
     var isEmpty: Bool {
@@ -67,7 +67,7 @@ struct PlayHomeModel: Equatable {
     }
 
     private static func lastMatch(_ record: MatchRecord) -> LastMatch {
-        let sets = record.sets.map { "\($0.a)–\($0.b)" }.joined(separator: " ")
+        let sets = record.perspectiveSetLine
         let date = record.playedAt.formatted(date: .abbreviated, time: .omitted)
         let state = record.status == .abandoned ? "Ended early" : sets
         return LastMatch(

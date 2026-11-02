@@ -14,7 +14,7 @@ import ChairTestSupport
 import Supabase
 
 final class SupabaseMatchRemoteTests: XCTestCase {
-    private static func client(signedInAs email: String) async throws -> SupabaseClient {
+    static func client(signedInAs email: String) async throws -> SupabaseClient {
         let client = try client()
         try await client.auth.signIn(email: email, password: "chair-local")
         return client
@@ -117,6 +117,7 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         var expected = record
         expected.ownerID = stored.ownerID
         expected.players = stored.players
+        expected.localUserSlot = stored.localUserSlot
         XCTAssertEqual(stored, expected)
     }
 
@@ -154,35 +155,6 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         }
     }
 
-    @MainActor
-    func testUnlinkingAnAcceptedLinkRemovesTheMatchFromTheOtherPlayerAndPrunesTheirCopy() async throws {
-        let owner = try await Self.device(signedInAs: "aaron@chair.test")
-        let invitee = try await Self.device(signedInAs: "juan@chair.test")
-        let inviteeClient = try await Self.client(signedInAs: "juan@chair.test")
-        let match = Match(playedAt: .now, format: .singles, createdAt: .now, updatedAt: .now)
-        match.players = [MatchPlayer.sample(.a1, name: "Aaron", at: .now), MatchPlayer.sample(.b1, name: "Juan", at: .now)]
-        match.link(.b1, to: Self.juan, at: .now)
-        try owner.repository.save(match)
-        try await owner.repository.sync(as: Self.aaron)
-        try await inviteeClient.rpc("respond_to_invite", params: InviteAnswer(matchID: match.remoteID, accept: true)).execute()
-        try await invitee.repository.sync(as: Self.juan)
-        XCTAssertTrue(try invitee.repository.fetch().contains { $0.remoteID == match.remoteID })
-
-        match.unlink(.b1, at: .now)
-        try owner.repository.save(match)
-        try await owner.repository.sync(as: Self.aaron)
-        try await invitee.repository.sync(as: Self.juan)
-
-        let stored = try await owner.remote.match(id: match.remoteID)
-        XCTAssertNil(stored?.players.first { $0.slot == .b1 }?.userID)
-        XCTAssertEqual(stored?.players.first { $0.slot == .b1 }?.name, "Juan")
-        let listed: [IDRow] = try await inviteeClient.from("my_matches").select("id").eq("id", value: match.remoteID).execute().value
-        XCTAssertTrue(listed.isEmpty)
-        XCTAssertFalse(try invitee.repository.fetch().contains { $0.remoteID == match.remoteID })
-
-        try await owner.remote.delete(id: match.remoteID)
-    }
-
     func testSearchIsAPrefixMatchOnHandleThatLeavesOutTheCaller() async throws {
         let client = try await Self.client(signedInAs: "aaron@chair.test")
         let profiles = SupabaseProfileRemote(client: client)
@@ -195,11 +167,11 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         XCTAssertTrue(fromJuan.allSatisfy { $0.handle.lowercased().hasPrefix("aar") })
     }
 
-    private static let aaron = UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!
-    private static let juan = UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
+    static let aaron = UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!
+    static let juan = UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
 
     @MainActor
-    private static func device(signedInAs email: String) async throws -> (repository: SyncingMatchRepository, remote: SupabaseMatchRemote) {
+    static func device(signedInAs email: String) async throws -> (repository: SyncingMatchRepository, remote: SupabaseMatchRemote) {
         let client = try client()
         _ = try await SupabaseAuthService(client: client).signIn(email: email, password: "chair-local")
         let container = try InMemoryModelContainer()
@@ -275,11 +247,11 @@ private struct OwnedRow: Decodable {
     }
 }
 
-private struct IDRow: Decodable {
+struct IDRow: Decodable {
     let id: UUID
 }
 
-private struct InviteAnswer: Encodable {
+struct InviteAnswer: Encodable {
     let matchID: UUID
     let accept: Bool
 
