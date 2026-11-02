@@ -208,3 +208,9 @@ public extension MatchState {
         currentSet == SetScore(a: 0, b: 0) ? sets : sets + [currentSet]
     }
 }
+
+public extension MatchLog {
+    init(record: MatchRecord) throws {
+        try self.init(rules: record.rules, format: record.format, pointEvents: record.pointEvents)
+    }
+}

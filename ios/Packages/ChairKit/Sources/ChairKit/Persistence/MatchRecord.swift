@@ -158,7 +158,13 @@ public extension Match {
                 syncState: .synced
             )
         }
-        points = record.points.map {
+        points = record.pointEvents
+    }
+}
+
+public extension MatchRecord {
+    var pointEvents: [PointEvent] {
+        points.map {
             PointEvent(
                 remoteID: $0.id,
                 index: $0.index,
@@ -172,7 +178,7 @@ public extension Match {
                 eventKind: $0.eventKind,
                 undone: $0.undone,
                 payload: $0.payload,
-                updatedAt: record.updatedAt,
+                updatedAt: updatedAt,
                 syncState: .synced
             )
         }

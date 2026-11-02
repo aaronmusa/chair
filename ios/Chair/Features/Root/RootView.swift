@@ -91,7 +91,15 @@ struct RootView: View {
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
         case .play:
-            PlayPlaceholderView(onNewMatch: handleNewMatch())
+            PlayHomeScreen(
+                viewModel: PlayHomeViewModel(repository: repository, clock: environment.clock),
+                actions: PlayHomeActions(
+                    onNewMatch: handleNewMatch(),
+                    onServeTraining: handleServeTraining(),
+                    onQuickScore: handleNewMatch(),
+                    onOpenMatch: handleOpenMatch()
+                )
+            )
         case .settings:
             SettingsView(viewModel: SettingsViewModel(environment: environment))
         default:
@@ -119,6 +127,14 @@ struct RootView: View {
                 asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded
             )
         )
+    }
+
+    private func handleServeTraining() -> () -> Void {
+        { router.selectedSection = .train }
+    }
+
+    private func handleOpenMatch() -> (UUID) -> Void {
+        { matchID in router.presentSession(for: matchID) }
     }
 
     private func handleNewMatch() -> () -> Void {
