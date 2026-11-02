@@ -20,6 +20,7 @@ struct MatchSessionView: View {
     @State private var showsDelete = false
 
     @Environment(\.appRouter) private var router
+    @Environment(\.appEnvironment) private var environment
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -57,6 +58,13 @@ struct MatchSessionView: View {
                             }
                         }
                     }
+                }
+                .sheet(isPresented: $viewModel.isShowingSignInPrompt) {
+                    SignInView(viewModel: SignInViewModel(
+                        environment: environment,
+                        reason: .saveMatch,
+                        onFinish: handleSignInPromptFinished()
+                    ))
                 }
                 .confirmationDialog("Delete this match?", isPresented: $showsDelete, titleVisibility: .visible) {
                     Button("Delete match", role: .destructive, action: handleDelete())
@@ -230,7 +238,12 @@ struct MatchSessionView: View {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
             viewModel.showSummary()
+            await viewModel.offerSignInAfterFirstMatch()
         }
+    }
+
+    private func handleSignInPromptFinished() -> () -> Void {
+        { [viewModel] in viewModel.isShowingSignInPrompt = false }
     }
 
     private func handleAskDelete() -> () -> Void {

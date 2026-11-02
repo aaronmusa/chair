@@ -24,6 +24,7 @@ enum SessionPhase: Equatable {
 final class MatchSessionViewModel {
     private(set) var phase = SessionPhase.loading
     private(set) var isReadOnly = false
+    var isShowingSignInPrompt = false
     private(set) var state: MatchState?
     private(set) var announcements: [Announcement] = []
     private(set) var announcementID = 0
@@ -36,6 +37,8 @@ final class MatchSessionViewModel {
     let asksHowPointEnded: Bool
     private let repository: (any MatchRepository)?
     private let clock: any ClockProvider
+    private let auth: (any AuthService)?
+    private let firstMatchPrompt: FirstMatchPrompt?
     private var match: Match?
     private var session: MatchSession?
 
@@ -43,8 +46,12 @@ final class MatchSessionViewModel {
         matchID: UUID,
         repository: (any MatchRepository)?,
         clock: any ClockProvider,
-        asksHowPointEnded: Bool = true
+        asksHowPointEnded: Bool = true,
+        auth: (any AuthService)? = nil,
+        firstMatchPrompt: FirstMatchPrompt? = nil
     ) {
+        self.auth = auth
+        self.firstMatchPrompt = firstMatchPrompt
         self.matchID = matchID
         self.asksHowPointEnded = asksHowPointEnded
         self.repository = repository
@@ -210,6 +217,13 @@ final class MatchSessionViewModel {
     func showSummary() {
         guard phase == .finishing else { return }
         phase = .complete
+    }
+
+    func offerSignInAfterFirstMatch() async {
+        guard match?.status == .completed, let auth, let firstMatchPrompt, !firstMatchPrompt.wasShown,
+              await auth.currentSession() == nil else { return }
+        firstMatchPrompt.markShown()
+        isShowingSignInPrompt = true
     }
 
     func fixScore(_ snapshot: ScoreSnapshot) async -> String? {

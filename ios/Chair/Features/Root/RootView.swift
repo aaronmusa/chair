@@ -15,6 +15,7 @@ struct RootView: View {
     @Environment(\.appEnvironment) private var environment
     @Environment(\.matchRepository) private var repository
     @Environment(\.inviteCenter) private var invites
+    @State private var firstMatchPrompt = FirstMatchPrompt.make()
     @Environment(\.syncCoordinator) private var sync
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -180,7 +181,9 @@ struct RootView: View {
                 matchID: match.id,
                 repository: repository,
                 clock: environment.clock,
-                asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded
+                asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded,
+                auth: environment.auth,
+                firstMatchPrompt: firstMatchPrompt
             )
         )
     }

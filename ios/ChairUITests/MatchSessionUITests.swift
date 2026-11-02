@@ -59,4 +59,24 @@ final class MatchSessionUITests: XCTestCase {
         XCTAssertTrue(header.waitForExistence(timeout: 5))
         XCTAssertTrue(header.label.contains("Aaron def. Juan"))
     }
+
+    @MainActor
+    func testTheFirstCompletedMatchSignedOutOffersToSaveItToAnAccount() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UseFakes", "-PresentSampleMatch", "-FirstMatchPrompt"]
+        app.launch()
+
+        let pause = app.buttons["session.pause"]
+        XCTAssertTrue(pause.waitForExistence(timeout: 10))
+        pause.tap()
+        app.buttons["pause.endMatch"].tap()
+        let retire = app.buttons["Retire — Juan"]
+        XCTAssertTrue(retire.waitForExistence(timeout: 5))
+        retire.tap()
+
+        XCTAssertTrue(app.staticTexts["Save this match to your account"].waitForExistence(timeout: 8))
+        app.buttons["signIn.continue"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["summary.header"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Save this match to your account"].exists)
+    }
 }
