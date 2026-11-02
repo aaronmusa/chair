@@ -32,6 +32,8 @@ final class MatchSessionViewModel {
     private(set) var errorMessage: String?
     private(set) var pendingPoint: Side?
     private(set) var log: MatchLog?
+    private(set) var mySlot = PlayerSlot.a1
+    var onChange: (() -> Void)?
 
     let matchID: UUID
     let asksHowPointEnded: Bool
@@ -93,6 +95,7 @@ final class MatchSessionViewModel {
             self.log = log
             show(log.state, announcements: [])
             isReadOnly = match.record.isReadOnly
+            mySlot = match.localUserSlot
             if match.status != .inProgress || isReadOnly {
                 phase = .complete
             }
@@ -208,6 +211,7 @@ final class MatchSessionViewModel {
         do {
             try repository?.save(match)
             phase = .complete
+            onChange?()
         } catch {
             match.status = .inProgress
             errorMessage = "That couldn't be saved. Try again."
@@ -237,9 +241,25 @@ final class MatchSessionViewModel {
         }
     }
 
-    private func perform(_ event: MatchEvent) async throws {
+    func applyFromWatch(_ event: MatchEvent) async -> Bool {
+        guard !isReadOnly, phase == .getSet || phase == .rally else { return false }
+        if case .pointWon = event {
+            pendingPoint = nil
+        }
+        do {
+            try await perform(event, source: .watch)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private func perform(
+        _ event: MatchEvent,
+        source: EventSource = .manual
+    ) async throws {
         guard let session, let match else { return }
-        let output = try await session.apply(TimedEvent(event, at: clock.now))
+        let output = try await session.apply(TimedEvent(event, at: clock.now, source: source))
         let log = await session.log
         match.update(from: log, at: clock.now)
         try repository?.save(match)
@@ -259,6 +279,7 @@ final class MatchSessionViewModel {
         } else {
             phase = .getSet
         }
+        onChange?()
     }
 
     private var teamNames: [Side: String] {
