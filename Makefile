@@ -38,7 +38,7 @@ functions-serve:
 	supabase functions serve --env-file supabase/functions/.env
 
 test-functions:
-	deno test --allow-env supabase/functions
+	deno test --allow-env --allow-net supabase/functions
 
 db-types:
 	supabase gen types --local --lang swift --swift-access-control public > ios/Packages/ChairKit/Sources/ChairKit/Persistence/Generated/Database.swift
