@@ -17,6 +17,7 @@ struct ChairApp: App {
     private let container: ModelContainer
     private let repository: any MatchRepository
     private let sync: SyncCoordinator?
+    private let accountPrompt: AccountPromptModel?
     @State private var router: AppRouter
     @Environment(\.scenePhase) private var scenePhase
 
@@ -28,11 +29,21 @@ struct ChairApp: App {
         let repository: any MatchRepository
         if let remote = environment.matchRemote {
             let syncing = SyncingMatchRepository(context: container.mainContext, remote: remote, clock: environment.clock)
+            let migration = AccountMigration(repository: syncing, store: UserDefaultsAccountStore())
+            let sync = SyncCoordinator(
+                repository: syncing,
+                auth: environment.auth,
+                network: SystemNetworkMonitor(),
+                clock: environment.clock,
+                migration: migration
+            )
             repository = syncing
-            sync = SyncCoordinator(repository: syncing, auth: environment.auth, network: SystemNetworkMonitor(), clock: environment.clock)
+            self.sync = sync
+            accountPrompt = AccountPromptModel(auth: environment.auth, migration: migration, sync: sync)
         } else {
             repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
             sync = nil
+            accountPrompt = nil
         }
         self.repository = repository
         _router = State(initialValue: AppRouter.make(repository: repository, clock: environment.clock))
@@ -47,6 +58,7 @@ struct ChairApp: App {
                 .environment(\.matchRepository, repository)
                 .environment(\.syncCoordinator, sync)
                 .modelContainer(container)
+                .accountPrompt(accountPrompt)
                 .onChange(of: scenePhase, initial: true, handleScenePhase())
         }
     }

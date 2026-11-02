@@ -43,6 +43,7 @@ public final class Match {
     public var updatedAt: Date
     public var syncState: SyncState
     public var ownerID: UUID?
+    public var localUserSlot: PlayerSlot = PlayerSlot.a1
 
     @Relationship(deleteRule: .cascade, inverse: \MatchPlayer.match)
     public var players: [MatchPlayer] = []
@@ -62,7 +63,8 @@ public final class Match {
         createdAt: Date,
         updatedAt: Date,
         syncState: SyncState = .pendingUpload,
-        ownerID: UUID? = nil
+        ownerID: UUID? = nil,
+        localUserSlot: PlayerSlot = .a1
     ) {
         self.remoteID = remoteID
         self.playedAt = playedAt
@@ -76,6 +78,7 @@ public final class Match {
         self.updatedAt = updatedAt
         self.syncState = syncState
         self.ownerID = ownerID
+        self.localUserSlot = localUserSlot
     }
 
     public var orderedPlayers: [MatchPlayer] {

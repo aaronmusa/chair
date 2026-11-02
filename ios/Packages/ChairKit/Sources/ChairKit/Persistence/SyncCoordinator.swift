@@ -41,18 +41,21 @@ public final class SyncCoordinator {
     private let auth: any AuthService
     private let network: any NetworkMonitor
     private let clock: any ClockProvider
+    private let migration: AccountMigration?
     private var watching: Task<Void, Never>?
 
     public init(
         repository: SyncingMatchRepository,
         auth: any AuthService,
         network: any NetworkMonitor,
-        clock: any ClockProvider = SystemClock()
+        clock: any ClockProvider = SystemClock(),
+        migration: AccountMigration? = nil
     ) {
         self.repository = repository
         self.auth = auth
         self.network = network
         self.clock = clock
+        self.migration = migration
     }
 
     public func start() {
@@ -78,6 +81,7 @@ public final class SyncCoordinator {
     public func syncNow() async {
         refreshPending()
         guard isOnline, !isSyncing, let session = await auth.currentSession() else { return }
+        guard (try? migration?.pendingPrompt(for: session.userID)) == nil else { return }
         isSyncing = true
         defer { isSyncing = false }
         do {
