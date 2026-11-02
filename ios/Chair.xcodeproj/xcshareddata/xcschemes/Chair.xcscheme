@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "2650"
-   version = "1.8">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -40,7 +40,8 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1ED5FDA1308F2E6B00DAC3F5"
@@ -67,12 +68,12 @@
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1ED5FD88308F2E6900DAC3F5"
-            BuildableName = "Chair.app"
-            BlueprintName = "Chair"
-            ReferencedContainer = "container:Chair.xcodeproj">
-         </BuildableReference>
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1ED5FD88308F2E6900DAC3F5"
+               BuildableName = "Chair.app"
+               BlueprintName = "Chair"
+               ReferencedContainer = "container:Chair.xcodeproj">
+            </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
          identifier = "../../Products.storekit">
@@ -87,12 +88,12 @@
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1ED5FD88308F2E6900DAC3F5"
-            BuildableName = "Chair.app"
-            BlueprintName = "Chair"
-            ReferencedContainer = "container:Chair.xcodeproj">
-         </BuildableReference>
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1ED5FD88308F2E6900DAC3F5"
+               BuildableName = "Chair.app"
+               BlueprintName = "Chair"
+               ReferencedContainer = "container:Chair.xcodeproj">
+            </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
