@@ -115,7 +115,8 @@ struct RootView: View {
             viewModel: MatchSessionViewModel(
                 matchID: match.id,
                 repository: repository,
-                clock: environment.clock
+                clock: environment.clock,
+                asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded
             )
         )
     }

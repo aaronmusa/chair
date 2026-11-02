@@ -61,6 +61,8 @@ struct SettingsView: View {
                     .textContentType(.name)
                     .accessibilityIdentifier("settings.playerName")
             }
+            Toggle("Ask how each point ended", isOn: $viewModel.defaults.asksHowPointEnded)
+                .accessibilityIdentifier("settings.asksHowPointEnded")
         }
     }
 

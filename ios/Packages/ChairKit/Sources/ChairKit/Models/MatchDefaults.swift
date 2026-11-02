@@ -15,19 +15,33 @@ public struct MatchDefaults: Codable, Hashable, Sendable {
     public var deuce: MatchRules.Deuce
     public var finalSet: MatchRules.FinalSet
     public var playerName: String
+    public var asksHowPointEnded: Bool
 
     public init(
         format: MatchFormat = .singles,
         sets: MatchRules.Sets = .bestOf3,
         deuce: MatchRules.Deuce = .advantage,
         finalSet: MatchRules.FinalSet = .tiebreak7,
-        playerName: String = ""
+        playerName: String = "",
+        asksHowPointEnded: Bool = true
     ) {
         self.format = format
         self.sets = sets
         self.deuce = deuce
         self.finalSet = finalSet
         self.playerName = playerName
+        self.asksHowPointEnded = asksHowPointEnded
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let fallback = MatchDefaults()
+        format = try container.decodeIfPresent(MatchFormat.self, forKey: .format) ?? fallback.format
+        sets = try container.decodeIfPresent(MatchRules.Sets.self, forKey: .sets) ?? fallback.sets
+        deuce = try container.decodeIfPresent(MatchRules.Deuce.self, forKey: .deuce) ?? fallback.deuce
+        finalSet = try container.decodeIfPresent(MatchRules.FinalSet.self, forKey: .finalSet) ?? fallback.finalSet
+        playerName = try container.decodeIfPresent(String.self, forKey: .playerName) ?? fallback.playerName
+        asksHowPointEnded = try container.decodeIfPresent(Bool.self, forKey: .asksHowPointEnded) ?? fallback.asksHowPointEnded
     }
 
     public var rules: MatchRules {

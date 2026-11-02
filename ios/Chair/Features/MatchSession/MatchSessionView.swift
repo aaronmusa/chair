@@ -14,6 +14,7 @@ struct MatchSessionView: View {
     @State private var viewModel: MatchSessionViewModel
     @State private var showsAnnouncement = true
     @State private var isPaused = false
+    @State private var showsPointLog = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -34,6 +35,22 @@ struct MatchSessionView: View {
                 .sheet(isPresented: $isPaused) {
                     PauseSheet(actions: pauseActions)
                         .presentationDetents([.medium])
+                }
+                .sheet(item: pendingPointBinding) { pending in
+                    OutcomeSheet(
+                        winnerName: viewModel.name(of: pending.side),
+                        isServerWinning: viewModel.isServer(pending.side),
+                        onChoose: handleOutcome()
+                    )
+                    .presentationDetents([.medium, .large])
+                }
+                .sheet(isPresented: $showsPointLog) {
+                    PointLogSheet(
+                        points: viewModel.pointLog,
+                        names: [.a: viewModel.name(of: .a), .b: viewModel.name(of: .b)],
+                        onFlip: handleFlip()
+                    )
+                    .presentationDetents([.medium, .large])
                 }
                 .alert("Couldn't do that", isPresented: errorBinding) {
                     Button("OK", role: .cancel) {}
@@ -92,7 +109,8 @@ struct MatchSessionView: View {
             onPoint: handlePoint(),
             onFault: handle(.fault),
             onLet: handle(.let),
-            onUndo: handle(.undo)
+            onUndo: handle(.undo),
+            onShowLog: handleShowLog()
         )
     }
 
@@ -106,8 +124,32 @@ struct MatchSessionView: View {
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { viewModel.errorMessage != nil },
-            set: { _ in }
+            set: { if !$0 { viewModel.dismissError() } }
         )
+    }
+
+    private var pendingPointBinding: Binding<PendingPoint?> {
+        Binding(
+            get: { viewModel.pendingPoint.map(PendingPoint.init) },
+            set: { if $0 == nil { viewModel.cancelPendingPoint() } }
+        )
+    }
+
+    private func handleOutcome() -> (PointOutcome?, PointEnding?) -> Void {
+        { [viewModel] outcome, ending in
+            Task { await viewModel.recordPendingPoint(outcome: outcome, ending: ending) }
+        }
+    }
+
+    private func handleFlip() -> (Int) -> Void {
+        { [viewModel] index in
+            showsPointLog = false
+            Task { await viewModel.flip(pointIndex: index) }
+        }
+    }
+
+    private func handleShowLog() -> () -> Void {
+        { showsPointLog = true }
     }
 
     private func handle(_ event: MatchEvent) -> () -> Void {
@@ -153,5 +195,13 @@ struct MatchSessionView: View {
             guard !Task.isCancelled else { return }
             withAnimation { showsAnnouncement = false }
         }
+    }
+}
+
+struct PendingPoint: Identifiable {
+    let side: Side
+
+    var id: Side {
+        side
     }
 }
