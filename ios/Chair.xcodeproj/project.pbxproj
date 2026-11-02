@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1C0FFEE5A0B5E7000000003 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */; };
 		00618E7EB6D21B02F063B6B1 /* ChairUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7CD2DFA71C1C72D48FA2F025 /* ChairUI */; };
 		1ED5FDB8308F2F4600DAC3F5 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */; };
 		1ED5FDDD308F307700DAC3F5 /* ChairWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -114,6 +115,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1C0FFEE5A0B5E7000000003 /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,6 +229,9 @@
 				1ED5FD9B308F2E6B00DAC3F5 /* ChairTests */,
 			);
 			name = ChairTests;
+			packageProductDependencies = (
+				A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */,
+			);
 			productName = ChairTests;
 			productReference = 1ED5FD98308F2E6B00DAC3F5 /* ChairTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -322,6 +327,7 @@
 			packageReferences = (
 				05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */,
 				5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "ChairUI" */,
+				A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1ED5FD8A308F2E6900DAC3F5 /* Products */;
@@ -846,6 +852,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = exactVersion;
+				version = 1.19.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		3FB08BB2CB4509A027C742EC /* ChairKit */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -871,6 +888,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
 			productName = ChairKit;
+		};
+		A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
