@@ -164,6 +164,22 @@ final class MatchSessionViewModel {
         }
     }
 
+    var summary: MatchSummaryModel? {
+        guard let match, let log else { return nil }
+        return MatchSummaryModel(match: match, log: log)
+    }
+
+    func delete() -> Bool {
+        guard let match, let repository else { return false }
+        do {
+            try repository.delete(match)
+            return true
+        } catch {
+            errorMessage = "This match couldn't be deleted. Try again."
+            return false
+        }
+    }
+
     var isAbandoned: Bool {
         match?.status == .abandoned
     }
