@@ -7,11 +7,13 @@
 
 import SwiftUI
 
+import ChairKit
 import ChairUI
 
 struct RootView: View {
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) private var environment
+    @Environment(\.matchRepository) private var repository
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     #if DEBUG
@@ -41,9 +43,7 @@ struct RootView: View {
                 }
                 .navigationTitle("Chair")
             } detail: {
-                NavigationStack {
-                    sectionView(router.selectedSection)
-                }
+                stack(router.selectedSection)
             }
             .sheet(item: $router.presentedMatch) { match in
                 MatchSessionPlaceholder(match: match)
@@ -54,9 +54,7 @@ struct RootView: View {
             TabView(selection: $router.selectedSection) {
                 ForEach(AppSection.allCases) { section in
                     Tab(section.title, systemImage: section.systemImage, value: section) {
-                        NavigationStack {
-                            sectionView(section)
-                        }
+                        stack(section)
                     }
                     .accessibilityIdentifier("tab.\(section.rawValue)")
                 }
@@ -75,13 +73,49 @@ struct RootView: View {
     }
 
     @ViewBuilder
+    private func stack(_ section: AppSection) -> some View {
+        @Bindable var router = router
+        if section == .play {
+            NavigationStack(path: $router.playPath) {
+                sectionView(section)
+                    .navigationDestination(for: PlayDestination.self, destination: playDestination)
+            }
+        } else {
+            NavigationStack {
+                sectionView(section)
+            }
+        }
+    }
+
+    @ViewBuilder
     private func sectionView(_ section: AppSection) -> some View {
         switch section {
+        case .play:
+            PlayPlaceholderView(onNewMatch: handleNewMatch())
         case .settings:
             SettingsView(viewModel: SettingsViewModel(environment: environment))
         default:
             PlaceholderView(section: section)
         }
+    }
+
+    private func playDestination(_ destination: PlayDestination) -> some View {
+        NewMatchView(
+            viewModel: NewMatchViewModel(
+                defaults: environment.matchDefaults.load(),
+                repository: repository,
+                clock: environment.clock
+            ),
+            onStart: handleStartSession()
+        )
+    }
+
+    private func handleNewMatch() -> () -> Void {
+        { router.showNewMatch() }
+    }
+
+    private func handleStartSession() -> (UUID) -> Void {
+        { matchID in router.startSession(for: matchID) }
     }
 
     private func handleOpenURL() -> (URL) -> Void {
