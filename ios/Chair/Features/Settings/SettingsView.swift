@@ -1,0 +1,112 @@
+//
+//  SettingsView.swift
+//  Chair
+//
+//  Created by Aaron Musa on 11/2/26.
+//
+
+import SwiftUI
+
+import ChairKit
+#if DEBUG
+    import ChairTestSupport
+#endif
+import ChairUI
+
+struct SettingsView: View {
+    @State private var viewModel: SettingsViewModel
+
+    init(viewModel: SettingsViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
+
+    var body: some View {
+        Form {
+            Group {
+                matchDefaultsSection
+                umpireSection
+                accountSection
+                aboutSection
+            }
+            .listRowBackground(Color.chair.surfaceRaised)
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.chair.surface)
+        .tint(Color.chair.accent)
+        .navigationTitle("Settings")
+        .task(handleRefreshAccount())
+    }
+
+    private var matchDefaultsSection: some View {
+        Section("Match defaults") {
+            Picker("Format", selection: $viewModel.defaults.format) {
+                ForEach(MatchFormat.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .accessibilityIdentifier("settings.format")
+            Picker("Sets", selection: $viewModel.defaults.sets) {
+                ForEach(MatchRules.Sets.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .accessibilityIdentifier("settings.sets")
+            Picker("Deuce", selection: $viewModel.defaults.deuce) {
+                ForEach(MatchRules.Deuce.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .accessibilityIdentifier("settings.deuce")
+            Picker("Final set", selection: $viewModel.defaults.finalSet) {
+                ForEach(MatchRules.FinalSet.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .accessibilityIdentifier("settings.finalSet")
+            LabeledContent("Player name") {
+                TextField("Player name", text: $viewModel.defaults.playerName, prompt: Text(MatchDefaults.fallbackPlayerName))
+                    .multilineTextAlignment(.trailing)
+                    .textContentType(.name)
+                    .accessibilityIdentifier("settings.playerName")
+            }
+        }
+    }
+
+    private var umpireSection: some View {
+        Section {
+            Toggle("Umpire voice", isOn: .constant(false))
+                .disabled(true)
+        } header: {
+            Text("Umpire")
+        } footer: {
+            Text("Available with umpire voice.")
+        }
+    }
+
+    private var accountSection: some View {
+        Section("Account") {
+            LabeledContent("Account", value: viewModel.accountStatus)
+                .accessibilityIdentifier("settings.account")
+        }
+    }
+
+    private var aboutSection: some View {
+        Section("About") {
+            LabeledContent("Version", value: viewModel.version)
+            LabeledContent("Build", value: viewModel.build)
+            Link("Privacy policy", destination: SettingsViewModel.privacyURL)
+            Link("Support", destination: SettingsViewModel.supportURL)
+        }
+    }
+
+    private func handleRefreshAccount() -> @MainActor @Sendable () async -> Void {
+        { [viewModel] in await viewModel.refreshAccount() }
+    }
+}
+
+#if DEBUG
+    #Preview("Light") {
+        NavigationStack {
+            SettingsView(viewModel: SettingsViewModel(environment: .fakes()))
+        }
+    }
+
+    #Preview("AX5") {
+        NavigationStack {
+            SettingsView(viewModel: SettingsViewModel(environment: .fakes()))
+        }
+        .environment(\.dynamicTypeSize, .accessibility5)
+    }
+#endif

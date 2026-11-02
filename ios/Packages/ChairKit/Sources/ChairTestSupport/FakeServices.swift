@@ -178,6 +178,31 @@
         }
     }
 
+    public final class FakeMatchDefaultsStore: MatchDefaultsStore, @unchecked Sendable {
+        private let lock = NSLock()
+        private var stored: MatchDefaults
+        private var saveCount = 0
+
+        public init(_ defaults: MatchDefaults = MatchDefaults()) {
+            stored = defaults
+        }
+
+        public var saves: Int {
+            lock.withLock { saveCount }
+        }
+
+        public func load() -> MatchDefaults {
+            lock.withLock { stored }
+        }
+
+        public func save(_ defaults: MatchDefaults) {
+            lock.withLock {
+                stored = defaults
+                saveCount += 1
+            }
+        }
+    }
+
     public extension AppEnvironment {
         static func fakes(clock: FixedClock = FixedClock(Fixtures.matchDay)) -> AppEnvironment {
             AppEnvironment(
@@ -187,7 +212,8 @@
                 coach: FakeCoachService(),
                 subscription: FakeSubscriptionService(),
                 clock: clock,
-                haptics: FakeHaptics()
+                haptics: FakeHaptics(),
+                matchDefaults: FakeMatchDefaultsStore()
             )
         }
     }

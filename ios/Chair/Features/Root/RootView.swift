@@ -11,6 +11,7 @@ import ChairUI
 
 struct RootView: View {
     @Environment(\.appRouter) private var router
+    @Environment(\.appEnvironment) private var environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     #if DEBUG
@@ -73,8 +74,14 @@ struct RootView: View {
         )
     }
 
+    @ViewBuilder
     private func sectionView(_ section: AppSection) -> some View {
-        PlaceholderView(section: section)
+        switch section {
+        case .settings:
+            SettingsView(viewModel: SettingsViewModel(environment: environment))
+        default:
+            PlaceholderView(section: section)
+        }
     }
 
     private func handleOpenURL() -> (URL) -> Void {
