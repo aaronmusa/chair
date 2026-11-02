@@ -56,6 +56,12 @@ final class WatchScoreViewSnapshotTests: XCTestCase {
         assertWatchSnapshot(of: view, named: "workout")
     }
 
+    func testWatchScoreDebugAck() {
+        var view = page(WatchHomeViewSnapshotTests.state)
+        view.lastAck = .milliseconds(84)
+        assertWatchSnapshot(of: view, named: "ack", sizes: [.mm41])
+    }
+
     func testWatchControls() {
         assertWatchSnapshot(of: WatchControlsPage { _ in }, named: "controls")
     }

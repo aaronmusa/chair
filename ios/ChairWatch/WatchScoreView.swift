@@ -36,6 +36,7 @@ struct WatchScoreView: View {
                     requiresHold: holdToScore,
                     heartRate: heartRate,
                     notice: notice,
+                    lastAck: model.link.lastAckLatency,
                     actions: WatchScoreActions(onScore: handleScore(), onUndo: handleSend(.undo))
                 )
                 WatchControlsPage(onSend: handleSendAction())
