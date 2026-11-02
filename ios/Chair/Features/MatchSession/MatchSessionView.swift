@@ -16,6 +16,9 @@ struct MatchSessionView: View {
     @State private var isPaused = false
     @State private var showsPointLog = false
     @State private var showsScoreFix = false
+    @State private var showsEndMatch = false
+
+    @Environment(\.appRouter) private var router
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -29,9 +32,22 @@ struct MatchSessionView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Pause", systemImage: "pause.circle", action: handlePause())
-                            .accessibilityIdentifier("session.pause")
+                        if viewModel.phase == .complete {
+                            Button("Done", action: handleDone())
+                                .accessibilityIdentifier("session.done")
+                        } else {
+                            Button("Pause", systemImage: "pause.circle", action: handlePause())
+                                .accessibilityIdentifier("session.pause")
+                        }
                     }
+                }
+                .confirmationDialog("End match", isPresented: $showsEndMatch, titleVisibility: .visible) {
+                    Button("Finish as is", action: handleFinishAsIs())
+                    Button("Retire — \(viewModel.name(of: .a))", role: .destructive, action: handleRetire(.a))
+                    Button("Retire — \(viewModel.name(of: .b))", role: .destructive, action: handleRetire(.b))
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("Finish as is keeps the score. Retiring gives the match to the other side.")
                 }
                 .sheet(isPresented: $isPaused) {
                     PauseSheet(actions: pauseActions)
@@ -96,10 +112,23 @@ struct MatchSessionView: View {
                     actions: rallyActions
                 )
             }
+        case .finishing:
+            MatchOverView(text: viewModel.announcementText)
+                .task(handleShowSummary())
         case .complete:
-            // TODO: Replace with MatchSummaryView in E2-10.
-            ContentUnavailableView("Match complete", systemImage: "trophy", description: Text(viewModel.announcementText))
+            MatchCompleteView(
+                title: completeTitle,
+                sets: viewModel.state?.setsIncludingCurrent ?? []
+            )
         }
+    }
+
+    private var completeTitle: String {
+        if viewModel.isAbandoned {
+            return "Match ended early"
+        }
+        guard let winner = viewModel.winner else { return "Match complete" }
+        return "\(viewModel.name(of: winner)) wins"
     }
 
     private var stripText: String {
@@ -131,7 +160,8 @@ struct MatchSessionView: View {
         PauseActions(
             onResume: handleResume(),
             onSwapSides: handle(.swapEnds),
-            onFixScore: handleShowScoreFix()
+            onFixScore: handleShowScoreFix(),
+            onEndMatch: handleShowEndMatch()
         )
     }
 
@@ -160,6 +190,37 @@ struct MatchSessionView: View {
             showsPointLog = false
             Task { await viewModel.flip(pointIndex: index) }
         }
+    }
+
+    private func handleShowEndMatch() -> () -> Void {
+        {
+            isPaused = false
+            showsEndMatch = true
+        }
+    }
+
+    private func handleFinishAsIs() -> () -> Void {
+        { [viewModel] in
+            Task { await viewModel.finishAsIs() }
+        }
+    }
+
+    private func handleRetire(_ side: Side) -> () -> Void {
+        { [viewModel] in
+            Task { await viewModel.retire(side) }
+        }
+    }
+
+    private func handleShowSummary() -> @MainActor @Sendable () async -> Void {
+        { [viewModel] in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            viewModel.showSummary()
+        }
+    }
+
+    private func handleDone() -> () -> Void {
+        { router.presentedMatch = nil }
     }
 
     private func handleShowScoreFix() -> () -> Void {

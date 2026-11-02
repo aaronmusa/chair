@@ -13,6 +13,7 @@ struct PauseActions {
     var onResume: () -> Void = {}
     var onSwapSides: () -> Void = {}
     var onFixScore: () -> Void = {}
+    var onEndMatch: () -> Void = {}
 }
 
 struct PauseSheet: View {
@@ -28,9 +29,8 @@ struct PauseSheet: View {
             ChairButton("Swap sides", style: .secondary, onTap: handleSwapSides())
             ChairButton("Fix score", style: .secondary, onTap: actions.onFixScore)
                 .accessibilityIdentifier("pause.fixScore")
-            // TODO: Wire End match in E2-9.
-            ChairButton("End match", style: .ghost, onTap: {})
-                .disabled(true)
+            ChairButton("End match", style: .ghost, onTap: actions.onEndMatch)
+                .accessibilityIdentifier("pause.endMatch")
         }
         .padding(Spacing.chair.md)
         .frame(maxHeight: .infinity, alignment: .top)
