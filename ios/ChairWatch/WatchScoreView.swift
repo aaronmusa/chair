@@ -14,6 +14,8 @@ struct WatchScoreView: View {
     static let holdToScoreKey = "chair.watch.holdToScore"
 
     let model: WatchMatchModel
+    let heartRate: Int?
+    let notice: String?
 
     @AppStorage(Self.holdToScoreKey) private var holdToScore = true
     @State private var visibleAnnouncement: String?
@@ -28,6 +30,8 @@ struct WatchScoreView: View {
                     showsCorrection: model.showsCorrection,
                     isWaitingForPhone: model.link.isWaitingForPeer,
                     requiresHold: holdToScore,
+                    heartRate: heartRate,
+                    notice: notice,
                     actions: WatchScoreActions(onScore: handleScore(), onUndo: handleSend(.undo))
                 )
                 WatchControlsPage(onSend: handleSendAction())

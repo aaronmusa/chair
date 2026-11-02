@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Chair records your match as a tennis workout so the Watch app stays on while you play</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Chair records your match as a tennis workout so the Watch app stays on while you play</string>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+		<string>physical-therapy</string>
+	</array>
+</dict>
+</plist>

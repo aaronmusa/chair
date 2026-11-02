@@ -42,6 +42,20 @@ final class WatchScoreViewSnapshotTests: XCTestCase {
         )
     }
 
+    func testWatchScoreAlwaysOn() {
+        assertWatchSnapshot(
+            of: page(WatchHomeViewSnapshotTests.state, announcement: "Fifteen all").environment(\.isLuminanceReduced, true),
+            named: "dimmed"
+        )
+    }
+
+    func testWatchScoreWorkout() {
+        var view = page(WatchHomeViewSnapshotTests.state)
+        view.heartRate = 128
+        view.notice = WatchWorkoutController.fallbackNotice
+        assertWatchSnapshot(of: view, named: "workout")
+    }
+
     func testWatchControls() {
         assertWatchSnapshot(of: WatchControlsPage { _ in }, named: "controls")
     }

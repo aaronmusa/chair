@@ -27,15 +27,18 @@ public final class WatchMatchModel {
 
     @ObservationIgnored public let link: WatchLink
     @ObservationIgnored private let haptics: any WatchHaptics
+    @ObservationIgnored public let keepAlive: any WatchKeepAlive
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var pendingUndoID: UUID?
 
     public init(
         link: WatchLink,
-        haptics: any WatchHaptics = SilentWatchHaptics()
+        haptics: any WatchHaptics = SilentWatchHaptics(),
+        keepAlive: any WatchKeepAlive = NoKeepAlive()
     ) {
         self.link = link
         self.haptics = haptics
+        self.keepAlive = keepAlive
     }
 
     public func start() {
@@ -53,16 +56,22 @@ public final class WatchMatchModel {
     public func apply(_ message: WatchMessage) {
         switch message {
         case let .state(newState):
+            if let state, newState.matchID == state.matchID {
+                playMilestone(from: state.score, to: newState.score)
+            }
             if newState != state {
                 state = newState
             }
             hasEnded = newState.phase == .complete
+            endWorkoutIfOver()
         case let .idle(result):
             state = nil
             lastResult = result
         case let .announcement(text):
             announcement = text
             announcementID += 1
+        case .refused:
+            haptics.play(.failure)
         case let .ack(inputID):
             if inputID == pendingUndoID {
                 pendingUndoID = nil
@@ -70,6 +79,7 @@ public final class WatchMatchModel {
             }
         case .matchEnded:
             hasEnded = true
+            endWorkoutIfOver()
         default:
             break
         }
@@ -84,6 +94,35 @@ public final class WatchMatchModel {
         }
         guard link.isReachable else { return .unreachable }
         return .startOnPhone(lastResult: lastResult)
+    }
+
+    public func join() async {
+        hasEnded = false
+        await refresh()
+        if !keepAlive.isRunning {
+            await keepAlive.start()
+        }
+    }
+
+    public func endWorkout() async {
+        keepAlive.end()
+        await link.send(.endWorkout)
+    }
+
+    private func endWorkoutIfOver() {
+        guard hasEnded, keepAlive.isRunning else { return }
+        keepAlive.end()
+    }
+
+    private func playMilestone(
+        from old: ScoreSnapshot,
+        to new: ScoreSnapshot
+    ) {
+        if new.sets.count > old.sets.count {
+            haptics.play(.success)
+        } else if new.currentSet.a + new.currentSet.b > old.currentSet.a + old.currentSet.b {
+            haptics.play(.notification)
+        }
     }
 
     public func score(me: Bool) async {

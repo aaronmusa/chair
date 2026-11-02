@@ -21,15 +21,44 @@ struct WatchScorePage: View {
     let showsCorrection: Bool
     let isWaitingForPhone: Bool
     let requiresHold: Bool
+    var heartRate: Int?
+    var notice: String?
     let actions: WatchScoreActions
 
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+
     var body: some View {
+        if isLuminanceReduced {
+            dimmed
+        } else {
+            live
+        }
+    }
+
+    private var dimmed: some View {
+        VStack(spacing: Spacing.chair.xxs) {
+            row(state.mySide)
+            row(state.theirSide)
+        }
+        .frame(maxHeight: .infinity)
+        .allowsHitTesting(false)
+        .accessibilityIdentifier("watch.score.dimmed")
+    }
+
+    private var live: some View {
         VStack(spacing: Spacing.chair.xxs) {
             HStack {
                 Text(state.setGameLabel)
                     .chairFont(.caption)
                     .foregroundStyle(Color.chair.inkSecondary)
                 Spacer(minLength: 0)
+                if let heartRate {
+                    Text("♥ \(heartRate)")
+                        .chairFont(.callout)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.chair.inkSecondary)
+                        .accessibilityLabel("Heart rate \(heartRate)")
+                }
                 if isWaitingForPhone {
                     Circle()
                         .fill(Color.chair.warning)
@@ -51,6 +80,14 @@ struct WatchScorePage: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .accessibilityIdentifier("watch.strip")
+            if let notice {
+                Text(notice)
+                    .chairFont(.callout)
+                    .foregroundStyle(Color.chair.inkSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .accessibilityIdentifier("watch.keepAliveNotice")
+            }
             Spacer(minLength: 0)
             HStack(spacing: Spacing.chair.xs) {
                 HoldToScoreButton(title: "Me", requiresHold: requiresHold, identifier: "watch.me", onScore: handleScore(me: true))
