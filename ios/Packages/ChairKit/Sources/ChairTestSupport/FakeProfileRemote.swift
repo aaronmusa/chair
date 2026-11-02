@@ -59,6 +59,10 @@
             linkedCounts[userID] ?? 0
         }
 
+        public func publicProfile(id: UUID) async throws -> PublicProfile? {
+            publicProfiles.values.first { $0.id == id }
+        }
+
         public func search(_ query: String) async throws -> [PublicProfile] {
             let prefix = query.trimmingCharacters(in: .whitespaces).lowercased()
             return publicProfiles.values

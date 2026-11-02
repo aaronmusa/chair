@@ -40,6 +40,8 @@ struct MatchSummaryModel: Equatable {
     let runs: [Run]
     let points: [PointRow]
     let shareText: String
+    let isReadOnly: Bool
+    let ownerID: UUID?
 
     init(
         record: MatchRecord,
@@ -52,17 +54,21 @@ struct MatchSummaryModel: Equatable {
         let teams: [Side: String] = doubles
             ? [.a: "\(name(.a1)) and \(name(.a2))", .b: "\(name(.b1)) and \(name(.b2))"]
             : [.a: name(.a1), .b: name(.b1)]
-        names = teams
+        let me = record.mySide
+        names = [.a: teams[me] ?? "", .b: teams[me.opponent] ?? ""]
         let stats = MatchStats(log: log)
         let state = log.state
 
         header = Self.header(record: record, duration: stats.duration)
-        setLine = state.summary.map(Self.setText).joined(separator: " ")
+        setLine = state.summary.map { Self.setText($0, from: me) }.joined(separator: " ")
         result = Self.result(state: state, status: record.status, names: teams)
-        rows = Self.rows(stats)
-        runs = Self.runs(stats.points)
+        rows = Self.rows(stats, from: me)
+        runs = Self.runs(stats.points).map { Run(side: $0.side == me ? .a : .b, length: $0.length) }
         points = stats.points.map { Self.pointRow($0, names: teams) }
-        shareText = [result, setLine].filter { !$0.isEmpty }.joined(separator: " ") + " · Chair"
+        isReadOnly = record.isReadOnly
+        ownerID = record.ownerID
+        let sharedSets = state.summary.map { Self.setText($0, from: .a) }.joined(separator: " ")
+        shareText = [result, sharedSets].filter { !$0.isEmpty }.joined(separator: " ") + " · Chair"
     }
 
     private static func header(
@@ -90,14 +96,22 @@ struct MatchSummaryModel: Equatable {
         return status == .abandoned ? "\(a) v \(b) · ended early" : "\(a) v \(b)"
     }
 
-    private static func setText(_ set: SetSummary) -> String {
-        guard let tiebreak = set.tiebreak else { return "\(set.a)–\(set.b)" }
-        return "\(set.a)–\(set.b)(\(tiebreak.a)–\(tiebreak.b))"
+    private static func setText(
+        _ set: SetSummary,
+        from me: Side
+    ) -> String {
+        let (mine, theirs) = me == .a ? (set.a, set.b) : (set.b, set.a)
+        guard let tiebreak = set.tiebreak else { return "\(mine)–\(theirs)" }
+        let (tbMine, tbTheirs) = me == .a ? (tiebreak.a, tiebreak.b) : (tiebreak.b, tiebreak.a)
+        return "\(mine)–\(theirs)(\(tbMine)–\(tbTheirs))"
     }
 
-    private static func rows(_ stats: MatchStats) -> [StatRow] {
-        let a = stats[.a]
-        let b = stats[.b]
+    private static func rows(
+        _ stats: MatchStats,
+        from me: Side
+    ) -> [StatRow] {
+        let a = stats[me]
+        let b = stats[me.opponent]
         let tagged = stats.hasTaggedData
         let value = { (number: Int) in tagged ? "\(number)" : "—" }
         let ratio = { (part: Int, whole: Int) -> String in

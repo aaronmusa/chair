@@ -65,9 +65,9 @@ struct MatchListModel: Equatable {
             title: "vs \(record.opponentNames.isEmpty ? "Opponent" : record.opponentNames)",
             subtitle: "\(date) · \(format) · \(minutes) min",
             badge: badge(record, log: log),
-            setLine: record.sets.map { "\($0.a)–\($0.b)" }.joined(separator: " "),
+            setLine: record.perspectiveSetLine,
             footer: "\(points) \(points == 1 ? "point" : "points") · \(input)",
-            isInProgress: record.status == .inProgress
+            isInProgress: record.status == .inProgress && !record.isReadOnly
         )
     }
 
@@ -80,7 +80,13 @@ struct MatchListModel: Equatable {
         case .abandoned: return "Abandoned"
         case .completed:
             guard case let .complete(winner) = log?.state.phase else { return "Completed" }
-            return winner == .a ? "W" : "L"
+            return winner == record.mySide ? "W" : "L"
         }
+    }
+}
+
+extension MatchRecord {
+    var perspectiveSetLine: String {
+        sets.map { mySide == .a ? "\($0.a)–\($0.b)" : "\($0.b)–\($0.a)" }.joined(separator: " ")
     }
 }

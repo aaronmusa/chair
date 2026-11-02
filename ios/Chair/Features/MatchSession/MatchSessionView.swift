@@ -48,11 +48,13 @@ struct MatchSessionView: View {
                             ShareLink(item: summary.shareText)
                                 .accessibilityIdentifier("summary.share")
                         }
-                        ToolbarItem(placement: .topBarLeading) {
-                            Menu("More", systemImage: "ellipsis.circle") {
-                                Button("Delete match", systemImage: "trash", role: .destructive, action: handleAskDelete())
+                        if !viewModel.isReadOnly {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Menu("More", systemImage: "ellipsis.circle") {
+                                    Button("Delete match", systemImage: "trash", role: .destructive, action: handleAskDelete())
+                                }
+                                .accessibilityIdentifier("summary.more")
                             }
-                            .accessibilityIdentifier("summary.more")
                         }
                     }
                 }

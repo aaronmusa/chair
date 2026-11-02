@@ -96,6 +96,16 @@ public struct MatchRecord: Codable, Equatable, Sendable {
     public var players: [Player]
     public var points: [Point]
     public var ownerID: UUID?
+    public var localUserSlot: PlayerSlot?
+
+    public var mySide: Side {
+        (localUserSlot ?? .a1).side
+    }
+
+    public var isReadOnly: Bool {
+        guard let ownerID, let me = players.first(where: { $0.slot == localUserSlot }), let myID = me.userID else { return false }
+        return myID != ownerID
+    }
 }
 
 public extension Match {
@@ -129,8 +139,13 @@ public extension Match {
                     updatedAt: $0.updatedAt
                 )
             },
-            ownerID: ownerID
+            ownerID: ownerID,
+            localUserSlot: localUserSlot
         )
+    }
+
+    func perspective(for userID: UUID?) -> Side {
+        players.first { $0.userID != nil && $0.userID == userID }?.slot.side ?? localUserSlot.side
     }
 
     convenience init(record: MatchRecord) {
