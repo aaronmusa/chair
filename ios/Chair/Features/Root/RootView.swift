@@ -100,6 +100,8 @@ struct RootView: View {
                     onOpenMatch: handleOpenMatch()
                 )
             )
+        case .matches:
+            MatchesScreen(viewModel: MatchListViewModel(repository: repository))
         case .settings:
             SettingsView(viewModel: SettingsViewModel(environment: environment))
         default:

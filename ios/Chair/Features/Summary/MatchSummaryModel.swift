@@ -41,11 +41,11 @@ struct MatchSummaryModel: Equatable {
     let shareText: String
 
     init(
-        match: Match,
+        record: MatchRecord,
         log: MatchLog
     ) {
-        let doubles = match.format == .doubles
-        let bySlot = Dictionary(uniqueKeysWithValues: match.players.map { ($0.slot, $0.name) })
+        let doubles = record.format == .doubles
+        let bySlot = Dictionary(uniqueKeysWithValues: record.players.map { ($0.slot, $0.name) })
         let name = { (slot: PlayerSlot) in bySlot[slot] ?? slot.rawValue }
         let teams: [Side: String] = doubles
             ? [.a: "\(name(.a1)) and \(name(.a2))", .b: "\(name(.b1)) and \(name(.b2))"]
@@ -54,9 +54,9 @@ struct MatchSummaryModel: Equatable {
         let stats = MatchStats(log: log)
         let state = log.state
 
-        header = Self.header(match: match, duration: stats.duration)
+        header = Self.header(record: record, duration: stats.duration)
         setLine = state.summary.map(Self.setText).joined(separator: " ")
-        result = Self.result(state: state, status: match.status, names: teams)
+        result = Self.result(state: state, status: record.status, names: teams)
         rows = Self.rows(stats)
         runs = Self.runs(stats.points)
         points = stats.points.map { Self.pointRow($0, names: teams) }
@@ -64,14 +64,14 @@ struct MatchSummaryModel: Equatable {
     }
 
     private static func header(
-        match: Match,
+        record: MatchRecord,
         duration: TimeInterval
     ) -> String {
-        let date = match.playedAt.formatted(date: .abbreviated, time: .omitted)
+        let date = record.playedAt.formatted(date: .abbreviated, time: .omitted)
         let minutes = Int(duration / 60)
         let length = minutes >= 60 ? "\(minutes / 60) h \(minutes % 60) min" : "\(minutes) min"
-        let format = match.format == .doubles ? "Doubles" : "Singles"
-        let input = match.inputModeValue == .camera ? "Camera" : "Manual"
+        let format = record.format == .doubles ? "Doubles" : "Singles"
+        let input = record.inputMode == InputMode.camera.rawValue ? "Camera" : "Manual"
         return [date, length, format, input].joined(separator: " · ")
     }
 

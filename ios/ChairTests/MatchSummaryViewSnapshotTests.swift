@@ -57,7 +57,7 @@ final class MatchSummaryViewSnapshotTests: XCTestCase {
             events += pattern
         }
         let (match, log) = try SummaryFixture.make(events: events)
-        let view = MatchSummaryView(model: MatchSummaryModel(match: match, log: log))
+        let view = MatchSummaryView(model: MatchSummaryModel(record: match.record, log: log))
             .environment(\.horizontalSizeClass, sizeClass)
             .environment(\.dynamicTypeSize, typeSize)
         assertSnapshot(
