@@ -65,6 +65,65 @@ final class SupabaseMatchRemoteTests: XCTestCase {
     }
 
     @MainActor
+    func testAnAcceptedInviteSurvivesTheOwnersStaleReUploadAndReachesTheOwner() async throws {
+        let owner = try await Self.device(signedInAs: "aaron@chair.test")
+        let inviteeClient = try await Self.client(signedInAs: "juan@chair.test")
+        let match = Match(playedAt: .now, format: .singles, createdAt: .now, updatedAt: .now)
+        let opponent = MatchPlayer(
+            slot: .b1,
+            name: "Juan",
+            userID: Self.juan,
+            linkStatus: .pending,
+            invitedAt: .now,
+            updatedAt: .now
+        )
+        match.players = [MatchPlayer.sample(.a1, name: "Aaron", at: .now), opponent]
+        try owner.repository.save(match)
+        try await owner.repository.sync(as: Self.aaron)
+
+        let hiddenWhilePending: [IDRow] = try await inviteeClient.from("matches")
+            .select("id")
+            .eq("id", value: match.remoteID)
+            .execute()
+            .value
+        XCTAssertTrue(hiddenWhilePending.isEmpty)
+        try await inviteeClient.rpc("respond_to_invite", params: InviteAnswer(matchID: match.remoteID, accept: true)).execute()
+
+        match.status = .abandoned
+        match.updatedAt = .now
+        try owner.repository.save(match)
+        try await owner.repository.sync(as: Self.aaron)
+
+        let stored = try await owner.remote.match(id: match.remoteID)
+        XCTAssertEqual(stored?.status, .abandoned)
+        XCTAssertEqual(stored?.players.first { $0.slot == .b1 }?.linkStatus, .accepted)
+        XCTAssertEqual(opponent.linkStatus, .accepted)
+        XCTAssertNotNil(opponent.respondedAt)
+        let linked: [IDRow] = try await inviteeClient.from("my_matches").select("id").eq("role", value: "linked").execute().value
+        XCTAssertEqual(linked.map(\.id), [match.remoteID])
+
+        try await owner.remote.delete(id: match.remoteID)
+    }
+
+    private func assertStored(
+        _ stored: MatchRecord?,
+        matches record: MatchRecord
+    ) throws {
+        let stored = try XCTUnwrap(stored)
+        XCTAssertEqual(stored.ownerID, Self.aaron)
+        XCTAssertEqual(stored.players.map(\.name), record.players.map(\.name))
+        XCTAssertEqual(stored.players.map(\.linkStatus), record.players.map(\.linkStatus))
+        XCTAssertTrue(stored.players.allSatisfy { $0.updatedAt != nil })
+        var expected = record
+        expected.ownerID = stored.ownerID
+        expected.players = stored.players
+        XCTAssertEqual(stored, expected)
+    }
+
+    private static let aaron = UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!
+    private static let juan = UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
+
+    @MainActor
     private static func device(signedInAs email: String) async throws -> (repository: SyncingMatchRepository, remote: SupabaseMatchRemote) {
         let client = try client()
         _ = try await SupabaseAuthService(client: client).signIn(email: email, password: "chair-local")
@@ -104,7 +163,7 @@ final class SupabaseMatchRemoteTests: XCTestCase {
 
         try await remote.upsert(record)
         let stored = try await remote.match(id: record.id)
-        XCTAssertEqual(stored, record)
+        try assertStored(stored, matches: record)
 
         let changes = try await remote.matches(updatedSince: Fixtures.matchDay.addingTimeInterval(-1))
         XCTAssertTrue(changes.contains { $0.id == record.id })
@@ -127,6 +186,20 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         try await remote.delete(id: record.id)
         let deleted = try await remote.match(id: record.id)
         XCTAssertNil(deleted)
+    }
+}
+
+private struct IDRow: Decodable {
+    let id: UUID
+}
+
+private struct InviteAnswer: Encodable {
+    let matchID: UUID
+    let accept: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case accept
+        case matchID = "p_match_id"
     }
 }
 

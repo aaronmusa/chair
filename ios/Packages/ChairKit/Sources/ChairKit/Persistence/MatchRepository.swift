@@ -119,9 +119,9 @@ public final class SyncingMatchRepository: MatchRepository {
         }
     }
 
-    public func sync() async throws {
+    public func sync(as userID: UUID? = nil) async throws {
         try await pushDeletes()
-        try await pushUploads()
+        try await pushUploads(as: userID)
         try await pull()
     }
 
@@ -133,13 +133,21 @@ public final class SyncingMatchRepository: MatchRepository {
         }
     }
 
-    private func pushUploads() async throws {
+    private func pushUploads(as userID: UUID?) async throws {
         for match in try local.allMatches() where match.syncState == .pendingUpload {
-            let snapshot = match.record
-            if let stored = try await remote.match(id: snapshot.id), stored.updatedAt > snapshot.updatedAt {
+            match.ownerID = match.ownerID ?? userID
+            let stored = try await remote.match(id: match.remoteID)
+            if let stored, stored.updatedAt > match.updatedAt {
                 match.apply(stored, in: local.context)
             } else {
-                try await remote.upsert(snapshot)
+                if let stored {
+                    match.merge(
+                        stored.players,
+                        fallbackUpdatedAt: stored.updatedAt,
+                        in: local.context
+                    )
+                }
+                try await remote.upsert(match.record)
                 match.syncState = .synced
                 match.players.forEach { $0.syncState = .synced }
                 match.points.forEach { $0.syncState = .synced }
