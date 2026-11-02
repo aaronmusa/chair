@@ -148,15 +148,9 @@ final class MatchSessionViewModel {
     }
 
     func apply(_ event: MatchEvent) async {
-        guard let session, let match else { return }
         errorMessage = nil
         do {
-            let output = try await session.apply(TimedEvent(event, at: clock.now))
-            let log = await session.log
-            match.update(from: log, at: clock.now)
-            try repository?.save(match)
-            self.log = log
-            show(output.state, announcements: output.announcements)
+            try await perform(event)
         } catch EngineError.undoLimit {
             errorMessage = "Nothing to undo in this set."
         } catch EngineError.setInProgress {
@@ -164,6 +158,27 @@ final class MatchSessionViewModel {
         } catch {
             errorMessage = "That couldn't be saved. Try again."
         }
+    }
+
+    func fixScore(_ snapshot: ScoreSnapshot) async -> String? {
+        do {
+            try await perform(.setScore(snapshot))
+            return nil
+        } catch let EngineError.invalidScore(reason) {
+            return reason.prefix(1).uppercased() + reason.dropFirst()
+        } catch {
+            return "That couldn't be saved. Try again."
+        }
+    }
+
+    private func perform(_ event: MatchEvent) async throws {
+        guard let session, let match else { return }
+        let output = try await session.apply(TimedEvent(event, at: clock.now))
+        let log = await session.log
+        match.update(from: log, at: clock.now)
+        try repository?.save(match)
+        self.log = log
+        show(output.state, announcements: output.announcements)
     }
 
     private func show(

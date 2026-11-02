@@ -52,6 +52,8 @@ final class AnnouncementFormatterTests: XCTestCase {
         XCTAssertEqual(formatter.text(.changeEnds), "Change ends")
         XCTAssertEqual(formatter.text(.receiverChoosesSide), "Deciding point, receiver chooses")
         XCTAssertEqual(formatter.text(.chooseServer(.a)), "Aaron to choose the server")
+        let snapshot = ScoreSnapshot(sets: [], currentSet: SetScore(a: 0, b: 0), currentGame: .loveAll, server: .a1)
+        XCTAssertEqual(formatter.text(.correction(snapshot)), "Correction")
     }
 
     func testTheCurrentScoreReadsFromTheState() throws {
