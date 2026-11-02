@@ -28,9 +28,10 @@ public struct SupabaseMatchRemote: MatchRemote {
 
     public func upsert(_ record: MatchRecord) async throws {
         try await client.from("matches").upsert(MatchFields(record)).execute()
-        try await client.from("match_players").delete().eq("match_id", value: record.id).execute()
         if !record.players.isEmpty {
-            try await client.from("match_players").insert(record.players.map { PlayerRow(match: record.id, $0) }).execute()
+            try await client.from("match_players")
+                .upsert(record.players.map { PlayerUpload(match: record.id, $0) }, onConflict: "match_id,slot")
+                .execute()
         }
         if !record.points.isEmpty {
             try await client.from("point_events")
@@ -60,6 +61,7 @@ private struct MatchRow: Decodable {
     static let columns = "*, match_players(*), point_events(*)"
 
     let id: UUID
+    let ownerID: UUID
     let playedAt: Date
     let format: MatchFormat
     let rules: MatchRules
@@ -74,6 +76,7 @@ private struct MatchRow: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case id, format, rules, status, sets
+        case ownerID = "owner_id"
         case playedAt = "played_at"
         case inputMode = "input_mode"
         case refereeMode = "referee_mode"
@@ -96,13 +99,15 @@ private struct MatchRow: Decodable {
             createdAt: createdAt,
             updatedAt: updatedAt,
             players: players.sorted { $0.slot < $1.slot }.map(\.player),
-            points: points.sorted { $0.index < $1.index }.map(\.point)
+            points: points.sorted { $0.index < $1.index }.map(\.point),
+            ownerID: ownerID
         )
     }
 }
 
 private struct MatchFields: Encodable {
     let id: UUID
+    let ownerID: UUID?
     let playedAt: Date
     let format: MatchFormat
     let rules: MatchRules
@@ -115,6 +120,7 @@ private struct MatchFields: Encodable {
 
     init(_ record: MatchRecord) {
         id = record.id
+        ownerID = record.ownerID
         playedAt = record.playedAt
         format = record.format
         rules = record.rules
@@ -128,20 +134,37 @@ private struct MatchFields: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case id, format, rules, status, sets
+        case ownerID = "owner_id"
         case playedAt = "played_at"
         case inputMode = "input_mode"
         case refereeMode = "referee_mode"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(ownerID, forKey: .ownerID)
+        try container.encode(playedAt, forKey: .playedAt)
+        try container.encode(format, forKey: .format)
+        try container.encode(rules, forKey: .rules)
+        try container.encode(status, forKey: .status)
+        try container.encode(inputMode, forKey: .inputMode)
+        try container.encode(refereeMode, forKey: .refereeMode)
+        try container.encode(sets, forKey: .sets)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+    }
 }
 
-private struct PlayerRow: Codable {
+private struct PlayerUpload: Encodable {
     let matchID: UUID
     let slot: PlayerSlot
     let name: String
     let userID: UUID?
     let linkStatus: LinkStatus
+    let invitedAt: Date?
 
     init(
         match: UUID,
@@ -152,10 +175,7 @@ private struct PlayerRow: Codable {
         name = player.name
         userID = player.userID
         linkStatus = player.linkStatus
-    }
-
-    var player: MatchRecord.Player {
-        MatchRecord.Player(slot: slot, name: name, userID: userID, linkStatus: linkStatus)
+        invitedAt = player.invitedAt
     }
 
     enum CodingKeys: String, CodingKey {
@@ -163,6 +183,48 @@ private struct PlayerRow: Codable {
         case matchID = "match_id"
         case userID = "user_id"
         case linkStatus = "link_status"
+        case invitedAt = "invited_at"
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(matchID, forKey: .matchID)
+        try container.encode(slot, forKey: .slot)
+        try container.encode(name, forKey: .name)
+        try container.encode(userID, forKey: .userID)
+        try container.encode(linkStatus, forKey: .linkStatus)
+        try container.encode(invitedAt, forKey: .invitedAt)
+    }
+}
+
+private struct PlayerRow: Decodable {
+    let slot: PlayerSlot
+    let name: String
+    let userID: UUID?
+    let linkStatus: LinkStatus
+    let invitedAt: Date?
+    let respondedAt: Date?
+    let updatedAt: Date?
+
+    var player: MatchRecord.Player {
+        MatchRecord.Player(
+            slot: slot,
+            name: name,
+            userID: userID,
+            linkStatus: linkStatus,
+            invitedAt: invitedAt,
+            respondedAt: respondedAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case slot, name
+        case userID = "user_id"
+        case linkStatus = "link_status"
+        case invitedAt = "invited_at"
+        case respondedAt = "responded_at"
+        case updatedAt = "updated_at"
     }
 }
 

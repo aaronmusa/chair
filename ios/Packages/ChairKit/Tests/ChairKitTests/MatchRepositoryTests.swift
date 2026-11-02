@@ -128,6 +128,74 @@ final class MatchRepositoryTests: XCTestCase {
         XCTAssertEqual(second?.count, 1)
     }
 
+    func testSyncStampsTheSessionUserAsOwnerOfALocalMatch() async throws {
+        let remote = FakeMatchRemote()
+        let repository = try device(remote: remote)
+        let match = Match.sample()
+        try repository.save(match)
+        let owner = FakeAuthService.sampleSession.userID
+
+        try await repository.sync(as: owner)
+
+        XCTAssertEqual(match.ownerID, owner)
+        let stored = await remote.rows[match.remoteID]
+        XCTAssertEqual(stored?.ownerID, owner)
+    }
+
+    func testAStaleLocalPendingTakesTheInviteesAnswerBeforeUploading() async throws {
+        let remote = FakeMatchRemote()
+        let repository = try device(remote: remote)
+        let invitee = UUID()
+        let match = Match.sample()
+        let opponent = try XCTUnwrap(match.players.first { $0.slot == .b1 })
+        opponent.userID = invitee
+        opponent.linkStatus = .pending
+        opponent.invitedAt = Fixtures.matchDay
+        try repository.save(match)
+        try await repository.sync()
+
+        let uploaded = await remote.rows[match.remoteID]
+        var answered = try XCTUnwrap(uploaded)
+        let answerIndex = try XCTUnwrap(answered.players.firstIndex { $0.slot == .b1 })
+        answered.players[answerIndex].linkStatus = .accepted
+        answered.players[answerIndex].respondedAt = Fixtures.matchDay.addingTimeInterval(30)
+        answered.players[answerIndex].updatedAt = Fixtures.matchDay.addingTimeInterval(30)
+        try await remote.upsert(answered)
+
+        match.status = .completed
+        match.updatedAt = Fixtures.matchDay.addingTimeInterval(60)
+        match.syncState = .pendingUpload
+        try await repository.sync()
+
+        XCTAssertEqual(opponent.linkStatus, .accepted)
+        XCTAssertEqual(opponent.respondedAt, Fixtures.matchDay.addingTimeInterval(30))
+        let stored = await remote.rows[match.remoteID]
+        XCTAssertEqual(stored?.status, .completed)
+        XCTAssertEqual(stored?.players.first { $0.slot == .b1 }?.linkStatus, .accepted)
+    }
+
+    func testANewerLocalLinkIsNotOverwrittenByTheServer() async throws {
+        let remote = FakeMatchRemote()
+        let repository = try device(remote: remote)
+        let match = Match.sample()
+        try repository.save(match)
+        try await repository.sync()
+
+        let opponent = try XCTUnwrap(match.players.first { $0.slot == .b1 })
+        let invitee = UUID()
+        opponent.userID = invitee
+        opponent.linkStatus = .pending
+        opponent.updatedAt = Fixtures.matchDay.addingTimeInterval(60)
+        opponent.syncState = .pendingUpload
+        match.updatedAt = Fixtures.matchDay.addingTimeInterval(60)
+        match.syncState = .pendingUpload
+        try await repository.sync()
+
+        let stored = await remote.rows[match.remoteID]
+        XCTAssertEqual(stored?.players.first { $0.slot == .b1 }?.userID, invitee)
+        XCTAssertEqual(opponent.linkStatus, .pending)
+    }
+
     private var containers: [ObjectIdentifier: ModelContainer] = [:]
 
     private func device(

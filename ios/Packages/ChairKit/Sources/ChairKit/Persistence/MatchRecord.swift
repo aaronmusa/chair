@@ -14,17 +14,26 @@ public struct MatchRecord: Codable, Equatable, Sendable {
         public var name: String
         public var userID: UUID?
         public var linkStatus: LinkStatus
+        public var invitedAt: Date?
+        public var respondedAt: Date?
+        public var updatedAt: Date?
 
         public init(
             slot: PlayerSlot,
             name: String,
             userID: UUID? = nil,
-            linkStatus: LinkStatus = .none
+            linkStatus: LinkStatus = .none,
+            invitedAt: Date? = nil,
+            respondedAt: Date? = nil,
+            updatedAt: Date? = nil
         ) {
             self.slot = slot
             self.name = name
             self.userID = userID
             self.linkStatus = linkStatus
+            self.invitedAt = invitedAt
+            self.respondedAt = respondedAt
+            self.updatedAt = updatedAt
         }
     }
 
@@ -86,6 +95,7 @@ public struct MatchRecord: Codable, Equatable, Sendable {
     public var updatedAt: Date
     public var players: [Player]
     public var points: [Point]
+    public var ownerID: UUID?
 }
 
 public extension Match {
@@ -101,9 +111,7 @@ public extension Match {
             sets: sets,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            players: orderedPlayers.map {
-                MatchRecord.Player(slot: $0.slot, name: $0.name, userID: $0.userID, linkStatus: $0.linkStatus)
-            },
+            players: orderedPlayers.map(\.recordPlayer),
             points: orderedPoints.map {
                 MatchRecord.Point(
                     id: $0.remoteID,
@@ -120,7 +128,8 @@ public extension Match {
                     payload: $0.payload,
                     updatedAt: $0.updatedAt
                 )
-            }
+            },
+            ownerID: ownerID
         )
     }
 
@@ -131,7 +140,8 @@ public extension Match {
             format: record.format,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
-            syncState: .synced
+            syncState: .synced,
+            ownerID: record.ownerID
         )
     }
 
@@ -149,19 +159,36 @@ public extension Match {
         createdAt = record.createdAt
         updatedAt = record.updatedAt
         syncState = .synced
+        ownerID = record.ownerID ?? ownerID
 
-        players.forEach(context.delete)
-        players = record.players.map {
-            MatchPlayer(
-                slot: $0.slot,
-                name: $0.name,
-                userID: $0.userID,
-                linkStatus: $0.linkStatus,
-                updatedAt: record.updatedAt,
-                syncState: .synced
-            )
-        }
+        merge(
+            record.players,
+            fallbackUpdatedAt: record.updatedAt,
+            in: context
+        )
         merge(record.pointEvents)
+    }
+
+    func merge(
+        _ incoming: [MatchRecord.Player],
+        fallbackUpdatedAt: Date,
+        in context: ModelContext
+    ) {
+        let local = Dictionary(players.map { ($0.slot, $0) }, uniquingKeysWith: { first, _ in first })
+        for row in incoming {
+            let rowUpdatedAt = row.updatedAt ?? fallbackUpdatedAt
+            guard let existing = local[row.slot] else {
+                players.append(MatchPlayer(row, updatedAt: rowUpdatedAt))
+                continue
+            }
+            guard existing.syncState == .synced || rowUpdatedAt > existing.updatedAt else { continue }
+            existing.copy(from: row, updatedAt: rowUpdatedAt)
+        }
+        let incomingSlots = Set(incoming.map(\.slot))
+        for stale in players where !incomingSlots.contains(stale.slot) && stale.syncState == .synced {
+            players.removeAll { $0 === stale }
+            context.delete(stale)
+        }
     }
 
     private func merge(_ incoming: [PointEvent]) {
@@ -174,6 +201,49 @@ public extension Match {
             guard existing.syncState == .synced || row.updatedAt > existing.updatedAt else { continue }
             existing.copy(from: row)
         }
+    }
+}
+
+extension MatchPlayer {
+    convenience init(
+        _ row: MatchRecord.Player,
+        updatedAt: Date
+    ) {
+        self.init(
+            slot: row.slot,
+            name: row.name,
+            userID: row.userID,
+            linkStatus: row.linkStatus,
+            invitedAt: row.invitedAt,
+            respondedAt: row.respondedAt,
+            updatedAt: updatedAt,
+            syncState: .synced
+        )
+    }
+
+    var recordPlayer: MatchRecord.Player {
+        MatchRecord.Player(
+            slot: slot,
+            name: name,
+            userID: userID,
+            linkStatus: linkStatus,
+            invitedAt: invitedAt,
+            respondedAt: respondedAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    func copy(
+        from row: MatchRecord.Player,
+        updatedAt rowUpdatedAt: Date
+    ) {
+        name = row.name
+        userID = row.userID
+        linkStatus = row.linkStatus
+        invitedAt = row.invitedAt
+        respondedAt = row.respondedAt
+        updatedAt = rowUpdatedAt
+        syncState = .synced
     }
 }
 

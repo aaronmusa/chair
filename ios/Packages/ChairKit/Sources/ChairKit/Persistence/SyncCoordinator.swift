@@ -77,11 +77,11 @@ public final class SyncCoordinator {
 
     public func syncNow() async {
         refreshPending()
-        guard isOnline, !isSyncing, await auth.currentSession() != nil else { return }
+        guard isOnline, !isSyncing, let session = await auth.currentSession() else { return }
         isSyncing = true
         defer { isSyncing = false }
         do {
-            try await repository.sync()
+            try await repository.sync(as: session.userID)
             lastSyncedAt = clock.now
             lastError = nil
         } catch {

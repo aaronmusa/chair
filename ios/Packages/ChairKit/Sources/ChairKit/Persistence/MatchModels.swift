@@ -26,6 +26,7 @@ public enum LinkStatus: String, Codable, Sendable {
     case none
     case pending
     case accepted
+    case declined
 }
 
 @Model
@@ -41,6 +42,7 @@ public final class Match {
     public var createdAt: Date
     public var updatedAt: Date
     public var syncState: SyncState
+    public var ownerID: UUID?
 
     @Relationship(deleteRule: .cascade, inverse: \MatchPlayer.match)
     public var players: [MatchPlayer] = []
@@ -59,7 +61,8 @@ public final class Match {
         sets: [SetScore] = [],
         createdAt: Date,
         updatedAt: Date,
-        syncState: SyncState = .pendingUpload
+        syncState: SyncState = .pendingUpload,
+        ownerID: UUID? = nil
     ) {
         self.remoteID = remoteID
         self.playedAt = playedAt
@@ -72,6 +75,7 @@ public final class Match {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.syncState = syncState
+        self.ownerID = ownerID
     }
 
     public var orderedPlayers: [MatchPlayer] {
@@ -90,6 +94,8 @@ public final class MatchPlayer {
     public var name: String
     public var userID: UUID?
     public var linkStatus: LinkStatus
+    public var invitedAt: Date?
+    public var respondedAt: Date?
     public var updatedAt: Date
     public var syncState: SyncState
     public var match: Match?
@@ -100,6 +106,8 @@ public final class MatchPlayer {
         name: String,
         userID: UUID? = nil,
         linkStatus: LinkStatus = .none,
+        invitedAt: Date? = nil,
+        respondedAt: Date? = nil,
         updatedAt: Date,
         syncState: SyncState = .pendingUpload
     ) {
@@ -108,6 +116,8 @@ public final class MatchPlayer {
         self.name = name
         self.userID = userID
         self.linkStatus = linkStatus
+        self.invitedAt = invitedAt
+        self.respondedAt = respondedAt
         self.updatedAt = updatedAt
         self.syncState = syncState
     }
