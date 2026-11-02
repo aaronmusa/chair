@@ -69,4 +69,17 @@ final class MatchUpdateTests: XCTestCase {
     private func point(_ side: Side) -> TimedEvent {
         TimedEvent(.pointWon(by: side, outcome: nil, ending: nil), at: Fixtures.matchDay)
     }
+
+    func testALogRebuildsFromAnUnsavedMatchsRecord() throws {
+        let match = Match(playedAt: Fixtures.matchDay, format: .singles, createdAt: Fixtures.matchDay, updatedAt: Fixtures.matchDay)
+        var log = try MatchLog(rules: MatchRules())
+        for _ in 0 ..< 5 {
+            try log.append(point(.a))
+        }
+        match.update(from: log, at: Fixtures.matchDay)
+
+        let rebuilt = try MatchLog(record: match.record)
+
+        XCTAssertEqual(rebuilt.state, log.state)
+    }
 }
