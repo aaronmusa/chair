@@ -22,6 +22,7 @@ struct ProfileView: View {
             Group {
                 header
                 profileSection
+                qrSection
                 accountSection
             }
             .listRowBackground(Color.chair.surfaceRaised)
@@ -112,6 +113,26 @@ struct ProfileView: View {
                 ForEach(Level.allCases, id: \.self) { Text($0.title).tag(Level?.some($0)) }
             }
             .accessibilityIdentifier("profile.level")
+        }
+    }
+
+    @ViewBuilder
+    private var qrSection: some View {
+        if let handle = viewModel.original?.handle, let image = PlayerQRCode.image(for: handle) {
+            Section {
+                Image(uiImage: image)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 200)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityLabel("QR code for @\(handle)")
+                    .accessibilityIdentifier("profile.qr")
+            } header: {
+                Text("Your code")
+            } footer: {
+                Text("Another player scans this to link you to a match.")
+            }
         }
     }
 

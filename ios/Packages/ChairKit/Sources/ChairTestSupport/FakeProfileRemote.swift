@@ -59,6 +59,13 @@
             linkedCounts[userID] ?? 0
         }
 
+        public func search(_ query: String) async throws -> [PublicProfile] {
+            let prefix = query.trimmingCharacters(in: .whitespaces).lowercased()
+            return publicProfiles.values
+                .filter { $0.handle.lowercased().hasPrefix(prefix) && $0.id != profile?.id }
+                .sorted { $0.handle < $1.handle }
+        }
+
         public func ownProfile() async throws -> ProfileRecord? {
             guard isOnline else { throw URLError(.notConnectedToInternet) }
             return profile

@@ -8,11 +8,15 @@
 import Foundation
 import SwiftData
 
-public enum PlayerSlot: String, Codable, Sendable, CaseIterable, Comparable {
+public enum PlayerSlot: String, Codable, Sendable, CaseIterable, Comparable, Identifiable {
     case a1 = "A1"
     case a2 = "A2"
     case b1 = "B1"
     case b2 = "B2"
+
+    public var id: String {
+        rawValue
+    }
 
     public static func < (
         lhs: PlayerSlot,

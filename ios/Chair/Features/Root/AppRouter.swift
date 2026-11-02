@@ -24,6 +24,9 @@ final class AppRouter {
     var presentedMatch: PresentedMatch?
     var summaryMatchID: UUID?
     var playPath: [PlayDestination] = []
+    var isPickingOpponent = false
+    var pickedHandle: String?
+    var publicProfileHandle: String?
 
     init(
         selectedSection: AppSection = .play,
@@ -60,10 +63,25 @@ final class AppRouter {
 
     @discardableResult
     func handle(_ url: URL) -> Bool {
+        if let handle = Self.userHandle(in: url) {
+            if isPickingOpponent {
+                pickedHandle = handle
+            } else {
+                publicProfileHandle = handle
+            }
+            return true
+        }
         guard let matchID = Self.matchID(in: url) else { return false }
         selectedSection = .matches
         summaryMatchID = matchID
         return true
+    }
+
+    static func userHandle(in url: URL) -> String? {
+        guard url.scheme == "chair", url.host() == "user" else { return nil }
+        let parts = url.pathComponents.filter { $0 != "/" }
+        guard parts.count == 1, parts[0].wholeMatch(of: /[A-Za-z0-9_]{3,20}/) != nil else { return nil }
+        return parts[0].lowercased()
     }
 
     static func matchID(in url: URL) -> UUID? {

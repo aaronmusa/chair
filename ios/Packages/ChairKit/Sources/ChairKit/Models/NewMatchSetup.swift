@@ -18,6 +18,7 @@ public struct NewMatchSetup: Equatable, Sendable {
     public var names: [PlayerSlot: String]
     public var firstServers: [Side: PlayerSlot]
     public var deuceReceivers: [Side: PlayerSlot]
+    public var links: [PlayerSlot: UUID] = [:]
 
     public init(defaults: MatchDefaults) {
         format = defaults.format
@@ -69,7 +70,14 @@ public struct NewMatchSetup: Equatable, Sendable {
             localUserSlot: slots.first { seats[$0] == .a1 } ?? .a1
         )
         match.players = slots.map { slot in
-            MatchPlayer(slot: slot, name: trimmedName(seats[slot] ?? slot), updatedAt: date)
+            let source = seats[slot] ?? slot
+            let player = MatchPlayer(slot: slot, name: trimmedName(source), updatedAt: date)
+            if let userID = links[source] {
+                player.userID = userID
+                player.linkStatus = .pending
+                player.invitedAt = date
+            }
+            return player
         }
         match.points = log.pointEvents(updatedAt: date)
         return match

@@ -15,6 +15,7 @@ import ChairUI
 
 struct NewMatchView: View {
     @State private var viewModel: NewMatchViewModel
+    @Environment(\.appEnvironment) private var environment
     private let onStart: (UUID) -> Void
 
     init(
@@ -44,6 +45,12 @@ struct NewMatchView: View {
         .tint(Color.chair.accent)
         .navigationTitle("New match")
         .safeAreaInset(edge: .bottom) { startBar }
+        .sheet(item: $viewModel.pickerSlot) { slot in
+            OpponentPickerView(viewModel: OpponentPickerViewModel(environment: environment, onPick: handleLinked(slot)))
+        }
+        .sheet(isPresented: $viewModel.isShowingSignIn) {
+            SignInView(viewModel: SignInViewModel(environment: environment, reason: .linkOpponent, onFinish: handleSignedIn()))
+        }
     }
 
     private var formatSection: some View {
@@ -66,10 +73,15 @@ struct NewMatchView: View {
 
     private func nameRow(_ slot: PlayerSlot) -> some View {
         VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
-            TextField(viewModel.label(for: slot), text: nameBinding(slot))
-                .textContentType(.name)
-                .accessibilityLabel(viewModel.label(for: slot))
-                .accessibilityIdentifier("newMatch.name.\(slot.rawValue)")
+            HStack {
+                TextField(viewModel.label(for: slot), text: nameBinding(slot))
+                    .textContentType(.name)
+                    .accessibilityLabel(viewModel.label(for: slot))
+                    .accessibilityIdentifier("newMatch.name.\(slot.rawValue)")
+                if viewModel.canLink(slot) {
+                    linkControl(slot)
+                }
+            }
             if let error = viewModel.error(for: slot) {
                 Text(error)
                     .chairFont(.callout)
@@ -77,6 +89,40 @@ struct NewMatchView: View {
                     .accessibilityIdentifier("newMatch.error.\(slot.rawValue)")
             }
         }
+    }
+
+    @ViewBuilder
+    private func linkControl(_ slot: PlayerSlot) -> some View {
+        if let profile = viewModel.linkedProfiles[slot] {
+            Menu {
+                Button("Unlink @\(profile.handle)", role: .destructive, action: handleUnlink(slot))
+            } label: {
+                LinkChip(status: .pending)
+            }
+            .accessibilityLabel("Linked to @\(profile.handle), pending")
+            .accessibilityIdentifier("newMatch.link.\(slot.rawValue)")
+        } else {
+            Button("Link", action: handleRequestLink(slot))
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Link \(viewModel.label(for: slot)) to a Chair player")
+                .accessibilityIdentifier("newMatch.link.\(slot.rawValue)")
+        }
+    }
+
+    private func handleRequestLink(_ slot: PlayerSlot) -> () -> Void {
+        { [viewModel] in Task { await viewModel.requestLink(slot) } }
+    }
+
+    private func handleUnlink(_ slot: PlayerSlot) -> () -> Void {
+        { [viewModel] in viewModel.unlink(slot) }
+    }
+
+    private func handleLinked(_ slot: PlayerSlot) -> (PublicProfile) -> Void {
+        { [viewModel] profile in viewModel.link(slot, to: profile) }
+    }
+
+    private func handleSignedIn() -> () -> Void {
+        { [viewModel] in viewModel.isShowingSignIn = false }
     }
 
     private func teamSection(_ side: Side) -> some View {

@@ -209,6 +209,15 @@ public final class SyncingMatchRepository: MatchRepository {
         }
         try local.context.save()
         lastPulledAt = changes.map(\.updatedAt).max() ?? lastPulledAt
+        try await prune()
+    }
+
+    private func prune() async throws {
+        let visible = try await remote.visibleMatchIDs()
+        for match in try local.allMatches() where match.syncState == .synced && !visible.contains(match.remoteID) {
+            local.context.delete(match)
+        }
+        try local.context.save()
     }
 }
 

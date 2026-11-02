@@ -39,7 +39,10 @@ final class ProfileUITests: XCTestCase {
         let level = app.buttons["profile.level"]
         XCTAssertTrue(level.label.contains("Level"))
         XCTAssertTrue(level.label.contains("Intermediate") || (level.value as? String) == "Intermediate")
-        XCTAssertTrue(app.buttons["profile.signOut"].exists)
+        XCTAssertTrue(app.images["profile.qr"].exists)
+        XCTAssertEqual(app.images["profile.qr"].label, "QR code for @aaron")
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["profile.signOut"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["profile.delete"].exists)
     }
 }

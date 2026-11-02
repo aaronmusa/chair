@@ -31,6 +31,7 @@ struct MatchSummaryModel: Equatable {
         let detail: String
     }
 
+    let matchID: UUID
     let names: [Side: String]
     let header: String
     let result: String
@@ -44,6 +45,7 @@ struct MatchSummaryModel: Equatable {
         record: MatchRecord,
         log: MatchLog
     ) {
+        matchID = record.id
         let doubles = record.format == .doubles
         let bySlot = Dictionary(uniqueKeysWithValues: record.players.map { ($0.slot, $0.name) })
         let name = { (slot: PlayerSlot) in bySlot[slot] ?? slot.rawValue }
