@@ -71,9 +71,3 @@ final class NewMatchViewModel {
         }
     }
 }
-
-extension PlayerSlot {
-    var side: Side {
-        self == .a1 || self == .a2 ? .a : .b
-    }
-}

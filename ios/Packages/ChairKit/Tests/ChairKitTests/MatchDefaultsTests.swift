@@ -13,7 +13,7 @@ import ChairTestSupport
 
 final class MatchDefaultsTests: XCTestCase {
     private var userDefaults: UserDefaults!
-    private let suiteName = "MatchDefaultsTests"
+    private let suiteName = "MatchDefaultsTests.\(UUID().uuidString)"
 
     override func setUp() {
         super.setUp()
