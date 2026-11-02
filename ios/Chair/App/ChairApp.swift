@@ -13,6 +13,7 @@ import ChairKit
 struct ChairApp: App {
     private let environment = AppEnvironment.make()
     private let watchLink = WatchLink()
+    @State private var router = AppRouter.make()
 
     init() {
         watchLink.activate()
@@ -22,6 +23,19 @@ struct ChairApp: App {
         WindowGroup {
             RootView()
                 .environment(\.appEnvironment, environment)
+                .environment(\.appRouter, router)
         }
+    }
+}
+
+extension AppRouter {
+    static func make(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppRouter {
+        let router = AppRouter()
+        #if DEBUG
+            if arguments.contains("-PresentSampleMatch") {
+                router.presentSession(for: UUID())
+            }
+        #endif
+        return router
     }
 }
