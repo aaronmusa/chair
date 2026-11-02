@@ -41,7 +41,7 @@ final class WatchHomeViewSnapshotTests: XCTestCase {
     static let state = WatchState(
         matchID: UUID(uuidString: "00000000-0000-0000-0000-0000000000B1")!,
         names: [.a1: "Aaron", .b1: "Juan"],
-        mySide: .a,
+        mySlot: .a1,
         score: ScoreSnapshot(
             sets: [SetScore(a: 6, b: 4)],
             currentSet: SetScore(a: 2, b: 1),

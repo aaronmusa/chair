@@ -11,35 +11,61 @@ import ChairKit
 import ChairUI
 
 struct WatchScoreView: View {
-    let state: WatchState?
-    let isWaitingForPhone: Bool
+    static let holdToScoreKey = "chair.watch.holdToScore"
+
+    let model: WatchMatchModel
+
+    @AppStorage(Self.holdToScoreKey) private var holdToScore = true
+    @State private var visibleAnnouncement: String?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: Spacing.chair.xs) {
-            if let state {
-                Text(state.title)
-                    .chairFont(.headline)
-                    .foregroundStyle(Color.chair.ink)
-                    .lineLimit(1)
-                Text(state.setsLine)
-                    .chairFont(.body)
-                    .foregroundStyle(Color.chair.inkSecondary)
-                Text(state.pointsLine)
-                    .font(Font.chair.score)
-                    .foregroundStyle(Color.chair.ink)
-                    .accessibilityIdentifier("watch.score.points")
-            } else {
-                ProgressView()
+        if let state = model.state {
+            TabView {
+                WatchScorePage(
+                    state: state,
+                    announcement: visibleAnnouncement,
+                    showsCorrection: model.showsCorrection,
+                    isWaitingForPhone: model.link.isWaitingForPeer,
+                    requiresHold: holdToScore,
+                    actions: WatchScoreActions(onScore: handleScore(), onUndo: handleSend(.undo))
+                )
+                WatchControlsPage(onSend: handleSendAction())
+                Form {
+                    Toggle("Hold to score", isOn: $holdToScore)
+                        .accessibilityIdentifier("watch.holdToScore")
+                }
             }
-            if isWaitingForPhone {
-                Circle()
-                    .fill(Color.chair.inkSecondary)
-                    .frame(width: 8, height: 8)
-                    .accessibilityLabel("Waiting for phone")
-                    .accessibilityIdentifier("watch.waitingForPhone")
-            }
+            .tabViewStyle(.verticalPage)
+            .background(Color.black)
+            .task(id: model.announcementID, handleAnnouncement)
+        } else {
+            ProgressView()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+    }
+
+    @Sendable
+    private func handleAnnouncement() async {
+        guard model.announcementID > 0 else { return }
+        visibleAnnouncement = model.announcement
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        if reduceMotion {
+            visibleAnnouncement = nil
+        } else {
+            withAnimation { visibleAnnouncement = nil }
+        }
+    }
+
+    private func handleScore() -> (Bool) -> Void {
+        { me in Task { await model.score(me: me) } }
+    }
+
+    private func handleSend(_ action: WatchInput.Action) -> () -> Void {
+        { Task { await model.send(action) } }
+    }
+
+    private func handleSendAction() -> (WatchInput.Action) -> Void {
+        { action in Task { await model.send(action) } }
     }
 }

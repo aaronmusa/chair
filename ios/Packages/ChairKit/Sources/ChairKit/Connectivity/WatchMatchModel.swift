@@ -22,12 +22,20 @@ public final class WatchMatchModel {
     public private(set) var announcement: String?
     public private(set) var hasEnded = false
     public private(set) var lastResult: String?
+    public private(set) var announcementID = 0
+    public private(set) var showsCorrection = false
 
     @ObservationIgnored public let link: WatchLink
+    @ObservationIgnored private let haptics: any WatchHaptics
     @ObservationIgnored private var listenTask: Task<Void, Never>?
+    @ObservationIgnored private var pendingUndoID: UUID?
 
-    public init(link: WatchLink) {
+    public init(
+        link: WatchLink,
+        haptics: any WatchHaptics = SilentWatchHaptics()
+    ) {
         self.link = link
+        self.haptics = haptics
     }
 
     public func start() {
@@ -54,6 +62,12 @@ public final class WatchMatchModel {
             lastResult = result
         case let .announcement(text):
             announcement = text
+            announcementID += 1
+        case let .ack(inputID):
+            if inputID == pendingUndoID {
+                pendingUndoID = nil
+                showsCorrection = true
+            }
         case .matchEnded:
             hasEnded = true
         default:
@@ -70,6 +84,23 @@ public final class WatchMatchModel {
         }
         guard link.isReachable else { return .unreachable }
         return .startOnPhone(lastResult: lastResult)
+    }
+
+    public func score(me: Bool) async {
+        guard let state else { return }
+        await send(.point(me ? state.mySide : state.theirSide))
+    }
+
+    public func send(_ action: WatchInput.Action) async {
+        guard let state else { return }
+        let input = WatchInput(action, matchID: state.matchID)
+        haptics.play(.click)
+        if action == .undo {
+            pendingUndoID = input.id
+        } else {
+            showsCorrection = false
+        }
+        await link.send(input)
     }
 
     public func refresh() async {

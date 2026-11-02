@@ -37,15 +37,18 @@ public struct WatchInput: Codable, Equatable, Sendable, Identifiable {
 
     public let id: UUID
     public let at: Date
+    public let matchID: UUID?
     public let action: Action
 
     public init(
         _ action: Action,
+        matchID: UUID? = nil,
         id: UUID = UUID(),
         at: Date = Date()
     ) {
         self.id = id
         self.at = at
+        self.matchID = matchID
         self.action = action
     }
 }
@@ -53,7 +56,7 @@ public struct WatchInput: Codable, Equatable, Sendable, Identifiable {
 public struct WatchState: Codable, Equatable, Sendable {
     public var matchID: UUID
     public var names: [PlayerSlot: String]
-    public var mySide: Side
+    public var mySlot: PlayerSlot
     public var score: ScoreSnapshot
     public var serverCourtSide: CourtSide
     public var serve: ServeNumber
@@ -62,7 +65,7 @@ public struct WatchState: Codable, Equatable, Sendable {
     public init(
         matchID: UUID,
         names: [PlayerSlot: String],
-        mySide: Side,
+        mySlot: PlayerSlot,
         score: ScoreSnapshot,
         serverCourtSide: CourtSide,
         serve: ServeNumber,
@@ -70,11 +73,15 @@ public struct WatchState: Codable, Equatable, Sendable {
     ) {
         self.matchID = matchID
         self.names = names
-        self.mySide = mySide
+        self.mySlot = mySlot
         self.score = score
         self.serverCourtSide = serverCourtSide
         self.serve = serve
         self.phase = phase
+    }
+
+    public var mySide: Side {
+        mySlot.side
     }
 
     public var server: PlayerSlot {

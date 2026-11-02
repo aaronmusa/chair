@@ -42,7 +42,7 @@ final class WatchMessageTests: XCTestCase {
     static let sampleState = WatchState(
         matchID: UUID(uuidString: "00000000-0000-0000-0000-0000000000B1")!,
         names: [.a1: "Aaron", .b1: "Juan"],
-        mySide: .a,
+        mySlot: .a1,
         score: ScoreSnapshot(sets: [], currentSet: SetScore(a: 2, b: 1), currentGame: .standard(a: .thirty, b: .fifteen), server: .a1),
         serverCourtSide: .ad,
         serve: .first,

@@ -39,7 +39,7 @@ final class WatchHomeTests: XCTestCase {
 
     func testTheScoreReadsFromTheUsersSide() {
         var state = WatchMessageTests.sampleState
-        state.mySide = .b
+        state.mySlot = .b1
         state.score.sets = [SetScore(a: 6, b: 4)]
         state.score.currentGame = .tiebreak(a: 5, b: 3, target: 7)
         state.names = [.a1: "Juan", .a2: "Ana", .b1: "Aaron", .b2: "Ben"]
