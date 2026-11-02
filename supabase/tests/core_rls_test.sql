@@ -55,7 +55,7 @@ select is((select count(*)::integer from public.profiles where id in (
 select is((select display_name from public.profiles where id = '00000000-0000-0000-0000-0000000001dd'),
   'Maria Santos', 'the profile takes the sign-up name');
 select is((select display_name from public.profiles where id = '00000000-0000-0000-0000-0000000001cc'),
-  '', 'a user without a name gets an empty display name');
+  'Player', 'a user without a name is called Player');
 
 update public.profiles set handle = 'rls_owner', display_name = 'Owner'
 where id = '00000000-0000-0000-0000-0000000001aa';
