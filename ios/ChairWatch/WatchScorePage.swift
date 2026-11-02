@@ -23,6 +23,7 @@ struct WatchScorePage: View {
     let requiresHold: Bool
     var heartRate: Int?
     var notice: String?
+    var lastAck: Duration?
     let actions: WatchScoreActions
 
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
@@ -52,6 +53,15 @@ struct WatchScorePage: View {
                     .chairFont(.caption)
                     .foregroundStyle(Color.chair.inkSecondary)
                 Spacer(minLength: 0)
+                #if DEBUG
+                    if let lastAck {
+                        Text("ack \(Int(lastAck / .milliseconds(1))) ms")
+                            .chairFont(.callout)
+                            .monospacedDigit()
+                            .foregroundStyle(Color.chair.inkSecondary)
+                            .accessibilityIdentifier("watch.lastAck")
+                    }
+                #endif
                 if let heartRate {
                     Text("♥ \(heartRate)")
                         .chairFont(.callout)
