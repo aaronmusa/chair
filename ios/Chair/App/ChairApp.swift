@@ -18,6 +18,7 @@ struct ChairApp: App {
     private let repository: any MatchRepository
     private let sync: SyncCoordinator?
     private let accountPrompt: AccountPromptModel?
+    private let profiles: ProfileRepository
     @State private var router: AppRouter
     @Environment(\.scenePhase) private var scenePhase
 
@@ -46,6 +47,7 @@ struct ChairApp: App {
             accountPrompt = nil
         }
         self.repository = repository
+        profiles = ProfileRepository(context: container.mainContext, remote: environment.profileRemote, clock: environment.clock)
         _router = State(initialValue: AppRouter.make(repository: repository, clock: environment.clock))
         watchLink.activate()
     }
@@ -57,6 +59,7 @@ struct ChairApp: App {
                 .environment(\.appRouter, router)
                 .environment(\.matchRepository, repository)
                 .environment(\.syncCoordinator, sync)
+                .environment(\.profileRepository, profiles)
                 .modelContainer(container)
                 .accountPrompt(accountPrompt)
                 .onChange(of: scenePhase, initial: true, handleScenePhase())

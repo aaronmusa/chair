@@ -16,6 +16,8 @@ import ChairUI
 struct SettingsView: View {
     @State private var viewModel: SettingsViewModel
     @Environment(\.syncCoordinator) private var sync
+    @Environment(\.profileRepository) private var profiles
+    @Environment(\.matchRepository) private var matches
 
     init(viewModel: SettingsViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -39,6 +41,11 @@ struct SettingsView: View {
         .task(handleWatchAccount())
         .sheet(isPresented: $viewModel.isShowingSignIn) {
             SignInView(viewModel: viewModel.makeSignInViewModel())
+        }
+        .navigationDestination(isPresented: $viewModel.isShowingProfile) {
+            if let profiles {
+                ProfileView(viewModel: viewModel.makeProfileViewModel(profiles: profiles, matches: matches))
+            }
         }
     }
 
@@ -84,7 +91,7 @@ struct SettingsView: View {
 
     private var accountSection: some View {
         Section("Account") {
-            Button(action: viewModel.showSignIn) {
+            Button(action: viewModel.showAccount) {
                 LabeledContent("Account", value: viewModel.accountStatus)
                     .foregroundStyle(Color.chair.ink)
             }

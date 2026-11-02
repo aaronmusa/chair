@@ -85,9 +85,22 @@ final class SettingsViewModelTests: XCTestCase {
     func testTappingTheAccountRowWhileSignedOutShowsSignIn() {
         let viewModel = SettingsViewModel(environment: environment(store: FakeMatchDefaultsStore()))
 
-        viewModel.showSignIn()
+        viewModel.showAccount()
 
         XCTAssertTrue(viewModel.isShowingSignIn)
+        XCTAssertFalse(viewModel.isShowingProfile)
+    }
+
+    func testTappingTheAccountRowWhileSignedInOpensTheProfile() async {
+        var env = environment(store: FakeMatchDefaultsStore())
+        env.auth = FakeAuthService(signedIn: true)
+        let viewModel = SettingsViewModel(environment: env)
+        await viewModel.refreshAccount()
+
+        viewModel.showAccount()
+
+        XCTAssertTrue(viewModel.isShowingProfile)
+        XCTAssertFalse(viewModel.isShowingSignIn)
     }
 
     private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
