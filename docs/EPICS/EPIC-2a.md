@@ -22,7 +22,6 @@ When Epic 2a is done, a player can sign in with Apple, has a profile with a hand
 
 ### E2a-1 Profile schema, handle rules and auto-create (#86)
 
-
 One migration that makes `profiles` usable and creates it on sign-up.
 
 - Migration `supabase migration new profiles_v1`, in this order: backfill first (existing rows with null `handle` get `'player_' || left(id::text, 8)`, empty `display_name` becomes "Player"), then the constraints: `profiles.handle` becomes `citext`, not null, unique, 3–20 chars, `^[a-z0-9_]+$` via a check constraint; `display_name` 1–40 chars; `hand` enum `left`/`right`/null; `level` enum `beginner`/`intermediate`/`advanced`/null; `home_court` text null; `created_at`, `updated_at` with a bump trigger. A `handle_available(h citext) returns boolean` function (exact match, case-insensitive, `security invoker` over `public_profiles`) for the profile editor.
@@ -40,7 +39,6 @@ Acceptance:
 Blocked by: E0-9
 
 ### E2a-2 Match linking schema and RLS (#87)
-
 
 The rules that let a match belong to two users.
 
@@ -63,7 +61,6 @@ Blocked by: E2a-1
 
 ### E2a-3 Account deletion function (#88)
 
-
 Server-side delete that Apple requires and the client cannot do under RLS.
 
 - Edge Function `delete-account` (verifies the JWT, uses the service role): deletes the user's `point_events`, `matches`, `saved_courts`, `training_sessions`; sets `user_id = null`, `link_status = none` on `match_players` rows that pointed at the user in other owners' matches (keeping the free-text name so the other player's history is intact); deletes the profile; deletes the auth user.
@@ -80,7 +77,6 @@ Blocked by: E2a-2
 ## Sign-in and profile tickets
 
 ### E2a-4 Sign in with Apple (#89)
-
 
 The real `AuthService` behind E0-10's protocol.
 
@@ -100,7 +96,6 @@ Blocked by: E2a-1, E2-12
 
 ### E2a-5 Local-to-account migration (#90)
 
-
 Matches scored before sign-in become the account's matches.
 
 - On the first session after local-only use, every local `Match` is already `pendingUpload` (E2-12) and `matches.owner_id` defaults to `auth.uid()` on insert, so no stamping is needed for matches. What this ticket adds: the local user's slot gets `user_id = session.user.id`, `link_status = accepted`, `responded_at = now()` before upload. The local user's slot is the slot holding the local user, not a fixed A1: `Match` gains `localUserSlot: PlayerSlot` set by `NewMatchSetup` to wherever the "You" row lands after its doubles reseating (team B serving first with A2 as team A's first server puts "You" in A2), and E2-4's doubles reseating is left as it is.
@@ -116,7 +111,6 @@ Acceptance:
 Blocked by: E2a-4
 
 ### E2a-6 Profile screen (#91)
-
 
 View and edit the user's own profile; view another user's public profile.
 
@@ -138,7 +132,6 @@ Blocked by: E2a-3, E2a-5
 
 ### E2a-7 Link an opponent to a user (#92)
 
-
 From a free-text name to a Chair user, from New match or from a finished match.
 
 - `OpponentPicker`: on any player row except the local user's (`Match.localUserSlot` is labelled "You" and has no Link action) — New match E2-4 rows and a "Link" action on the summary header E2-10 — a search field over `profiles_search`; results show avatar, handle, display name; picking one sets `match_players.user_id` and `link_status = pending`, `invited_at = now()`, and keeps the typed name as fallback.
@@ -157,7 +150,6 @@ Blocked by: E2a-2, E2a-6
 
 ### E2a-8 Invites: accept or decline, and the shared view (#93)
 
-
 The other side of the link.
 
 - `InvitesView` reachable from a badge on the Matches tab and a banner on Play: lists `pending_invites` (owner handle, date, format, score so far or final); Accept and Decline call `respond_to_invite` (E2a-2) and refresh on success.
@@ -175,7 +167,6 @@ Acceptance:
 Blocked by: E2a-7
 
 ### E2a-9 Two-device sync check and first-launch prompt (#94)
-
 
 The user-level proof Epic 2 deferred, plus when to ask for sign-in.
 
