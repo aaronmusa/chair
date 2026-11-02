@@ -66,7 +66,8 @@ final class MatchSessionViewModelTests: XCTestCase {
         let reopened = MatchSessionViewModel(
             matchID: matchID,
             repository: LocalMatchRepository(context: container.mainContext, clock: FixedClock(Fixtures.matchDay)),
-            clock: FixedClock(Fixtures.matchDay)
+            clock: FixedClock(Fixtures.matchDay),
+            asksHowPointEnded: false
         )
         reopened.load()
 
@@ -114,7 +115,78 @@ final class MatchSessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.scoreboard?.rows.map(\.isServing), [false, true])
     }
 
-    private func makeViewModel() -> MatchSessionViewModel {
-        MatchSessionViewModel(matchID: matchID, repository: repository, clock: FixedClock(Fixtures.matchDay))
+    func testWhenAskingAPointWaitsForItsOutcome() async throws {
+        let viewModel = makeViewModel(asking: true)
+        viewModel.load()
+
+        await viewModel.pointWon(by: .a)
+        XCTAssertEqual(viewModel.pendingPoint, .a)
+        XCTAssertTrue(try XCTUnwrap(repository.fetch().first).points.isEmpty)
+
+        await viewModel.recordPendingPoint(outcome: .winner, ending: .net)
+
+        XCTAssertNil(viewModel.pendingPoint)
+        let saved = try XCTUnwrap(repository.fetch().first?.points.first)
+        XCTAssertEqual(saved.outcome, .winner)
+        XCTAssertEqual(viewModel.pointLog.map(\.ending), [.net])
+    }
+
+    func testWithAskingOffThePointIsLoggedWithNoOutcome() async throws {
+        let viewModel = makeViewModel(asking: false)
+        viewModel.load()
+
+        await viewModel.pointWon(by: .b)
+
+        XCTAssertNil(viewModel.pendingPoint)
+        XCTAssertEqual(viewModel.pointLog.map(\.winner), [.b])
+        XCTAssertNil(try XCTUnwrap(repository.fetch().first?.points.first).outcome)
+    }
+
+    func testFlippingPointTwoSwapsOnlyItsWinner() async throws {
+        let viewModel = makeViewModel()
+        viewModel.load()
+        await viewModel.pointWon(by: .a)
+        await viewModel.pointWon(by: .a)
+        await viewModel.pointWon(by: .b)
+        let second = try XCTUnwrap(viewModel.pointLog.dropFirst().first)
+
+        await viewModel.flip(pointIndex: second.index)
+
+        XCTAssertEqual(viewModel.pointLog.map(\.winner), [.a, .b, .b])
+        XCTAssertEqual(viewModel.scoreboard?.rows.map(\.points), ["15", "30"])
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func testFlippingAnAceShowsAnAlertAndLeavesTheLog() async {
+        let viewModel = makeViewModel(asking: true)
+        viewModel.load()
+        await viewModel.pointWon(by: .a)
+        await viewModel.recordPendingPoint(outcome: .ace, ending: nil)
+        let before = viewModel.log
+
+        await viewModel.flip(pointIndex: 0)
+
+        XCTAssertEqual(viewModel.log, before)
+        XCTAssertEqual(viewModel.errorMessage, "An ace or double fault can't change hands. Undo the point and enter it again.")
+    }
+
+    func testAPointForTheReceiverDisablesAceAndEnablesDoubleFault() {
+        let viewModel = makeViewModel()
+        viewModel.load()
+
+        let serverWinning = viewModel.isServer(.b)
+
+        XCTAssertFalse(OutcomeSheet.isEnabled(.ace, serverWinning: serverWinning))
+        XCTAssertTrue(OutcomeSheet.isEnabled(.doubleFault, serverWinning: serverWinning))
+        XCTAssertTrue(OutcomeSheet.isEnabled(.winner, serverWinning: serverWinning))
+    }
+
+    private func makeViewModel(asking: Bool = false) -> MatchSessionViewModel {
+        MatchSessionViewModel(
+            matchID: matchID,
+            repository: repository,
+            clock: FixedClock(Fixtures.matchDay),
+            asksHowPointEnded: asking
+        )
     }
 }

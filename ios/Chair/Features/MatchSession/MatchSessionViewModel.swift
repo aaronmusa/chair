@@ -27,8 +27,11 @@ final class MatchSessionViewModel {
     private(set) var announcementID = 0
     private(set) var names: [PlayerSlot: String] = [:]
     private(set) var errorMessage: String?
+    private(set) var pendingPoint: Side?
+    private(set) var log: MatchLog?
 
     let matchID: UUID
+    let asksHowPointEnded: Bool
     private let repository: (any MatchRepository)?
     private let clock: any ClockProvider
     private var match: Match?
@@ -37,9 +40,11 @@ final class MatchSessionViewModel {
     init(
         matchID: UUID,
         repository: (any MatchRepository)?,
-        clock: any ClockProvider
+        clock: any ClockProvider,
+        asksHowPointEnded: Bool = true
     ) {
         self.matchID = matchID
+        self.asksHowPointEnded = asksHowPointEnded
         self.repository = repository
         self.clock = clock
     }
@@ -76,6 +81,7 @@ final class MatchSessionViewModel {
             self.match = match
             names = Dictionary(uniqueKeysWithValues: match.players.map { ($0.slot, $0.name) })
             session = MatchSession(log: log)
+            self.log = log
             show(log.state, announcements: [])
         } catch {
             phase = .failed("This match couldn't be opened.")
@@ -93,7 +99,52 @@ final class MatchSessionViewModel {
     }
 
     func pointWon(by side: Side) async {
-        await apply(.pointWon(by: side, outcome: nil, ending: nil))
+        guard asksHowPointEnded else {
+            await apply(.pointWon(by: side, outcome: nil, ending: nil))
+            return
+        }
+        pendingPoint = side
+    }
+
+    func recordPendingPoint(
+        outcome: PointOutcome?,
+        ending: PointEnding?
+    ) async {
+        guard let side = pendingPoint else { return }
+        pendingPoint = nil
+        await apply(.pointWon(by: side, outcome: outcome, ending: ending))
+    }
+
+    func cancelPendingPoint() {
+        pendingPoint = nil
+    }
+
+    func isServer(_ side: Side) -> Bool {
+        state?.server.side == side
+    }
+
+    var pointLog: [LoggedPoint] {
+        log?.currentGamePoints ?? []
+    }
+
+    func flip(pointIndex: Int) async {
+        guard let log else { return }
+        do {
+            for event in try log.flipEvents(at: pointIndex) {
+                await apply(event)
+                guard errorMessage == nil else { return }
+            }
+        } catch FlipError.aceOrDoubleFault {
+            errorMessage = "An ace or double fault can't change hands. Undo the point and enter it again."
+        } catch FlipError.otherSet {
+            errorMessage = "Points from an earlier set can't be flipped."
+        } catch {
+            errorMessage = "This point can't be flipped after a score change. Undo and enter it again."
+        }
+    }
+
+    func dismissError() {
+        errorMessage = nil
     }
 
     func apply(_ event: MatchEvent) async {
@@ -101,8 +152,10 @@ final class MatchSessionViewModel {
         errorMessage = nil
         do {
             let output = try await session.apply(TimedEvent(event, at: clock.now))
-            await match.update(from: session.log, at: clock.now)
+            let log = await session.log
+            match.update(from: log, at: clock.now)
             try repository?.save(match)
+            self.log = log
             show(output.state, announcements: output.announcements)
         } catch EngineError.undoLimit {
             errorMessage = "Nothing to undo in this set."

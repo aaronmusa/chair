@@ -73,4 +73,15 @@ final class MatchDefaultsTests: XCTestCase {
         XCTAssertEqual(store.load().format, .doubles)
         XCTAssertEqual(store.saves, 1)
     }
+
+    func testDefaultsSavedBeforeTheOutcomeSettingStillLoadAndAsk() {
+        let old = #"{"format":"doubles","sets":"bestOf5","deuce":"noAd","finalSet":"tiebreak10","playerName":"Aaron"}"#
+        userDefaults.set(Data(old.utf8), forKey: UserDefaultsMatchDefaultsStore.key)
+
+        let loaded = UserDefaultsMatchDefaultsStore(userDefaults: userDefaults).load()
+
+        XCTAssertEqual(loaded.format, .doubles)
+        XCTAssertEqual(loaded.playerName, "Aaron")
+        XCTAssertTrue(loaded.asksHowPointEnded)
+    }
 }

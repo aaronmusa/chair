@@ -15,6 +15,7 @@ struct RallyActions {
     var onFault: () -> Void = {}
     var onLet: () -> Void = {}
     var onUndo: () -> Void = {}
+    var onShowLog: () -> Void = {}
 }
 
 struct RallyView: View {
@@ -55,7 +56,11 @@ struct RallyView: View {
                 VStack(spacing: Spacing.chair.sm) {
                     topStrip
                     AnnouncementStrip(text: announcement)
-                    ScoreboardView(model: scoreboard)
+                    Button(action: actions.onShowLog) {
+                        ScoreboardView(model: scoreboard)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Shows the points in this game")
                     HStack(alignment: .center, spacing: Spacing.chair.sm) {
                         CourtView(players: getSet.markers)
                             .frame(maxHeight: 160)

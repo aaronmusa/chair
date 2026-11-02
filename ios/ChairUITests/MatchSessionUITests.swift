@@ -28,6 +28,12 @@ final class MatchSessionUITests: XCTestCase {
         XCTAssertEqual(app.buttons["session.point.B"].label, "Point Juan")
         pointAaron.tap()
 
+        let ace = app.buttons["outcome.ace"]
+        XCTAssertTrue(ace.waitForExistence(timeout: 5))
+        XCTAssertTrue(ace.isEnabled)
+        XCTAssertFalse(app.buttons["outcome.doubleFault"].isEnabled)
+        app.buttons["outcome.winner"].tap()
+
         XCTAssertTrue(playPoint.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["getSet.summary"].label.hasSuffix("Fifteen–love"))
     }
