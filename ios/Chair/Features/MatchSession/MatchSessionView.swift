@@ -17,6 +17,7 @@ struct MatchSessionView: View {
     @State private var showsPointLog = false
     @State private var showsScoreFix = false
     @State private var showsEndMatch = false
+    @State private var showsDelete = false
 
     @Environment(\.appRouter) private var router
 
@@ -35,11 +36,31 @@ struct MatchSessionView: View {
                         if viewModel.phase == .complete {
                             Button("Done", action: handleDone())
                                 .accessibilityIdentifier("session.done")
-                        } else {
+                        } else if viewModel.phase != .finishing {
                             Button("Pause", systemImage: "pause.circle", action: handlePause())
                                 .accessibilityIdentifier("session.pause")
                         }
                     }
+                }
+                .toolbar {
+                    if viewModel.phase == .complete, let summary = viewModel.summary {
+                        ToolbarItem(placement: .topBarLeading) {
+                            ShareLink(item: summary.shareText)
+                                .accessibilityIdentifier("summary.share")
+                        }
+                        ToolbarItem(placement: .topBarLeading) {
+                            Menu("More", systemImage: "ellipsis.circle") {
+                                Button("Delete match", systemImage: "trash", role: .destructive, action: handleAskDelete())
+                            }
+                            .accessibilityIdentifier("summary.more")
+                        }
+                    }
+                }
+                .confirmationDialog("Delete this match?", isPresented: $showsDelete, titleVisibility: .visible) {
+                    Button("Delete match", role: .destructive, action: handleDelete())
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("The match and its points are removed from this device.")
                 }
                 .confirmationDialog("End match", isPresented: $showsEndMatch, titleVisibility: .visible) {
                     Button("Finish as is", action: handleFinishAsIs())
@@ -116,19 +137,10 @@ struct MatchSessionView: View {
             MatchOverView(text: viewModel.announcementText)
                 .task(handleShowSummary())
         case .complete:
-            MatchCompleteView(
-                title: completeTitle,
-                sets: viewModel.state?.setsIncludingCurrent ?? []
-            )
+            if let summary = viewModel.summary {
+                MatchSummaryView(model: summary)
+            }
         }
-    }
-
-    private var completeTitle: String {
-        if viewModel.isAbandoned {
-            return "Match ended early"
-        }
-        guard let winner = viewModel.winner else { return "Match complete" }
-        return "\(viewModel.name(of: winner)) wins"
     }
 
     private var stripText: String {
@@ -219,6 +231,17 @@ struct MatchSessionView: View {
         }
     }
 
+    private func handleAskDelete() -> () -> Void {
+        { showsDelete = true }
+    }
+
+    private func handleDelete() -> () -> Void {
+        { [viewModel] in
+            guard viewModel.delete() else { return }
+            router.presentedMatch = nil
+        }
+    }
+
     private func handleDone() -> () -> Void {
         { router.presentedMatch = nil }
     }
@@ -247,43 +270,45 @@ struct MatchSessionView: View {
     private func handleShowLog() -> () -> Void {
         { showsPointLog = true }
     }
+}
 
-    private func handle(_ event: MatchEvent) -> () -> Void {
+private extension MatchSessionView {
+    func handle(_ event: MatchEvent) -> () -> Void {
         { [viewModel] in
             Task { await viewModel.apply(event) }
         }
     }
 
-    private func handleSwapReceivers() -> () -> Void {
+    func handleSwapReceivers() -> () -> Void {
         { [viewModel] in
             guard let side = viewModel.getSet?.receivingSide else { return }
             Task { await viewModel.apply(.swapReceivers(side)) }
         }
     }
 
-    private func handlePoint() -> (Side) -> Void {
+    func handlePoint() -> (Side) -> Void {
         { [viewModel] side in
             Task { await viewModel.pointWon(by: side) }
         }
     }
 
-    private func handlePlayPoint() -> () -> Void {
+    func handlePlayPoint() -> () -> Void {
         { [viewModel] in viewModel.playPoint() }
     }
 
-    private func handlePause() -> () -> Void {
+    func handlePause() -> () -> Void {
         { isPaused = true }
     }
 
-    private func handleResume() -> () -> Void {
+    func handleResume() -> () -> Void {
         { isPaused = false }
     }
 
-    private func handleLoad() -> @MainActor @Sendable () async -> Void {
+    func handleLoad() -> @MainActor @Sendable () async -> Void {
         { [viewModel] in viewModel.load() }
     }
 
-    private func handleAnnouncementTimer() -> @MainActor @Sendable () async -> Void {
+    func handleAnnouncementTimer() -> @MainActor @Sendable () async -> Void {
         { [reduceMotion] in
             showsAnnouncement = true
             guard !reduceMotion else { return }

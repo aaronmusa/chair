@@ -55,8 +55,8 @@ final class MatchSessionUITests: XCTestCase {
         retire.tap()
 
         XCTAssertTrue(app.staticTexts["session.matchOver"].waitForExistence(timeout: 3))
-        let title = app.staticTexts["summary.title"]
-        XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.label, "Aaron wins")
+        let header = app.descendants(matching: .any)["summary.header"]
+        XCTAssertTrue(header.waitForExistence(timeout: 5))
+        XCTAssertTrue(header.label.contains("Aaron def. Juan"))
     }
 }

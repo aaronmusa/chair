@@ -60,7 +60,7 @@ public extension MatchLog {
     }
 }
 
-private struct GameKey: Equatable {
+struct GameKey: Equatable {
     let sets: Int
     let currentSet: SetScore
 
