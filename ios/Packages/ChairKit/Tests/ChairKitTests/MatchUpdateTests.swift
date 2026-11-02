@@ -52,15 +52,18 @@ final class MatchUpdateTests: XCTestCase {
         XCTAssertEqual(match.sets, [SetScore(a: 1, b: 0)])
     }
 
-    func testARetirementCompletesTheMatch() throws {
+    func testARetirementCompletesTheMatchAndKeepsThePartialSet() throws {
         let match = Match(playedAt: Fixtures.matchDay, format: .singles, createdAt: Fixtures.matchDay, updatedAt: Fixtures.matchDay)
         var log = try MatchLog(rules: MatchRules())
-        try log.append(point(.a))
+        for _ in 0 ..< 4 {
+            try log.append(point(.a))
+        }
         try log.append(TimedEvent(.retire(.b), at: Fixtures.matchDay))
 
         match.update(from: log, at: Fixtures.matchDay)
 
         XCTAssertEqual(match.status, .completed)
+        XCTAssertEqual(match.sets, [SetScore(a: 1, b: 0)])
     }
 
     private func point(_ side: Side) -> TimedEvent {

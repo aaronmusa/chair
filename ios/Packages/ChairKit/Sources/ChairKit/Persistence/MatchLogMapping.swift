@@ -205,9 +205,6 @@ public extension Match {
 
 public extension MatchState {
     var setsIncludingCurrent: [SetScore] {
-        if case .complete = phase {
-            return sets
-        }
-        return currentSet == SetScore(a: 0, b: 0) ? sets : sets + [currentSet]
+        currentSet == SetScore(a: 0, b: 0) ? sets : sets + [currentSet]
     }
 }

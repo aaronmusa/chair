@@ -14,6 +14,7 @@ enum SessionPhase: Equatable {
     case loading
     case getSet
     case rally
+    case finishing
     case complete
     case failed(String)
 }
@@ -83,6 +84,9 @@ final class MatchSessionViewModel {
             session = MatchSession(log: log)
             self.log = log
             show(log.state, announcements: [])
+            if match.status != .inProgress {
+                phase = .complete
+            }
         } catch {
             phase = .failed("This match couldn't be opened.")
         }
@@ -160,6 +164,36 @@ final class MatchSessionViewModel {
         }
     }
 
+    var isAbandoned: Bool {
+        match?.status == .abandoned
+    }
+
+    var winner: Side? {
+        guard case let .complete(winner) = state?.phase else { return nil }
+        return winner
+    }
+
+    func retire(_ side: Side) async {
+        await apply(.retire(side))
+    }
+
+    func finishAsIs() async {
+        guard let match else { return }
+        match.status = .abandoned
+        do {
+            try repository?.save(match)
+            phase = .complete
+        } catch {
+            match.status = .inProgress
+            errorMessage = "That couldn't be saved. Try again."
+        }
+    }
+
+    func showSummary() {
+        guard phase == .finishing else { return }
+        phase = .complete
+    }
+
     func fixScore(_ snapshot: ScoreSnapshot) async -> String? {
         do {
             try await perform(.setScore(snapshot))
@@ -189,7 +223,7 @@ final class MatchSessionViewModel {
         self.announcements = announcements
         announcementID += 1
         if case .complete = state.phase {
-            phase = .complete
+            phase = phase == .loading ? .complete : .finishing
         } else {
             phase = .getSet
         }

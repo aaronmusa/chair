@@ -37,4 +37,26 @@ final class MatchSessionUITests: XCTestCase {
         XCTAssertTrue(playPoint.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["getSet.summary"].label.hasSuffix("Fifteen–love"))
     }
+
+    @MainActor
+    func testRetiringTheOpponentShowsTheOverlayThenTheSummary() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UseFakes", "-PresentSampleMatch"]
+        app.launch()
+
+        let pause = app.buttons["session.pause"]
+        XCTAssertTrue(pause.waitForExistence(timeout: 10))
+        pause.tap()
+        let endMatch = app.buttons["pause.endMatch"]
+        XCTAssertTrue(endMatch.waitForExistence(timeout: 5))
+        endMatch.tap()
+        let retire = app.buttons["Retire — Juan"]
+        XCTAssertTrue(retire.waitForExistence(timeout: 5))
+        retire.tap()
+
+        XCTAssertTrue(app.staticTexts["session.matchOver"].waitForExistence(timeout: 3))
+        let title = app.staticTexts["summary.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertEqual(title.label, "Aaron wins")
+    }
 }
