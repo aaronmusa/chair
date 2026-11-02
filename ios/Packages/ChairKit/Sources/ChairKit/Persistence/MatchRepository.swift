@@ -135,7 +135,9 @@ public final class SyncingMatchRepository: MatchRepository {
 
     private func pushUploads(as userID: UUID?) async throws {
         for match in try local.allMatches() where match.syncState == .pendingUpload {
-            match.ownerID = match.ownerID ?? userID
+            if match.ownerID == nil, let userID {
+                claim(match, for: userID)
+            }
             let stored = try await remote.match(id: match.remoteID)
             if let stored, stored.updatedAt > match.updatedAt {
                 match.apply(stored, in: local.context)
@@ -154,6 +156,38 @@ public final class SyncingMatchRepository: MatchRepository {
             }
             try local.context.save()
         }
+    }
+
+    private func claim(
+        _ match: Match,
+        for userID: UUID
+    ) {
+        match.ownerID = userID
+        guard let me = match.players.first(where: { $0.slot == match.localUserSlot }), me.userID == nil else { return }
+        me.userID = userID
+        me.linkStatus = .accepted
+        me.respondedAt = clock.now
+        me.updatedAt = clock.now
+        me.syncState = .pendingUpload
+    }
+
+    public func unclaimedMatches() throws -> [Match] {
+        try local.allMatches().filter { $0.ownerID == nil && $0.syncState != .pendingDelete }
+    }
+
+    public func hasLocalMatches() throws -> Bool {
+        try !local.allMatches().isEmpty
+    }
+
+    public func discardUnclaimed() throws {
+        try unclaimedMatches().forEach(local.context.delete)
+        try local.context.save()
+    }
+
+    public func clearLocal() throws {
+        try local.allMatches().forEach(local.context.delete)
+        try local.context.save()
+        lastPulledAt = nil
     }
 
     private func pull() async throws {

@@ -30,7 +30,7 @@ public struct SupabaseMatchRemote: MatchRemote {
         try await client.from("matches").upsert(MatchFields(record)).execute()
         if !record.players.isEmpty {
             try await client.from("match_players")
-                .upsert(record.players.map { PlayerUpload(match: record.id, $0) }, onConflict: "match_id,slot")
+                .upsert(record.players.map { PlayerUpload(match: record.id, owner: record.ownerID, $0) }, onConflict: "match_id,slot")
                 .execute()
         }
         if !record.points.isEmpty {
@@ -165,9 +165,11 @@ private struct PlayerUpload: Encodable {
     let userID: UUID?
     let linkStatus: LinkStatus
     let invitedAt: Date?
+    let ownRespondedAt: Date?
 
     init(
         match: UUID,
+        owner: UUID?,
         _ player: MatchRecord.Player
     ) {
         matchID = match
@@ -176,6 +178,7 @@ private struct PlayerUpload: Encodable {
         userID = player.userID
         linkStatus = player.linkStatus
         invitedAt = player.invitedAt
+        ownRespondedAt = player.userID != nil && player.userID == owner ? player.respondedAt : nil
     }
 
     enum CodingKeys: String, CodingKey {
@@ -184,6 +187,7 @@ private struct PlayerUpload: Encodable {
         case userID = "user_id"
         case linkStatus = "link_status"
         case invitedAt = "invited_at"
+        case respondedAt = "responded_at"
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -194,6 +198,7 @@ private struct PlayerUpload: Encodable {
         try container.encode(userID, forKey: .userID)
         try container.encode(linkStatus, forKey: .linkStatus)
         try container.encode(invitedAt, forKey: .invitedAt)
+        try container.encode(ownRespondedAt, forKey: .respondedAt)
     }
 }
 

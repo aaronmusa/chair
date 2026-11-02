@@ -114,6 +114,24 @@ final class NewMatchSetupTests: XCTestCase {
         XCTAssertEqual(log.state.receiver, .b1)
     }
 
+    func testTheLocalUserIsA1InSingles() throws {
+        var setup = NewMatchSetup(defaults: MatchDefaults())
+        setup.names[.b1] = "Juan"
+
+        XCTAssertEqual(try setup.makeMatch(at: Fixtures.matchDay).localUserSlot, .a1)
+    }
+
+    func testTheLocalUserFollowsTheYouRowWhenTeamAReceivesAndA2ServesFirst() throws {
+        var setup = doubles()
+        setup.rules.firstServer = .b
+        setup.firstServers[.a] = .a2
+
+        let match = try setup.makeMatch(at: Fixtures.matchDay)
+
+        XCTAssertEqual(match.localUserSlot, .a2)
+        XCTAssertEqual(match.orderedPlayers.first { $0.slot == .a2 }?.name, "You")
+    }
+
     private func doubles() -> NewMatchSetup {
         var setup = NewMatchSetup(defaults: MatchDefaults(format: .doubles))
         setup.names[.a2] = "Bea"

@@ -120,6 +120,40 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         XCTAssertEqual(stored, expected)
     }
 
+    @MainActor
+    func testTwoKeptLocalMatchesReachTheStackAsTheUsersOwnAndAppearInMyMatches() async throws {
+        let client = try Self.client()
+        let session = try await SupabaseAuthService(client: client).signIn(email: "test@chair.local", password: "chair-local")
+        let container = try InMemoryModelContainer()
+        Self.containers.append(container)
+        let repository = SyncingMatchRepository(context: container.mainContext, remote: SupabaseMatchRemote(client: client))
+        let matches = [Match.sample(at: .now), Match.sample(at: .now)]
+        try matches.forEach(repository.save)
+        let migration = AccountMigration(repository: repository, store: InMemoryAccountStore())
+
+        XCTAssertEqual(try migration.pendingPrompt(for: session.userID), .keepLocal(count: 2))
+        migration.keep(for: session.userID)
+        try await repository.sync(as: session.userID)
+
+        let ids = matches.map(\.remoteID)
+        let mine: [OwnedRow] = try await client.from("my_matches")
+            .select("id, owner_id, role")
+            .in("id", values: ids)
+            .execute()
+            .value
+        XCTAssertEqual(Set(mine.map(\.id)), Set(ids))
+        XCTAssertTrue(mine.allSatisfy { $0.ownerID == session.userID && $0.role == "owner" })
+        let stored = try await SupabaseMatchRemote(client: client).match(id: ids[0])
+        let me = stored?.players.first { $0.slot == .a1 }
+        XCTAssertEqual(me?.userID, session.userID)
+        XCTAssertEqual(me?.linkStatus, .accepted)
+        XCTAssertNotNil(me?.respondedAt)
+
+        for id in ids {
+            try await SupabaseMatchRemote(client: client).delete(id: id)
+        }
+    }
+
     private static let aaron = UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!
     private static let juan = UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
 
@@ -186,6 +220,17 @@ final class SupabaseMatchRemoteTests: XCTestCase {
         try await remote.delete(id: record.id)
         let deleted = try await remote.match(id: record.id)
         XCTAssertNil(deleted)
+    }
+}
+
+private struct OwnedRow: Decodable {
+    let id: UUID
+    let ownerID: UUID
+    let role: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, role
+        case ownerID = "owner_id"
     }
 }
 

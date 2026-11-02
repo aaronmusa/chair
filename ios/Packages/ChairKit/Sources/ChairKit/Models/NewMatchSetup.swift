@@ -65,7 +65,8 @@ public struct NewMatchSetup: Equatable, Sendable {
             status: .inProgress,
             inputMode: InputMode.manual.rawValue,
             createdAt: date,
-            updatedAt: date
+            updatedAt: date,
+            localUserSlot: slots.first { seats[$0] == .a1 } ?? .a1
         )
         match.players = slots.map { slot in
             MatchPlayer(slot: slot, name: trimmedName(seats[slot] ?? slot), updatedAt: date)

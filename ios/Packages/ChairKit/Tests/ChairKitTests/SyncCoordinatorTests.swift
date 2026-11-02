@@ -82,6 +82,7 @@ final class SyncCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(RecordingURLProtocol.requests, [])
         XCTAssertNil(coordinator.lastSyncedAt)
+        XCTAssertEqual(try repository.fetch().count, 1, "history still shows while signed out")
     }
 
     func testANewerRemotePointReplacesAPendingOneAndAnOlderOneDoesNot() throws {
