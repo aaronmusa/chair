@@ -13,7 +13,7 @@ import ChairKit
 @main
 struct ChairApp: App {
     private let environment: AppEnvironment
-    private let watch: WatchCompanion
+    private let watch: WatchBridge
     private let container: ModelContainer
     private let repository: any MatchRepository
     private let sync: SyncCoordinator?
@@ -53,7 +53,12 @@ struct ChairApp: App {
         profiles = ProfileRepository(context: container.mainContext, remote: environment.profileRemote, clock: environment.clock)
         let router = AppRouter.make(repository: repository, clock: environment.clock)
         _router = State(initialValue: router)
-        watch = WatchCompanion(link: WatchLink(), router: router, repository: repository)
+        watch = WatchBridge(
+            link: WatchLink(),
+            router: router,
+            repository: repository,
+            makeSession: WatchBridge.sessionFactory(environment: environment, repository: repository)
+        )
         watch.start()
     }
 
@@ -66,6 +71,7 @@ struct ChairApp: App {
                 .environment(\.syncCoordinator, sync)
                 .environment(\.profileRepository, profiles)
                 .environment(\.inviteCenter, invites)
+                .environment(\.watchBridge, watch)
                 .modelContainer(container)
                 .accountPrompt(accountPrompt)
                 .onChange(of: scenePhase, initial: true, handleScenePhase())

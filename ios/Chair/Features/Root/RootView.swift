@@ -15,6 +15,7 @@ struct RootView: View {
     @Environment(\.appEnvironment) private var environment
     @Environment(\.matchRepository) private var repository
     @Environment(\.inviteCenter) private var invites
+    @Environment(\.watchBridge) private var watchBridge
     @State private var firstMatchPrompt = FirstMatchPrompt.make()
     @Environment(\.syncCoordinator) private var sync
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -176,15 +177,17 @@ struct RootView: View {
     }
 
     private func sessionView(_ match: PresentedMatch) -> some View {
-        MatchSessionView(
-            viewModel: MatchSessionViewModel(
-                matchID: match.id,
-                repository: repository,
-                clock: environment.clock,
-                asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded,
-                auth: environment.auth,
-                firstMatchPrompt: firstMatchPrompt
-            )
+        MatchSessionView(viewModel: watchBridge?.session(for: match.id) ?? standaloneSession(match))
+    }
+
+    private func standaloneSession(_ match: PresentedMatch) -> MatchSessionViewModel {
+        MatchSessionViewModel(
+            matchID: match.id,
+            repository: repository,
+            clock: environment.clock,
+            asksHowPointEnded: environment.matchDefaults.load().asksHowPointEnded,
+            auth: environment.auth,
+            firstMatchPrompt: firstMatchPrompt
         )
     }
 
