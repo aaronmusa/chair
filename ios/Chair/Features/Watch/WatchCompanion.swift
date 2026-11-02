@@ -19,6 +19,8 @@ final class WatchCompanion {
     @ObservationIgnored private let router: AppRouter
     @ObservationIgnored private let repository: any MatchRepository
     @ObservationIgnored private var listenTask: Task<Void, Never>?
+    @ObservationIgnored private var matchesTask: Task<Void, Never>?
+    @ObservationIgnored private var liveMatchID: UUID?
 
     init(
         link: WatchLink,
@@ -39,7 +41,23 @@ final class WatchCompanion {
                 await handle(message)
             }
         }
+        let matches = repository.observe()
+        matchesTask = Task { [weak self] in
+            for await records in matches {
+                guard let self else { return }
+                await follow(records)
+            }
+        }
         link.activate()
+    }
+
+    func follow(_ records: [MatchRecord]) async {
+        if let liveMatchID, let record = records.first(where: { $0.id == liveMatchID }), record.status != .inProgress {
+            self.liveMatchID = nil
+            await link.send(.matchEnded)
+            return
+        }
+        liveMatchID = Self.live(in: records)?.id
     }
 
     func handle(_ message: WatchMessage) async {
@@ -57,12 +75,18 @@ final class WatchCompanion {
     }
 
     func currentState() -> WatchMessage {
-        let records = ((try? repository.fetch()) ?? []).map(\.record).sorted { $0.playedAt > $1.playedAt }
-        if let live = records.first(where: { $0.status == .inProgress && !$0.isReadOnly }),
-           let log = try? MatchLog(record: live) {
+        let records = ((try? repository.fetch()) ?? []).map(\.record)
+        if let live = Self.live(in: records), let log = try? MatchLog(record: live) {
             return .state(WatchState(record: live, log: log))
         }
-        return .idle(lastResult: records.first { $0.status != .inProgress }.map(Self.result))
+        let finished = records.sorted { $0.playedAt > $1.playedAt }.first { $0.status != .inProgress }
+        return .idle(lastResult: finished.map(Self.result))
+    }
+
+    private static func live(in records: [MatchRecord]) -> MatchRecord? {
+        records
+            .filter { $0.status == .inProgress && !$0.isReadOnly }
+            .max { $0.playedAt < $1.playedAt }
     }
 
     private static func result(_ record: MatchRecord) -> String {

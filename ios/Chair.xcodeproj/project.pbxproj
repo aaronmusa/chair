@@ -73,6 +73,7 @@
 		1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChairWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
 		B2C0FFEE5A0B5E7000000001 /* ChairWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChairWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2C0FFEE5A0B5E7000000017 /* ChairWatch-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ChairWatch-Info.plist"; sourceTree = "<group>"; };
 		B723CE00549C496EF70DD1FA /* Chair-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Chair-Info.plist"; sourceTree = "<group>"; };
 		BEE01943ED6B99F2161C79FC /* Products.storekit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
@@ -195,6 +196,7 @@
 				C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */,
 				1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */,
 				B723CE00549C496EF70DD1FA /* Chair-Info.plist */,
+				B2C0FFEE5A0B5E7000000017 /* ChairWatch-Info.plist */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -788,6 +790,7 @@
 				DEVELOPMENT_TEAM = L537769T9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/ChairWatch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Chair;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -824,6 +827,7 @@
 				DEVELOPMENT_TEAM = L537769T9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/ChairWatch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Chair;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";

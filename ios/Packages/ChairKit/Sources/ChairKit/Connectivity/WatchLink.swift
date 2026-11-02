@@ -124,7 +124,7 @@ public final class WatchLink {
         switch message {
         case let .input(input):
             await receive(input)
-        case let .ack(inputID):
+        case let .ack(inputID), let .refused(inputID):
             settle(inputID)
             messageContinuation.yield(message)
         default:

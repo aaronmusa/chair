@@ -19,6 +19,7 @@ final class WatchCompanionTests: XCTestCase {
         let companion: WatchCompanion
         let router: AppRouter
         let repository: LocalMatchRepository
+        let session: FakeWCSession
     }
 
     private var container: ModelContainer?
@@ -84,16 +85,30 @@ final class WatchCompanionTests: XCTestCase {
         XCTAssertEqual(subject.companion.currentState(), .idle(lastResult: nil))
     }
 
+    func testFinishingTheLiveMatchTellsTheWatchItEnded() async throws {
+        let subject = try makeSubject()
+        let match = Match.sample()
+        try subject.repository.save(match)
+        await subject.companion.follow([match.record])
+        XCTAssertTrue(subject.session.sent.isEmpty)
+
+        match.status = .completed
+        await subject.companion.follow([match.record])
+
+        XCTAssertEqual(subject.session.sent, [.matchEnded])
+    }
+
     private func makeSubject() throws -> Subject {
         let container = try InMemoryModelContainer()
         self.container = container
         let repository = LocalMatchRepository(context: container.mainContext)
         let router = AppRouter()
+        let session = FakeWCSession()
         let companion = WatchCompanion(
-            link: WatchLink(transport: FakeWCSession()),
+            link: WatchLink(transport: session),
             router: router,
             repository: repository
         )
-        return Subject(companion: companion, router: router, repository: repository)
+        return Subject(companion: companion, router: router, repository: repository, session: session)
     }
 }

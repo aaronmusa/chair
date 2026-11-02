@@ -12,6 +12,7 @@ import ChairUI
 
 struct ContentView: View {
     let model: WatchMatchModel
+    let workout: WatchWorkoutController
 
     @State private var isScoring = false
     @State private var hasAskedForNewMatch = false
@@ -23,7 +24,7 @@ struct ContentView: View {
             }
             .background(Color.black)
             .navigationDestination(isPresented: $isScoring) {
-                WatchScoreView(model: model)
+                WatchScoreView(model: model, heartRate: workout.heartRate, notice: workout.notice)
             }
         }
         .task(handleStart)
@@ -47,7 +48,7 @@ struct ContentView: View {
     private func handleJoin() -> () -> Void {
         {
             isScoring = true
-            Task { await model.refresh() }
+            Task { await model.join() }
         }
     }
 
