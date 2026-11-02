@@ -54,6 +54,25 @@ public extension WatchState {
         (score.sets + [score.currentSet]).map { games($0, side) }
     }
 
+    var isSetStart: Bool {
+        phase == .getSet && score.currentSet == SetScore(a: 0, b: 0) && score.currentGame == .loveAll
+    }
+
+    var resultText: String {
+        let played = score.currentSet == SetScore(a: 0, b: 0) ? score.sets : score.sets + [score.currentSet]
+        let sets = played.map { "\(games($0, mySide))–\(games($0, theirSide))" }.joined(separator: " ")
+        let lead = switch winner {
+        case mySide: "You won"
+        case theirSide: "You lost"
+        default: "Match ended"
+        }
+        return sets.isEmpty ? lead : "\(lead) \(sets)"
+    }
+
+    func name(of slot: PlayerSlot) -> String {
+        slot == mySlot ? "You" : (names[slot] ?? "Partner")
+    }
+
     var serveStrip: String {
         let who = server == mySlot ? "You serve" : "\(Self.short(names[server] ?? "Them")) serves"
         let serveNote = serve == .second ? " · 2nd serve" : ""
@@ -109,7 +128,16 @@ public extension WatchState {
             score: log.snapshot,
             serverCourtSide: state.serverCourtSide,
             serve: state.preRally.serve,
-            phase: phase
+            phase: phase,
+            deuceReceiver: state.doublesOrder?.deuceReceivers[(record.localUserSlot ?? .a1).side],
+            winner: state.phase.winner
         )
+    }
+}
+
+public extension MatchPhase {
+    var winner: Side? {
+        guard case let .complete(winner) = self else { return nil }
+        return winner
     }
 }

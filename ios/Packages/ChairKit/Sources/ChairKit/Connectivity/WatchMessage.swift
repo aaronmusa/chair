@@ -34,6 +34,15 @@ public struct WatchInput: Codable, Equatable, Sendable, Identifiable {
         case `let`
         case undo
         case swapEnds
+        case swapServer
+        case swapReceivers(Side)
+        case endMatch(EndChoice)
+    }
+
+    public enum EndChoice: String, Codable, Sendable {
+        case finishAsIs
+        case retireMe
+        case retireThem
     }
 
     public let id: UUID
@@ -62,6 +71,8 @@ public struct WatchState: Codable, Equatable, Sendable {
     public var serverCourtSide: CourtSide
     public var serve: ServeNumber
     public var phase: WatchPhase
+    public var deuceReceiver: PlayerSlot?
+    public var winner: Side?
 
     public init(
         matchID: UUID,
@@ -70,7 +81,9 @@ public struct WatchState: Codable, Equatable, Sendable {
         score: ScoreSnapshot,
         serverCourtSide: CourtSide,
         serve: ServeNumber,
-        phase: WatchPhase
+        phase: WatchPhase,
+        deuceReceiver: PlayerSlot? = nil,
+        winner: Side? = nil
     ) {
         self.matchID = matchID
         self.names = names
@@ -79,6 +92,8 @@ public struct WatchState: Codable, Equatable, Sendable {
         self.serverCourtSide = serverCourtSide
         self.serve = serve
         self.phase = phase
+        self.deuceReceiver = deuceReceiver
+        self.winner = winner
     }
 
     public var mySide: Side {

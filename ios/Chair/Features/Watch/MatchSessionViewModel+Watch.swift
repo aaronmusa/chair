@@ -32,7 +32,9 @@ extension MatchSessionViewModel {
             score: log.snapshot,
             serverCourtSide: state.serverCourtSide,
             serve: state.preRally.serve,
-            phase: watchPhase
+            phase: watchPhase,
+            deuceReceiver: state.doublesOrder?.deuceReceivers[mySlot.side],
+            winner: state.phase.winner
         )
     }
 }

@@ -22,7 +22,11 @@ struct WatchScoreView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        if let state = model.state {
+        if let state = model.state, model.hasEnded {
+            WatchResultView(state: state, onDone: handleDone())
+        } else if let state = model.state, let card = model.setStartCard {
+            WatchSetStartView(card: card, state: state, onPick: handlePick(card))
+        } else if let state = model.state {
             TabView {
                 WatchScorePage(
                     state: state,
@@ -35,6 +39,7 @@ struct WatchScoreView: View {
                     actions: WatchScoreActions(onScore: handleScore(), onUndo: handleSend(.undo))
                 )
                 WatchControlsPage(onSend: handleSendAction())
+                WatchEndMatchPage(onEnd: handleEnd())
                 Form {
                     Toggle("Hold to score", isOn: $holdToScore)
                         .accessibilityIdentifier("watch.holdToScore")
@@ -59,6 +64,25 @@ struct WatchScoreView: View {
         } else {
             withAnimation { visibleAnnouncement = nil }
         }
+    }
+
+    private func handleDone() -> () -> Void {
+        { Task { await model.finish() } }
+    }
+
+    private func handlePick(_ card: SetStartCard) -> (Bool) -> Void {
+        { second in
+            Task {
+                switch card {
+                case .serve: await model.chooseServer(second: second)
+                case .deuce: await model.chooseDeuceReceiver(partner: second)
+                }
+            }
+        }
+    }
+
+    private func handleEnd() -> (WatchInput.EndChoice) -> Void {
+        { choice in Task { await model.endMatch(choice) } }
     }
 
     private func handleScore() -> (Bool) -> Void {

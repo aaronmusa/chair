@@ -69,7 +69,7 @@ struct ContentView: View {
         { _, home in
             if case .join = home {
                 hasAskedForNewMatch = false
-            } else {
+            } else if model.state == nil {
                 isScoring = false
             }
         }

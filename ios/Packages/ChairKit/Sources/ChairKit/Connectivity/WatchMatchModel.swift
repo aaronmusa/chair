@@ -8,6 +8,11 @@
 import Foundation
 import Observation
 
+public enum SetStartCard: Equatable, Sendable {
+    case serve(first: PlayerSlot, second: PlayerSlot)
+    case deuce(current: PlayerSlot, partner: PlayerSlot)
+}
+
 public enum WatchHomeContent: Equatable, Sendable {
     case join(WatchState)
     case startOnPhone(lastResult: String?)
@@ -30,6 +35,8 @@ public final class WatchMatchModel {
     @ObservationIgnored public let keepAlive: any WatchKeepAlive
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var pendingUndoID: UUID?
+    private var answeredServe: Set<Int> = []
+    private var answeredDeuce: Set<Int> = []
 
     public init(
         link: WatchLink,
@@ -94,6 +101,43 @@ public final class WatchMatchModel {
         }
         guard link.isReachable else { return .unreachable }
         return .startOnPhone(lastResult: lastResult)
+    }
+
+    public var setStartCard: SetStartCard? {
+        guard let state, state.isDoubles, state.isSetStart else { return nil }
+        let set = state.score.sets.count
+        if state.server.side == state.mySide, !answeredServe.contains(set) {
+            return .serve(first: state.server, second: state.server.partner)
+        }
+        guard let receiver = state.deuceReceiver, !answeredDeuce.contains(set) else { return nil }
+        return .deuce(current: receiver, partner: receiver.partner)
+    }
+
+    public func chooseServer(second: Bool) async {
+        guard let state else { return }
+        answeredServe.insert(state.score.sets.count)
+        if second {
+            await send(.swapServer)
+        }
+    }
+
+    public func chooseDeuceReceiver(partner: Bool) async {
+        guard let state else { return }
+        answeredDeuce.insert(state.score.sets.count)
+        if partner {
+            await send(.swapReceivers(state.mySide))
+        }
+    }
+
+    public func endMatch(_ choice: WatchInput.EndChoice) async {
+        await send(.endMatch(choice))
+    }
+
+    public func finish() async {
+        await endWorkout()
+        state = nil
+        hasEnded = false
+        await refresh()
     }
 
     public func join() async {
