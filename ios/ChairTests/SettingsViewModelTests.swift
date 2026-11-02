@@ -63,7 +63,38 @@ final class SettingsViewModelTests: XCTestCase {
 
         await viewModel.refreshAccount()
 
-        XCTAssertEqual(viewModel.accountStatus, "Signed in")
+        XCTAssertEqual(viewModel.accountStatus, "@aaron")
+        XCTAssertTrue(viewModel.isSignedIn)
+    }
+
+    func testTheAccountRowFollowsSignInAndSignOut() async throws {
+        let auth = FakeAuthService()
+        var env = environment(store: FakeMatchDefaultsStore())
+        env.auth = auth
+        let viewModel = SettingsViewModel(environment: env)
+        let watching = Task { await viewModel.watchAccount() }
+        defer { watching.cancel() }
+
+        try await waitUntil { viewModel.accountStatus == "Not signed in" }
+        _ = try await auth.signIn(email: "a", password: "b")
+        try await waitUntil { viewModel.accountStatus == "@aaron" }
+        try await auth.signOut()
+        try await waitUntil { viewModel.accountStatus == "Not signed in" }
+    }
+
+    func testTappingTheAccountRowWhileSignedOutShowsSignIn() {
+        let viewModel = SettingsViewModel(environment: environment(store: FakeMatchDefaultsStore()))
+
+        viewModel.showSignIn()
+
+        XCTAssertTrue(viewModel.isShowingSignIn)
+    }
+
+    private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
+        for _ in 0 ..< 100 where !condition() {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertTrue(condition())
     }
 
     func testVersionAndBuildComeFromTheBundle() {

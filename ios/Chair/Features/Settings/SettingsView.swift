@@ -36,7 +36,10 @@ struct SettingsView: View {
         .background(Color.chair.surface)
         .tint(Color.chair.accent)
         .navigationTitle("Settings")
-        .task(handleRefreshAccount())
+        .task(handleWatchAccount())
+        .sheet(isPresented: $viewModel.isShowingSignIn) {
+            SignInView(viewModel: viewModel.makeSignInViewModel())
+        }
     }
 
     private var matchDefaultsSection: some View {
@@ -81,8 +84,11 @@ struct SettingsView: View {
 
     private var accountSection: some View {
         Section("Account") {
-            LabeledContent("Account", value: viewModel.accountStatus)
-                .accessibilityIdentifier("settings.account")
+            Button(action: viewModel.showSignIn) {
+                LabeledContent("Account", value: viewModel.accountStatus)
+                    .foregroundStyle(Color.chair.ink)
+            }
+            .accessibilityIdentifier("settings.account")
         }
     }
 
@@ -120,8 +126,8 @@ struct SettingsView: View {
         { Task { await sync.syncNow() } }
     }
 
-    private func handleRefreshAccount() -> @MainActor @Sendable () async -> Void {
-        { [viewModel] in await viewModel.refreshAccount() }
+    private func handleWatchAccount() -> @MainActor @Sendable () async -> Void {
+        { [viewModel] in await viewModel.watchAccount() }
     }
 }
 

@@ -61,7 +61,8 @@ extension AppEnvironment {
             clock: SystemClock(),
             haptics: SystemHaptics(),
             matchDefaults: UserDefaultsMatchDefaultsStore(),
-            matchRemote: SupabaseMatchRemote(client: client)
+            matchRemote: SupabaseMatchRemote(client: client),
+            profileRemote: SupabaseProfileRemote(client: client)
         )
     }
 }

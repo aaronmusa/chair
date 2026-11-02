@@ -21,8 +21,11 @@ final class SettingsViewModel {
     }
 
     private(set) var accountStatus = "Not signed in"
+    private(set) var isSignedIn = false
+    var isShowingSignIn = false
     let version: String
     let build: String
+    let environment: AppEnvironment
 
     private let store: any MatchDefaultsStore
     private let auth: any AuthService
@@ -31,6 +34,7 @@ final class SettingsViewModel {
         environment: AppEnvironment,
         info: [String: Any] = Bundle.main.infoDictionary ?? [:]
     ) {
+        self.environment = environment
         store = environment.matchDefaults
         auth = environment.auth
         defaults = environment.matchDefaults.load()
@@ -39,6 +43,36 @@ final class SettingsViewModel {
     }
 
     func refreshAccount() async {
-        accountStatus = await auth.currentSession() == nil ? "Not signed in" : "Signed in"
+        await show(auth.currentSession())
+    }
+
+    func watchAccount() async {
+        for await session in await auth.sessionStream {
+            await show(session)
+        }
+    }
+
+    func showSignIn() {
+        guard !isSignedIn else { return }
+        isShowingSignIn = true
+    }
+
+    func makeSignInViewModel() -> SignInViewModel {
+        SignInViewModel(environment: environment, onFinish: handleSignInFinished())
+    }
+
+    private func handleSignInFinished() -> () -> Void {
+        { [weak self] in self?.isShowingSignIn = false }
+    }
+
+    private func show(_ session: AuthSession?) async {
+        guard session != nil else {
+            isSignedIn = false
+            accountStatus = "Not signed in"
+            return
+        }
+        isSignedIn = true
+        let profile = try? await environment.profileRemote?.ownProfile()
+        accountStatus = profile.map { "@\($0.handle)" } ?? "Signed in"
     }
 }

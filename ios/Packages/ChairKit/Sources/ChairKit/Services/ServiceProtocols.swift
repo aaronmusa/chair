@@ -26,6 +26,7 @@ public enum AuthError: Error, Equatable, Sendable {
 }
 
 public protocol AuthService: Sendable {
+    var sessionStream: AsyncStream<AuthSession?> { get async }
     func currentSession() async -> AuthSession?
     func signInWithApple(
         idToken: String,

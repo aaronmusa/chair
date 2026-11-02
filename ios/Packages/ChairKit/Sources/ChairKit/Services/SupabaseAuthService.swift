@@ -16,6 +16,19 @@ public struct SupabaseAuthService: AuthService {
         self.client = client
     }
 
+    public var sessionStream: AsyncStream<AuthSession?> {
+        let changes = client.auth.authStateChanges
+        return AsyncStream { continuation in
+            let task = Task {
+                for await change in changes {
+                    continuation.yield(change.session.map { AuthSession(userID: $0.user.id, accessToken: $0.accessToken) })
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
     public func currentSession() async -> AuthSession? {
         guard let session = try? await client.auth.session else { return nil }
         return AuthSession(userID: session.user.id, accessToken: session.accessToken)

@@ -15,6 +15,7 @@ public struct AppEnvironment: Sendable {
     public var haptics: any Haptics
     public var matchDefaults: any MatchDefaultsStore
     public var matchRemote: (any MatchRemote)?
+    public var profileRemote: (any ProfileRemote)?
 
     public init(
         auth: any AuthService,
@@ -25,7 +26,8 @@ public struct AppEnvironment: Sendable {
         clock: any ClockProvider,
         haptics: any Haptics,
         matchDefaults: any MatchDefaultsStore,
-        matchRemote: (any MatchRemote)? = nil
+        matchRemote: (any MatchRemote)? = nil,
+        profileRemote: (any ProfileRemote)? = nil
     ) {
         self.auth = auth
         self.speechOutput = speechOutput
@@ -36,6 +38,7 @@ public struct AppEnvironment: Sendable {
         self.haptics = haptics
         self.matchDefaults = matchDefaults
         self.matchRemote = matchRemote
+        self.profileRemote = profileRemote
     }
 
     public static let unavailable = AppEnvironment(
@@ -52,6 +55,13 @@ public struct AppEnvironment: Sendable {
 
 public struct UnavailableService: AuthService, SpeechOutput, SpeechInput, CoachService, SubscriptionService, Haptics {
     public init() {}
+
+    public var sessionStream: AsyncStream<AuthSession?> {
+        AsyncStream { continuation in
+            continuation.yield(nil)
+            continuation.finish()
+        }
+    }
 
     public func currentSession() async -> AuthSession? {
         nil
