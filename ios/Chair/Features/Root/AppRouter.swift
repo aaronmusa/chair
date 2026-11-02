@@ -17,6 +17,10 @@ enum PlayDestination: Hashable {
     case newMatch
 }
 
+enum PendingRoute: Equatable {
+    case newMatch
+}
+
 @MainActor
 @Observable
 final class AppRouter {
@@ -27,6 +31,7 @@ final class AppRouter {
     var isPickingOpponent = false
     var pickedHandle: String?
     var publicProfileHandle: String?
+    var pendingRoute: PendingRoute?
 
     init(
         selectedSection: AppSection = .play,
@@ -43,6 +48,16 @@ final class AppRouter {
     func showNewMatch() {
         selectedSection = .play
         playPath = [.newMatch]
+    }
+
+    func applyPendingRoute() {
+        guard let route = pendingRoute else { return }
+        pendingRoute = nil
+        switch route {
+        case .newMatch:
+            guard presentedMatch == nil else { return }
+            showNewMatch()
+        }
     }
 
     func openMatch(

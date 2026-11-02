@@ -79,6 +79,11 @@ public final class WatchLink {
         await deliver(message)
     }
 
+    public func queue(_ message: WatchMessage) {
+        guard !isVersionMismatched else { return }
+        transport.transferUserInfo(WatchEnvelope(message).data)
+    }
+
     public func acknowledge(_ inputID: UUID) async {
         await send(.ack(inputID: inputID))
     }

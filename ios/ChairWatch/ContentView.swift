@@ -13,33 +13,64 @@ import ChairUI
 struct ContentView: View {
     let model: WatchMatchModel
 
+    @State private var isScoring = false
+    @State private var hasAskedForNewMatch = false
+
     var body: some View {
-        VStack(spacing: Spacing.chair.xs) {
-            if model.link.isVersionMismatched {
-                Text("Update Chair on your iPhone")
-                    .chairFont(.headline)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.chair.ink)
-                    .accessibilityIdentifier("watch.updatePhone")
-            } else {
-                Text("Chair")
-                    .chairFont(.headline)
-                    .foregroundStyle(Color.chair.ink)
-                if model.link.isWaitingForPeer {
-                    Circle()
-                        .fill(Color.chair.inkSecondary)
-                        .frame(width: 8, height: 8)
-                        .accessibilityLabel("Waiting for phone")
-                        .accessibilityIdentifier("watch.waitingForPhone")
-                }
+        NavigationStack {
+            ScrollView {
+                WatchHomeView(content: model.home, hasAskedForNewMatch: hasAskedForNewMatch, actions: actions)
+            }
+            .background(Color.black)
+            .navigationDestination(isPresented: $isScoring) {
+                WatchScoreView(state: model.state, isWaitingForPhone: model.link.isWaitingForPeer)
             }
         }
         .task(handleStart)
+        .onChange(of: model.home, handleHomeChange())
+    }
+
+    private var actions: WatchHomeActions {
+        WatchHomeActions(
+            onJoin: handleJoin(),
+            onNewMatch: handleNewMatch(),
+            onRetry: handleRetry()
+        )
     }
 
     @Sendable
     private func handleStart() async {
         model.start()
-        await model.link.send(.requestState)
+        await model.refresh()
+    }
+
+    private func handleJoin() -> () -> Void {
+        {
+            isScoring = true
+            Task { await model.refresh() }
+        }
+    }
+
+    private func handleNewMatch() -> () -> Void {
+        {
+            model.openNewMatchOnPhone()
+            hasAskedForNewMatch = true
+        }
+    }
+
+    private func handleRetry() -> () -> Void {
+        {
+            Task { await model.refresh() }
+        }
+    }
+
+    private func handleHomeChange() -> (WatchHomeContent, WatchHomeContent) -> Void {
+        { _, home in
+            if case .join = home {
+                hasAskedForNewMatch = false
+            } else {
+                isScoring = false
+            }
+        }
     }
 }

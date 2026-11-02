@@ -13,7 +13,7 @@ import ChairKit
 @main
 struct ChairApp: App {
     private let environment: AppEnvironment
-    private let watchLink = WatchLink()
+    private let watch: WatchCompanion
     private let container: ModelContainer
     private let repository: any MatchRepository
     private let sync: SyncCoordinator?
@@ -51,8 +51,10 @@ struct ChairApp: App {
         let coordinator = sync
         invites = environment.inviteRemote.map { InviteCenter(remote: $0, auth: environment.auth, sync: coordinator) }
         profiles = ProfileRepository(context: container.mainContext, remote: environment.profileRemote, clock: environment.clock)
-        _router = State(initialValue: AppRouter.make(repository: repository, clock: environment.clock))
-        watchLink.activate()
+        let router = AppRouter.make(repository: repository, clock: environment.clock)
+        _router = State(initialValue: router)
+        watch = WatchCompanion(link: WatchLink(), router: router, repository: repository)
+        watch.start()
     }
 
     var body: some Scene {
@@ -71,8 +73,11 @@ struct ChairApp: App {
     }
 
     private func handleScenePhase() -> (ScenePhase, ScenePhase) -> Void {
-        { [sync] _, phase in
-            guard phase == .active, let sync else { return }
+        { [sync, watch, router] _, phase in
+            watch.isActive = phase == .active
+            guard phase == .active else { return }
+            router.applyPendingRoute()
+            guard let sync else { return }
             sync.start()
             Task { await sync.syncNow() }
         }

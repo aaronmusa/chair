@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1C0FFEE5A0B5E7000000003 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */; };
 		00618E7EB6D21B02F063B6B1 /* ChairUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7CD2DFA71C1C72D48FA2F025 /* ChairUI */; };
 		1ED5FDB8308F2F4600DAC3F5 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */; };
 		1ED5FDDD308F307700DAC3F5 /* ChairWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -16,6 +15,9 @@
 		60D1B31B8889AE0CA47EB86F /* ChairKit in Frameworks */ = {isa = PBXBuildFile; productRef = B38D2F6ED39C09E6029FE5A0 /* ChairKit */; };
 		81B46B8FF701B16DA3C1DFEB /* ChairTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 72F29F76F2294AF3A321B770 /* ChairTestSupport */; };
 		882A257E17EA14145D4F17DD /* ChairUI in Frameworks */ = {isa = PBXBuildFile; productRef = AD281D2DF567DC19A77E913E /* ChairUI */; };
+		A1C0FFEE5A0B5E7000000003 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */; };
+		B2C0FFEE5A0B5E7000000008 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = B2C0FFEE5A0B5E7000000010 /* SnapshotTesting */; };
+		B2C0FFEE5A0B5E7000000011 /* ChairTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = B2C0FFEE5A0B5E7000000012 /* ChairTestSupport */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,13 @@
 			remoteInfo = Chair;
 		};
 		1ED5FDDB308F307700DAC3F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1ED5FD81308F2E6900DAC3F5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1ED5FDBC308F307500DAC3F5;
+			remoteInfo = ChairWatch;
+		};
+		B2C0FFEE5A0B5E7000000006 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1ED5FD81308F2E6900DAC3F5 /* Project object */;
 			proxyType = 1;
@@ -63,38 +72,36 @@
 		1ED5FDB7308F2F4500DAC3F5 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChairWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		B2C0FFEE5A0B5E7000000001 /* ChairWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChairWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B723CE00549C496EF70DD1FA /* Chair-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Chair-Info.plist"; sourceTree = "<group>"; };
-		BEE01943ED6B99F2161C79FC /* Products.storekit */ = {isa = PBXFileReference; includeInIndex = 1; path = Products.storekit; sourceTree = "<group>"; };
+		BEE01943ED6B99F2161C79FC /* Products.storekit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		C1211BAEE9B3B61A0270FE4B /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1ED5FD8B308F2E6900DAC3F5 /* Chair */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Chair;
 			sourceTree = "<group>";
 		};
 		1ED5FD9B308F2E6B00DAC3F5 /* ChairTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = ChairTests;
 			sourceTree = "<group>";
 		};
 		1ED5FDA5308F2E6B00DAC3F5 /* ChairUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = ChairUITests;
 			sourceTree = "<group>";
 		};
 		1ED5FDBE308F307500DAC3F5 /* ChairWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = ChairWatch;
+			sourceTree = "<group>";
+		};
+		B2C0FFEE5A0B5E7000000002 /* ChairWatchTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ChairWatchTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -132,6 +139,15 @@
 			files = (
 				43C52E17AA98CD4B605C0CC5 /* ChairKit in Frameworks */,
 				882A257E17EA14145D4F17DD /* ChairUI in Frameworks */,
+				B2C0FFEE5A0B5E7000000011 /* ChairTestSupport in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2C0FFEE5A0B5E7000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2C0FFEE5A0B5E7000000008 /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,6 +161,7 @@
 				1ED5FD9B308F2E6B00DAC3F5 /* ChairTests */,
 				1ED5FDA5308F2E6B00DAC3F5 /* ChairUITests */,
 				1ED5FDBE308F307500DAC3F5 /* ChairWatch */,
+				B2C0FFEE5A0B5E7000000002 /* ChairWatchTests */,
 				1ED5FDB6308F2F4500DAC3F5 /* Frameworks */,
 				1ED5FD8A308F2E6900DAC3F5 /* Products */,
 				D7F9C75477339F78010B9702 /* Config */,
@@ -159,6 +176,7 @@
 				1ED5FD98308F2E6B00DAC3F5 /* ChairTests.xctest */,
 				1ED5FDA2308F2E6B00DAC3F5 /* ChairUITests.xctest */,
 				1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */,
+				B2C0FFEE5A0B5E7000000001 /* ChairWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -178,7 +196,6 @@
 				1FD4925C0B9837F8CE06751C /* Secrets.example.xcconfig */,
 				B723CE00549C496EF70DD1FA /* Chair-Info.plist */,
 			);
-			name = Config;
 			path = Config;
 			sourceTree = "<group>";
 		};
@@ -276,10 +293,35 @@
 			packageProductDependencies = (
 				3FB08BB2CB4509A027C742EC /* ChairKit */,
 				AD281D2DF567DC19A77E913E /* ChairUI */,
+				B2C0FFEE5A0B5E7000000012 /* ChairTestSupport */,
 			);
 			productName = ChairWatch;
 			productReference = 1ED5FDBD308F307500DAC3F5 /* ChairWatch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B2C0FFEE5A0B5E7000000013 /* ChairWatchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2C0FFEE5A0B5E7000000014 /* Build configuration list for PBXNativeTarget "ChairWatchTests" */;
+			buildPhases = (
+				B2C0FFEE5A0B5E7000000004 /* Sources */,
+				B2C0FFEE5A0B5E7000000003 /* Frameworks */,
+				B2C0FFEE5A0B5E7000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B2C0FFEE5A0B5E7000000007 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B2C0FFEE5A0B5E7000000002 /* ChairWatchTests */,
+			);
+			name = ChairWatchTests;
+			packageProductDependencies = (
+				B2C0FFEE5A0B5E7000000010 /* SnapshotTesting */,
+			);
+			productName = ChairWatchTests;
+			productReference = B2C0FFEE5A0B5E7000000001 /* ChairWatchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -305,11 +347,7 @@
 					1ED5FDBC308F307500DAC3F5 = {
 						CreatedOnToolsVersion = 26.5;
 					};
-					1ED5FDC8308F307700DAC3F5 = {
-						CreatedOnToolsVersion = 26.5;
-						TestTargetID = 1ED5FDBC308F307500DAC3F5;
-					};
-					1ED5FDD2308F307700DAC3F5 = {
+					B2C0FFEE5A0B5E7000000013 = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = 1ED5FDBC308F307500DAC3F5;
 					};
@@ -325,8 +363,8 @@
 			mainGroup = 1ED5FD80308F2E6900DAC3F5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */,
-				5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "ChairUI" */,
+				05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */,
+				5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "Packages/ChairUI" */,
 				A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -338,6 +376,7 @@
 				1ED5FD97308F2E6B00DAC3F5 /* ChairTests */,
 				1ED5FDA1308F2E6B00DAC3F5 /* ChairUITests */,
 				1ED5FDBC308F307500DAC3F5 /* ChairWatch */,
+				B2C0FFEE5A0B5E7000000013 /* ChairWatchTests */,
 			);
 		};
 /* End PBXProject section */
@@ -366,6 +405,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1ED5FDBB308F307500DAC3F5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2C0FFEE5A0B5E7000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -403,6 +449,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B2C0FFEE5A0B5E7000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -420,6 +473,11 @@
 			isa = PBXTargetDependency;
 			target = 1ED5FDBC308F307500DAC3F5 /* ChairWatch */;
 			targetProxy = 1ED5FDDB308F307700DAC3F5 /* PBXContainerItemProxy */;
+		};
+		B2C0FFEE5A0B5E7000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1ED5FDBC308F307500DAC3F5 /* ChairWatch */;
+			targetProxy = B2C0FFEE5A0B5E7000000006 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -791,6 +849,54 @@
 			};
 			name = Release;
 		};
+		B2C0FFEE5A0B5E7000000015 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L537769T9Z;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aaronmusa.ChairWatchTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChairWatch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChairWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		B2C0FFEE5A0B5E7000000016 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L537769T9Z;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aaronmusa.ChairWatchTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChairWatch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChairWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -839,14 +945,23 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B2C0FFEE5A0B5E7000000014 /* Build configuration list for PBXNativeTarget "ChairWatchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2C0FFEE5A0B5E7000000015 /* Debug */,
+				B2C0FFEE5A0B5E7000000016 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */ = {
+		05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ChairKit;
 		};
-		5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "ChairUI" */ = {
+		5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "Packages/ChairUI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ChairUI;
 		};
@@ -866,33 +981,43 @@
 /* Begin XCSwiftPackageProductDependency section */
 		3FB08BB2CB4509A027C742EC /* ChairKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
+			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */;
 			productName = ChairKit;
 		};
 		72F29F76F2294AF3A321B770 /* ChairTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
+			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */;
 			productName = ChairTestSupport;
 		};
 		7CD2DFA71C1C72D48FA2F025 /* ChairUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "ChairUI" */;
+			package = 5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "Packages/ChairUI" */;
 			productName = ChairUI;
-		};
-		AD281D2DF567DC19A77E913E /* ChairUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "ChairUI" */;
-			productName = ChairUI;
-		};
-		B38D2F6ED39C09E6029FE5A0 /* ChairKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "ChairKit" */;
-			productName = ChairKit;
 		};
 		A1C0FFEE5A0B5E7000000002 /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		AD281D2DF567DC19A77E913E /* ChairUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5438F8D0F30C3BC4016139F4 /* XCLocalSwiftPackageReference "Packages/ChairUI" */;
+			productName = ChairUI;
+		};
+		B2C0FFEE5A0B5E7000000010 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1C0FFEE5A0B5E7000000001 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		B2C0FFEE5A0B5E7000000012 /* ChairTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */;
+			productName = ChairTestSupport;
+		};
+		B38D2F6ED39C09E6029FE5A0 /* ChairKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 05F1344808902B28392E8E91 /* XCLocalSwiftPackageReference "Packages/ChairKit" */;
+			productName = ChairKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
