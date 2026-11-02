@@ -16,14 +16,16 @@ struct ChairApp: App {
     private let watchLink = WatchLink()
     private let container: ModelContainer
     private let repository: LocalMatchRepository
-    @State private var router = AppRouter.make()
+    @State private var router: AppRouter
 
     init() {
         let environment = AppEnvironment.make()
         let container = MatchStore.makeContainer()
         self.environment = environment
         self.container = container
-        repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
+        let repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
+        self.repository = repository
+        _router = State(initialValue: AppRouter.make(repository: repository, clock: environment.clock))
         watchLink.activate()
     }
 
@@ -39,13 +41,30 @@ struct ChairApp: App {
 }
 
 extension AppRouter {
-    static func make(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppRouter {
+    static func make(
+        arguments: [String] = ProcessInfo.processInfo.arguments,
+        repository: any MatchRepository,
+        clock: any ClockProvider
+    ) -> AppRouter {
         let router = AppRouter()
         #if DEBUG
-            if arguments.contains("-PresentSampleMatch") {
-                router.presentSession(for: UUID())
+            if arguments.contains("-PresentSampleMatch"), let matchID = sampleMatch(in: repository, at: clock.now) {
+                router.presentSession(for: matchID)
             }
         #endif
         return router
     }
+
+    #if DEBUG
+        private static func sampleMatch(
+            in repository: any MatchRepository,
+            at date: Date
+        ) -> UUID? {
+            var setup = NewMatchSetup(defaults: MatchDefaults(playerName: "Aaron"))
+            setup.names[.b1] = "Juan"
+            guard let match = try? setup.makeMatch(at: date) else { return nil }
+            try? repository.save(match)
+            return match.remoteID
+        }
+    #endif
 }

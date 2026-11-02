@@ -46,7 +46,7 @@ struct RootView: View {
                 stack(router.selectedSection)
             }
             .sheet(item: $router.presentedMatch) { match in
-                MatchSessionPlaceholder(match: match)
+                sessionView(match)
                     .presentationSizing(.page)
                     .interactiveDismissDisabled()
             }
@@ -60,7 +60,7 @@ struct RootView: View {
                 }
             }
             .fullScreenCover(item: $router.presentedMatch) { match in
-                MatchSessionPlaceholder(match: match)
+                sessionView(match)
             }
         }
     }
@@ -107,6 +107,16 @@ struct RootView: View {
                 clock: environment.clock
             ),
             onStart: handleStartSession()
+        )
+    }
+
+    private func sessionView(_ match: PresentedMatch) -> some View {
+        MatchSessionView(
+            viewModel: MatchSessionViewModel(
+                matchID: match.id,
+                repository: repository,
+                clock: environment.clock
+            )
         )
     }
 

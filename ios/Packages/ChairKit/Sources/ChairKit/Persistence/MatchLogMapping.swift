@@ -177,3 +177,37 @@ private extension MatchEvent {
         return nil
     }
 }
+
+public extension Match {
+    func update(
+        from log: MatchLog,
+        at date: Date
+    ) {
+        let rows = MatchLog.pointEvents(log.events, updatedAt: date)
+        let existing = orderedPoints
+        for (index, row) in rows.enumerated() {
+            guard index < existing.count else {
+                points.append(row)
+                continue
+            }
+            if existing[index].undone != row.undone {
+                existing[index].undone = row.undone
+                existing[index].updatedAt = date
+                existing[index].syncState = .pendingUpload
+            }
+        }
+        sets = log.state.setsIncludingCurrent
+        if case .complete = log.state.phase {
+            status = .completed
+        }
+    }
+}
+
+public extension MatchState {
+    var setsIncludingCurrent: [SetScore] {
+        if case .complete = phase {
+            return sets
+        }
+        return currentSet == SetScore(a: 0, b: 0) ? sets : sets + [currentSet]
+    }
+}
