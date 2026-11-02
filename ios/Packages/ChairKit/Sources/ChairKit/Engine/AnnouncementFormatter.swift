@@ -46,7 +46,7 @@ public struct AnnouncementFormatter: Sendable {
         case .fault: "Fault"
         case .doubleFault: "Double fault"
         case .changeEnds: "Change ends"
-        case .correction: "Score corrected"
+        case .correction: "Correction"
         default: nil
         }
     }

@@ -12,6 +12,7 @@ import ChairUI
 struct PauseActions {
     var onResume: () -> Void = {}
     var onSwapSides: () -> Void = {}
+    var onFixScore: () -> Void = {}
 }
 
 struct PauseSheet: View {
@@ -25,9 +26,9 @@ struct PauseSheet: View {
             ChairButton("Resume", size: .large, onTap: actions.onResume)
                 .accessibilityIdentifier("pause.resume")
             ChairButton("Swap sides", style: .secondary, onTap: handleSwapSides())
-            // TODO: Wire Fix score in E2-8 and End match in E2-9.
-            ChairButton("Fix score", style: .secondary, onTap: {})
-                .disabled(true)
+            ChairButton("Fix score", style: .secondary, onTap: actions.onFixScore)
+                .accessibilityIdentifier("pause.fixScore")
+            // TODO: Wire End match in E2-9.
             ChairButton("End match", style: .ghost, onTap: {})
                 .disabled(true)
         }

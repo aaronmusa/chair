@@ -15,6 +15,7 @@ struct MatchSessionView: View {
     @State private var showsAnnouncement = true
     @State private var isPaused = false
     @State private var showsPointLog = false
+    @State private var showsScoreFix = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -51,6 +52,17 @@ struct MatchSessionView: View {
                         onFlip: handleFlip()
                     )
                     .presentationDetents([.medium, .large])
+                }
+                .sheet(isPresented: $showsScoreFix) {
+                    if let state = viewModel.state {
+                        ScoreFixSheet(
+                            draft: ScoreFixDraft(state: state),
+                            names: [.a: viewModel.name(of: .a), .b: viewModel.name(of: .b)],
+                            slotNames: viewModel.names,
+                            onApply: handleScoreFix(),
+                            onCancel: handleCloseScoreFix()
+                        )
+                    }
                 }
                 .alert("Couldn't do that", isPresented: errorBinding) {
                     Button("OK", role: .cancel) {}
@@ -100,6 +112,7 @@ struct MatchSessionView: View {
             onSwapServer: handle(.swapServer),
             onSwapReceivers: handleSwapReceivers(),
             onSwapSides: handle(.swapEnds),
+            onFixScore: handleShowScoreFix(),
             onPlayPoint: handlePlayPoint()
         )
     }
@@ -117,7 +130,8 @@ struct MatchSessionView: View {
     private var pauseActions: PauseActions {
         PauseActions(
             onResume: handleResume(),
-            onSwapSides: handle(.swapEnds)
+            onSwapSides: handle(.swapEnds),
+            onFixScore: handleShowScoreFix()
         )
     }
 
@@ -145,6 +159,27 @@ struct MatchSessionView: View {
         { [viewModel] index in
             showsPointLog = false
             Task { await viewModel.flip(pointIndex: index) }
+        }
+    }
+
+    private func handleShowScoreFix() -> () -> Void {
+        {
+            isPaused = false
+            showsScoreFix = true
+        }
+    }
+
+    private func handleCloseScoreFix() -> () -> Void {
+        { showsScoreFix = false }
+    }
+
+    private func handleScoreFix() -> (ScoreSnapshot) async -> String? {
+        { [viewModel] snapshot in
+            let error = await viewModel.fixScore(snapshot)
+            if error == nil {
+                showsScoreFix = false
+            }
+            return error
         }
     }
 

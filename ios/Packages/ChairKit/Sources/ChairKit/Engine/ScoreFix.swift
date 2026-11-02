@@ -74,7 +74,7 @@ enum ScoreFix {
         switch state.currentGame {
         case let .standard(a, b):
             if state.rules.deuce == .noAd, a == .advantage || b == .advantage {
-                throw invalid("there's no advantage in a no-ad game")
+                throw invalid("advantage is not allowed under no-ad rules")
             }
             if (a == .advantage && b != .forty) || (b == .advantage && a != .forty) {
                 throw invalid("advantage needs the other side on forty")
