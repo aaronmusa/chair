@@ -110,7 +110,7 @@ final class WatchBridge {
         defer { UIApplication.shared.endBackgroundTask(work) }
         guard let session = currentSession(),
               input.matchID == nil || input.matchID == session.matchID,
-              await session.applyFromWatch(Self.event(for: input.action)) else {
+              await apply(input.action, to: session) else {
             await link.send(.refused(inputID: input.id))
             await link.send(currentState())
             return
@@ -150,13 +150,22 @@ final class WatchBridge {
         return .idle(lastResult: finished.map(Self.result))
     }
 
-    static func event(for action: WatchInput.Action) -> MatchEvent {
+    private func apply(
+        _ action: WatchInput.Action,
+        to session: MatchSessionViewModel
+    ) async -> Bool {
+        let mySide = session.mySlot.side
         switch action {
-        case let .point(side): .pointWon(by: side, outcome: nil, ending: nil)
-        case .fault: .fault
-        case .let: .let
-        case .undo: .undo
-        case .swapEnds: .swapEnds
+        case let .point(side): return await session.applyFromWatch(.pointWon(by: side, outcome: nil, ending: nil))
+        case .fault: return await session.applyFromWatch(.fault)
+        case .let: return await session.applyFromWatch(.let)
+        case .undo: return await session.applyFromWatch(.undo)
+        case .swapEnds: return await session.applyFromWatch(.swapEnds)
+        case .swapServer: return await session.applyFromWatch(.swapServer)
+        case let .swapReceivers(side): return await session.applyFromWatch(.swapReceivers(side))
+        case .endMatch(.finishAsIs): return await session.finishFromWatch()
+        case .endMatch(.retireMe): return await session.applyFromWatch(.retire(mySide))
+        case .endMatch(.retireThem): return await session.applyFromWatch(.retire(mySide.opponent))
         }
     }
 

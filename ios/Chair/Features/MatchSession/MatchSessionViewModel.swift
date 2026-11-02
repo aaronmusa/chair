@@ -254,6 +254,12 @@ final class MatchSessionViewModel {
         }
     }
 
+    func finishFromWatch() async -> Bool {
+        guard !isReadOnly, phase == .getSet || phase == .rally else { return false }
+        await finishAsIs()
+        return phase == .complete
+    }
+
     private func perform(
         _ event: MatchEvent,
         source: EventSource = .manual

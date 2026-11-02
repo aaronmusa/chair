@@ -187,6 +187,87 @@ final class WatchBridgeTests: XCTestCase {
         XCTAssertEqual(subject.session.sent.last, .announcement(text: screen.announcementText))
     }
 
+    func testChoosingTheSecondPartnerToServeShowsOnThePhonesGetSet() async throws {
+        let subject = try makeSubject()
+        let match = doublesMatch()
+        try subject.repository.save(match)
+        let screen = subject.bridge.session(for: match.remoteID)
+        XCTAssertEqual(screen.state?.server, .a1)
+
+        await subject.bridge.receive(WatchInput(.swapServer, matchID: match.remoteID))
+
+        XCTAssertEqual(screen.state?.server, .a2)
+        XCTAssertEqual(screen.getSet?.serverName, "Ana")
+        XCTAssertNotNil(subject.session.sent.first?.ackID)
+        XCTAssertFalse(subject.session.sent.contains { $0.isRefusal })
+    }
+
+    func testALateSwapIsRefused() async throws {
+        let subject = try makeSubject()
+        let match = doublesMatch()
+        try subject.repository.save(match)
+        let screen = subject.bridge.session(for: match.remoteID)
+        await screen.apply(.pointWon(by: .a, outcome: nil, ending: nil))
+
+        await subject.bridge.receive(WatchInput(.swapServer, matchID: match.remoteID))
+
+        XCTAssertEqual(screen.state?.server, .a1)
+        XCTAssertTrue(subject.session.sent.contains { $0.isRefusal })
+    }
+
+    func testTheFinalPointFromTheWatchCompletesTheMatch() async throws {
+        let subject = try makeSubject()
+        let match = Match(playedAt: Fixtures.matchDay, format: .singles, createdAt: Fixtures.matchDay, updatedAt: Fixtures.matchDay)
+        match.players = [MatchPlayer.sample(.a1, name: "Musa"), MatchPlayer.sample(.b1, name: "Reyes")]
+        try subject.repository.save(match)
+        let screen = subject.bridge.session(for: match.remoteID)
+        for _ in 0 ..< 47 {
+            await screen.apply(.pointWon(by: .a, outcome: nil, ending: nil))
+        }
+
+        await subject.bridge.receive(WatchInput(.point(.a), matchID: match.remoteID))
+
+        let state = try XCTUnwrap(screen.watchState)
+        XCTAssertEqual(state.phase, .complete)
+        XCTAssertEqual(state.resultText, "You won 6–0 6–0")
+    }
+
+    func testRetireThemFromTheWatchMakesTheUserTheWinner() async throws {
+        let subject = try makeSubject()
+        let match = Match.sample()
+        try subject.repository.save(match)
+        let screen = subject.bridge.session(for: match.remoteID)
+
+        await subject.bridge.receive(WatchInput(.endMatch(.retireThem), matchID: match.remoteID))
+
+        XCTAssertEqual(screen.winner, .a)
+        XCTAssertEqual(try subject.repository.fetch().first?.status, .completed)
+    }
+
+    func testFinishAsIsFromTheWatchEndsTheMatchWithNoWinner() async throws {
+        let subject = try makeSubject()
+        let match = Match.sample()
+        try subject.repository.save(match)
+        let screen = subject.bridge.session(for: match.remoteID)
+
+        await subject.bridge.receive(WatchInput(.endMatch(.finishAsIs), matchID: match.remoteID))
+
+        XCTAssertEqual(screen.phase, .complete)
+        XCTAssertEqual(try subject.repository.fetch().first?.status, .abandoned)
+        XCTAssertNil(screen.watchState?.winner)
+    }
+
+    private func doublesMatch() -> Match {
+        let match = Match(playedAt: Fixtures.matchDay, format: .doubles, createdAt: Fixtures.matchDay, updatedAt: Fixtures.matchDay)
+        match.players = [
+            MatchPlayer.sample(.a1, name: "Musa"),
+            MatchPlayer.sample(.a2, name: "Ana"),
+            MatchPlayer.sample(.b1, name: "Reyes"),
+            MatchPlayer.sample(.b2, name: "Cy"),
+        ]
+        return match
+    }
+
     private func makeSubject() throws -> Subject {
         let container = try InMemoryModelContainer()
         self.container = container
@@ -211,6 +292,16 @@ final class WatchBridgeTests: XCTestCase {
 }
 
 private extension WatchMessage {
+    var isRefusal: Bool {
+        guard case .refused = self else { return false }
+        return true
+    }
+
+    var ackID: UUID? {
+        guard case let .ack(id) = self else { return nil }
+        return id
+    }
+
     var isState: Bool {
         guard case .state = self else { return false }
         return true
