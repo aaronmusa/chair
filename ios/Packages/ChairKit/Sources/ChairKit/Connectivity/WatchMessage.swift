@@ -7,23 +7,107 @@
 
 import Foundation
 
-public enum WatchMessage: String, Codable, Sendable {
-    case ping
-    case pong
+public enum WatchMessage: Codable, Equatable, Sendable {
+    case input(WatchInput)
+    case requestState
+    case endWorkout
+    case state(WatchState)
+    case ack(inputID: UUID)
+    case announcement(text: String)
+    case matchEnded
+}
 
-    static let payloadKey = "payload"
+public enum WatchPhase: String, Codable, Sendable {
+    case waiting
+    case getSet
+    case rally
+    case complete
+}
 
-    var payload: [String: Any] {
-        [Self.payloadKey: (try? JSONEncoder().encode(self)) ?? Data()]
+public struct WatchInput: Codable, Equatable, Sendable, Identifiable {
+    public enum Action: Codable, Equatable, Sendable {
+        case point(Side)
+        case fault
+        case `let`
+        case undo
+        case swapEnds
     }
 
-    init?(payload: [String: Any]) {
-        guard let data = payload[Self.payloadKey] as? Data,
-              let message = try? JSONDecoder().decode(WatchMessage.self, from: data) else { return nil }
-        self = message
+    public let id: UUID
+    public let at: Date
+    public let action: Action
+
+    public init(
+        _ action: Action,
+        id: UUID = UUID(),
+        at: Date = Date()
+    ) {
+        self.id = id
+        self.at = at
+        self.action = action
+    }
+}
+
+public struct WatchState: Codable, Equatable, Sendable {
+    public var matchID: UUID
+    public var names: [PlayerSlot: String]
+    public var mySide: Side
+    public var score: ScoreSnapshot
+    public var serverCourtSide: CourtSide
+    public var serve: ServeNumber
+    public var phase: WatchPhase
+
+    public init(
+        matchID: UUID,
+        names: [PlayerSlot: String],
+        mySide: Side,
+        score: ScoreSnapshot,
+        serverCourtSide: CourtSide,
+        serve: ServeNumber,
+        phase: WatchPhase
+    ) {
+        self.matchID = matchID
+        self.names = names
+        self.mySide = mySide
+        self.score = score
+        self.serverCourtSide = serverCourtSide
+        self.serve = serve
+        self.phase = phase
     }
 
-    public static func defaultReply(to message: WatchMessage) -> WatchMessage? {
-        message == .ping ? .pong : nil
+    public var server: PlayerSlot {
+        score.server
+    }
+}
+
+public struct WatchEnvelope: Codable, Equatable, Sendable {
+    public static let protocolVersion = 1
+
+    public let protocolVersion: Int
+    public let message: WatchMessage?
+
+    public init(_ message: WatchMessage) {
+        protocolVersion = Self.protocolVersion
+        self.message = message
+    }
+
+    public var data: Data {
+        (try? JSONEncoder().encode(self)) ?? Data()
+    }
+
+    public static func decode(_ data: Data) -> Received? {
+        guard let version = try? JSONDecoder().decode(Version.self, from: data) else { return nil }
+        guard version.protocolVersion == protocolVersion else { return .versionMismatch(version.protocolVersion) }
+        guard let message = try? JSONDecoder().decode(WatchEnvelope.self, from: data).message else { return nil }
+        return .message(message)
+    }
+
+    public enum Received: Equatable, Sendable {
+        case message(WatchMessage)
+        case versionMismatch(Int)
+    }
+
+    private struct Version: Decodable {
+        let protocolVersion: Int
     }
 }

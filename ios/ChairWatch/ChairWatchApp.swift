@@ -11,15 +11,11 @@ import ChairKit
 
 @main
 struct ChairWatchApp: App {
-    private let link = WatchLink()
-
-    init() {
-        link.activate()
-    }
+    @State private var model = WatchMatchModel(link: WatchLink())
 
     var body: some Scene {
         WindowGroup {
-            ContentView(link: link)
+            ContentView(model: model)
         }
     }
 }
