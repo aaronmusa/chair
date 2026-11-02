@@ -2,7 +2,7 @@
 #
 # Runs the test suites and prints a one-line summary.
 #
-#   test.sh                       # ChairKit, ChairUI, app unit tests, and only the UI suites in $UI (none if unset)
+#   test.sh                       # ChairKit, ChairUI, ChairWatchTests, app unit tests, and only the UI suites in $UI (none if unset)
 #   UI=ChairUITests test.sh
 #   test.sh --all                 # ChairKit, ChairUI, app unit tests and every UI suite (end of an epic)
 #   test.sh --fast                # ChairKit only, no simulator
@@ -40,6 +40,20 @@ run() {
   fi
 }
 
+latest_watch() {
+  xcrun simctl list devices available -j | python3 -c '
+import json, sys
+devices = json.load(sys.stdin)["devices"]
+def version(runtime):
+    return tuple(int(p) for p in runtime.rsplit("watchOS-", 1)[1].split("-"))
+watch = sorted((r for r in devices if "SimRuntime.watchOS-" in r), key=version, reverse=True)
+for runtime in watch:
+    if devices[runtime]:
+        print(devices[runtime][0]["udid"])
+        break
+'
+}
+
 latest_iphone() {
   xcrun simctl list devices available -j | python3 -c '
 import json, sys
@@ -66,6 +80,14 @@ if ! $fast; then
     destination="platform=iOS Simulator,id=$udid"
     uitest() { (cd "$ui" && xcodebuild test -quiet -scheme ChairUI -destination "$destination"); }
     run ChairUI uitest
+    watch_udid=$(latest_watch)
+    if [ -z "$watch_udid" ]; then
+      summary+=("watch simulator MISSING")
+      status=1
+    else
+      watchtest() { xcodebuild test -quiet -project "$project" -scheme ChairWatch -destination "platform=watchOS Simulator,id=$watch_udid"; }
+      run ChairWatchTests watchtest
+    fi
     xcodetest() { xcodebuild test -quiet -project "$project" -scheme Chair -destination "$destination" "$@"; }
     if $all; then
       run ChairAllTests xcodetest

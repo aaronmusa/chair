@@ -11,7 +11,9 @@ public enum WatchMessage: Codable, Equatable, Sendable {
     case input(WatchInput)
     case requestState
     case endWorkout
+    case openNewMatch
     case state(WatchState)
+    case idle(lastResult: String?)
     case ack(inputID: UUID)
     case announcement(text: String)
     case matchEnded
