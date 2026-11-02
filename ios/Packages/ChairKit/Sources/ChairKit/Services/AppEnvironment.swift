@@ -13,6 +13,7 @@ public struct AppEnvironment: Sendable {
     public var subscription: any SubscriptionService
     public var clock: any ClockProvider
     public var haptics: any Haptics
+    public var matchDefaults: any MatchDefaultsStore
 
     public init(
         auth: any AuthService,
@@ -21,7 +22,8 @@ public struct AppEnvironment: Sendable {
         coach: any CoachService,
         subscription: any SubscriptionService,
         clock: any ClockProvider,
-        haptics: any Haptics
+        haptics: any Haptics,
+        matchDefaults: any MatchDefaultsStore
     ) {
         self.auth = auth
         self.speechOutput = speechOutput
@@ -30,6 +32,7 @@ public struct AppEnvironment: Sendable {
         self.subscription = subscription
         self.clock = clock
         self.haptics = haptics
+        self.matchDefaults = matchDefaults
     }
 
     public static let unavailable = AppEnvironment(
@@ -39,7 +42,8 @@ public struct AppEnvironment: Sendable {
         coach: UnavailableService(),
         subscription: UnavailableService(),
         clock: SystemClock(),
-        haptics: UnavailableService()
+        haptics: UnavailableService(),
+        matchDefaults: UserDefaultsMatchDefaultsStore()
     )
 }
 

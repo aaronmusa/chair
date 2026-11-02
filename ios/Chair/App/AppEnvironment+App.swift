@@ -59,7 +59,8 @@ extension AppEnvironment {
             ),
             subscription: StoreKitSubscriptionService(),
             clock: SystemClock(),
-            haptics: SystemHaptics()
+            haptics: SystemHaptics(),
+            matchDefaults: UserDefaultsMatchDefaultsStore()
         )
     }
 }
