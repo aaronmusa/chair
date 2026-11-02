@@ -13,12 +13,17 @@ struct PresentedMatch: Identifiable, Hashable {
     let id: UUID
 }
 
+enum PlayDestination: Hashable {
+    case newMatch
+}
+
 @MainActor
 @Observable
 final class AppRouter {
     var selectedSection: AppSection
     var presentedMatch: PresentedMatch?
     var summaryMatchID: UUID?
+    var playPath: [PlayDestination] = []
 
     init(
         selectedSection: AppSection = .play,
@@ -30,6 +35,16 @@ final class AppRouter {
 
     func presentSession(for matchID: UUID) {
         presentedMatch = PresentedMatch(id: matchID)
+    }
+
+    func showNewMatch() {
+        selectedSection = .play
+        playPath = [.newMatch]
+    }
+
+    func startSession(for matchID: UUID) {
+        playPath = []
+        presentSession(for: matchID)
     }
 
     @discardableResult

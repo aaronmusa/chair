@@ -57,4 +57,24 @@ final class AppRouterTests: XCTestCase {
 
         XCTAssertEqual(router.presentedMatch?.id, matchID)
     }
+
+    func testNewMatchOpensOnPlay() {
+        let router = AppRouter(selectedSection: .settings)
+
+        router.showNewMatch()
+
+        XCTAssertEqual(router.selectedSection, .play)
+        XCTAssertEqual(router.playPath, [.newMatch])
+    }
+
+    func testStartingASessionLeavesNewMatchAndPresentsTheMatch() {
+        let router = AppRouter()
+        let matchID = UUID()
+        router.showNewMatch()
+
+        router.startSession(for: matchID)
+
+        XCTAssertTrue(router.playPath.isEmpty)
+        XCTAssertEqual(router.presentedMatch, PresentedMatch(id: matchID))
+    }
 }
