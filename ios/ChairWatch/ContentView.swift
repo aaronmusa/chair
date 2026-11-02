@@ -23,7 +23,7 @@ struct ContentView: View {
             }
             .background(Color.black)
             .navigationDestination(isPresented: $isScoring) {
-                WatchScoreView(state: model.state, isWaitingForPhone: model.link.isWaitingForPeer)
+                WatchScoreView(model: model)
             }
         }
         .task(handleStart)

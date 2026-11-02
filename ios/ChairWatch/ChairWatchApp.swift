@@ -11,7 +11,7 @@ import ChairKit
 
 @main
 struct ChairWatchApp: App {
-    @State private var model = WatchMatchModel(link: WatchLink())
+    @State private var model = WatchMatchModel(link: WatchLink(), haptics: DeviceWatchHaptics())
 
     var body: some Scene {
         WindowGroup {

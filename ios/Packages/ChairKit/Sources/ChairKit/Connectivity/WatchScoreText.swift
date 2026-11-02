@@ -32,6 +32,34 @@ public extension WatchState {
         "\(points(for: mySide))–\(points(for: theirSide))"
     }
 
+    var setGameLabel: String {
+        let set = "Set \(score.sets.count + 1)"
+        if case .tiebreak = score.currentGame {
+            return "\(set) · Tiebreak"
+        }
+        return "\(set) · Game \(score.currentSet.a + score.currentSet.b + 1)"
+    }
+
+    var isDoubles: Bool {
+        names.keys.contains { $0 == .a2 || $0 == .b2 }
+    }
+
+    func rowName(for side: Side) -> String {
+        let slots = PlayerSlot.allCases.filter { $0.side == side && names[$0] != nil }
+        let labels = slots.map { $0 == mySlot ? "You" : Self.short(names[$0] ?? "") }
+        return labels.isEmpty ? (side == mySide ? "You" : "Them") : labels.joined(separator: " + ")
+    }
+
+    func games(for side: Side) -> [Int] {
+        (score.sets + [score.currentSet]).map { games($0, side) }
+    }
+
+    var serveStrip: String {
+        let who = server == mySlot ? "You serve" : "\(Self.short(names[server] ?? "Them")) serves"
+        let serveNote = serve == .second ? " · 2nd serve" : ""
+        return "\(who) · \(serverCourtSide.rawValue)\(serveNote)"
+    }
+
     func points(for side: Side) -> String {
         switch score.currentGame {
         case let .standard(a, b):
@@ -46,6 +74,10 @@ public extension WatchState {
         _ side: Side
     ) -> Int {
         side == .a ? set.a : set.b
+    }
+
+    private static func short(_ name: String) -> String {
+        name.count > 8 ? String(name.prefix(8)) : name
     }
 
     private static func text(_ score: GameScore) -> String {
@@ -73,7 +105,7 @@ public extension WatchState {
         self.init(
             matchID: record.id,
             names: Dictionary(record.players.map { ($0.slot, $0.name) }, uniquingKeysWith: { first, _ in first }),
-            mySide: record.mySide,
+            mySlot: record.localUserSlot ?? .a1,
             score: log.snapshot,
             serverCourtSide: state.serverCourtSide,
             serve: state.preRally.serve,
