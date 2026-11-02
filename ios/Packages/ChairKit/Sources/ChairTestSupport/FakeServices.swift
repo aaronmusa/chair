@@ -16,8 +16,12 @@
             accessToken: "fake-access-token"
         )
 
-        public private(set) var session: AuthSession?
+        public private(set) var session: AuthSession? {
+            didSet { continuations.values.forEach { $0.yield(session) } }
+        }
+
         public private(set) var calls: [String] = []
+        private var continuations: [UUID: AsyncStream<AuthSession?>.Continuation] = [:]
 
         public init(signedIn: Bool = false) {
             session = signedIn ? Self.sampleSession : nil
@@ -25,6 +29,21 @@
 
         public func setSignedIn(_ signedIn: Bool) {
             session = signedIn ? Self.sampleSession : nil
+        }
+
+        public var sessionStream: AsyncStream<AuthSession?> {
+            let (stream, continuation) = AsyncStream<AuthSession?>.makeStream()
+            let id = UUID()
+            continuations[id] = continuation
+            continuation.yield(session)
+            continuation.onTermination = { [weak self] _ in
+                Task { await self?.removeContinuation(id) }
+            }
+            return stream
+        }
+
+        private func removeContinuation(_ id: UUID) {
+            continuations[id] = nil
         }
 
         public func currentSession() async -> AuthSession? {
@@ -248,7 +267,8 @@
                 subscription: FakeSubscriptionService(),
                 clock: clock,
                 haptics: FakeHaptics(),
-                matchDefaults: FakeMatchDefaultsStore()
+                matchDefaults: FakeMatchDefaultsStore(),
+                profileRemote: FakeProfileRemote()
             )
         }
     }

@@ -28,6 +28,21 @@ final class FakeServiceTests: XCTestCase {
         XCTAssertEqual(calls, ["currentSession", "currentSession", "signOut", "currentSession"])
     }
 
+    func testFakeAuthStreamsTheCurrentSessionThenEveryChange() async throws {
+        let auth = FakeAuthService()
+        var sessions = await auth.sessionStream.makeAsyncIterator()
+
+        let first = await sessions.next()
+        try await _ = auth.signIn(email: "a", password: "b")
+        let second = await sessions.next()
+        try await auth.signOut()
+        let third = await sessions.next()
+
+        XCTAssertEqual(first, .some(nil))
+        XCTAssertEqual(second, FakeAuthService.sampleSession)
+        XCTAssertEqual(third, .some(nil))
+    }
+
     func testFakeSpeechOutputRecordsWhatWasSaid() async {
         let speech = FakeSpeechOutput()
         await speech.speak("Fifteen–love")
