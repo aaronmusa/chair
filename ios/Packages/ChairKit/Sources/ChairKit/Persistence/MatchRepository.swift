@@ -14,6 +14,7 @@ public protocol MatchRepository: AnyObject {
     func fetch() throws -> [Match]
     func observe() -> AsyncStream<[MatchRecord]>
     func delete(_ match: Match) throws
+    func clearLocal() throws
 }
 
 @MainActor
@@ -63,6 +64,11 @@ public final class LocalMatchRepository: MatchRepository {
 
     public func delete(_ match: Match) throws {
         context.delete(match)
+        try context.save()
+    }
+
+    public func clearLocal() throws {
+        try allMatches().forEach(context.delete)
         try context.save()
     }
 
@@ -185,8 +191,7 @@ public final class SyncingMatchRepository: MatchRepository {
     }
 
     public func clearLocal() throws {
-        try local.allMatches().forEach(local.context.delete)
-        try local.context.save()
+        try local.clearLocal()
         lastPulledAt = nil
     }
 

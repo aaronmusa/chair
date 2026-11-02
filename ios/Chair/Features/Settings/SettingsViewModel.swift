@@ -23,6 +23,7 @@ final class SettingsViewModel {
     private(set) var accountStatus = "Not signed in"
     private(set) var isSignedIn = false
     var isShowingSignIn = false
+    var isShowingProfile = false
     let version: String
     let build: String
     let environment: AppEnvironment
@@ -52,9 +53,23 @@ final class SettingsViewModel {
         }
     }
 
-    func showSignIn() {
-        guard !isSignedIn else { return }
-        isShowingSignIn = true
+    func showAccount() {
+        if isSignedIn {
+            isShowingProfile = true
+        } else {
+            isShowingSignIn = true
+        }
+    }
+
+    func makeProfileViewModel(
+        profiles: ProfileRepository,
+        matches: (any MatchRepository)?
+    ) -> ProfileViewModel {
+        ProfileViewModel(environment: environment, profiles: profiles, matches: matches, onSignedOut: handleSignedOut())
+    }
+
+    private func handleSignedOut() -> () -> Void {
+        { [weak self] in self?.isShowingProfile = false }
     }
 
     func makeSignInViewModel() -> SignInViewModel {

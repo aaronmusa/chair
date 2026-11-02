@@ -27,4 +27,5 @@ enum MatchStore {
 extension EnvironmentValues {
     @Entry var matchRepository: (any MatchRepository)?
     @Entry var syncCoordinator: SyncCoordinator?
+    @Entry var profileRepository: ProfileRepository?
 }

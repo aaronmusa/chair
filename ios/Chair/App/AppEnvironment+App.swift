@@ -36,7 +36,19 @@ extension AppEnvironment {
     ) -> AppEnvironment {
         #if DEBUG
             if arguments.contains("-UseFakes") {
-                return .fakes(clock: FixedClock(.now))
+                var fakes = AppEnvironment.fakes(clock: FixedClock(.now))
+                if arguments.contains("-SignedIn") {
+                    fakes.auth = FakeAuthService(signedIn: true)
+                    fakes.profileRemote = FakeProfileRemote(profile: ProfileRecord(
+                        id: FakeAuthService.sampleSession.userID,
+                        handle: "aaron",
+                        displayName: "Aaron Musa",
+                        homeCourt: "Rizal Memorial",
+                        hand: .right,
+                        level: .intermediate
+                    ))
+                }
+                return fakes
             }
         #endif
         guard let config = Config(info: info) else {

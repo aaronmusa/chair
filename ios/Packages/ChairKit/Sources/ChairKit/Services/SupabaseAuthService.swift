@@ -49,7 +49,8 @@ public struct SupabaseAuthService: AuthService {
     }
 
     public func deleteAccount() async throws {
-        throw AuthError.accountDeletionUnavailable
+        try await client.functions.invoke("delete-account", options: FunctionInvokeOptions(method: .post))
+        try await client.auth.signOut(scope: .local)
     }
 
     #if DEBUG
