@@ -83,10 +83,18 @@
     public actor FakeSpeechOutput: SpeechOutput {
         public private(set) var spoken: [String] = []
         public private(set) var spokenAt: [UInt64] = []
+        public private(set) var calls: [UmpireCall] = []
+        public private(set) var callsAt: [UInt64] = []
         public private(set) var stopCount = 0
         public var currentRoute = AudioRoute.speaker
 
         public init() {}
+
+        public func speak(_ calls: [UmpireCall]) async {
+            let now = mach_absolute_time()
+            self.calls += calls
+            callsAt += calls.map { _ in now }
+        }
 
         public func speak(_ text: String) async {
             spoken.append(text)
@@ -105,6 +113,7 @@
     public actor FakeCuePlayer: CuePlaying {
         public private(set) var played: [CueKind] = []
         public private(set) var endedAt: [UInt64] = []
+        public private(set) var stopCount = 0
         private let duration: Duration
 
         public init(duration: Duration = .milliseconds(250)) {
@@ -115,6 +124,53 @@
             played.append(cue)
             try? await Task.sleep(for: duration)
             endedAt.append(mach_absolute_time())
+        }
+
+        public func stop() async {
+            stopCount += 1
+        }
+    }
+
+    @MainActor
+    public final class FakeSynthesizer: Synthesizing {
+        public var voiceID: String?
+        public var volume: Float = 1
+        public private(set) var said: [String] = []
+        public private(set) var saidAt: [UInt64] = []
+        public private(set) var voices: [String?] = []
+        public private(set) var interrupted: [String] = []
+        public private(set) var warmUps = 0
+        private let duration: Duration
+        private var stopping = false
+
+        public init(duration: Duration = .milliseconds(300)) {
+            self.duration = duration
+        }
+
+        public func say(_ text: String) async {
+            said.append(text)
+            saidAt.append(mach_absolute_time())
+            voices.append(voiceID)
+            stopping = false
+            let end = ContinuousClock.now + duration
+            while ContinuousClock.now < end, !stopping {
+                try? await Task.sleep(for: .milliseconds(5))
+            }
+            if stopping {
+                interrupted.append(text)
+            }
+        }
+
+        public func stopAtWordBoundary() {
+            stopping = true
+        }
+
+        public func stopNow() {
+            stopping = true
+        }
+
+        public func warmUp() {
+            warmUps += 1
         }
     }
 

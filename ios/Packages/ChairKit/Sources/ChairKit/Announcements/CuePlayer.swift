@@ -9,6 +9,7 @@ import AVFoundation
 
 public protocol CuePlaying: Sendable {
     func play(_ cue: CueKind) async
+    func stop() async
 }
 
 @MainActor
@@ -35,5 +36,9 @@ public final class CuePlayer: CuePlaying {
         guard player.play(atTime: startsAt) else { return }
         let remaining = startsAt + player.duration - player.deviceCurrentTime
         try? await Task.sleep(for: .seconds(max(0, remaining)))
+    }
+
+    public func stop() async {
+        players.values.forEach { $0.stop() }
     }
 }

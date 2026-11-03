@@ -49,6 +49,7 @@ public enum AudioRoute: String, Sendable {
 }
 
 public protocol SpeechOutput: Sendable {
+    func speak(_ calls: [UmpireCall]) async
     func speak(_ text: String) async
     func stop() async
     func route() async -> AudioRoute

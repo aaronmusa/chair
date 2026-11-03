@@ -62,7 +62,7 @@ extension AppEnvironment {
         let auth = SupabaseAuthService(client: client)
         return AppEnvironment(
             auth: auth,
-            speechOutput: SystemSpeechOutput(),
+            speechOutput: UmpireSpeech(synthesizer: SystemSynthesizer(), cues: CuePlayer()),
             speechInput: UnavailableService(),
             coach: EdgeCoachService(
                 auth: auth,

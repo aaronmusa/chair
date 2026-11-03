@@ -36,7 +36,7 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertTrue(environment.auth is SupabaseAuthService)
         XCTAssertTrue(environment.coach is EdgeCoachService)
         XCTAssertTrue(environment.subscription is StoreKitSubscriptionService)
-        XCTAssertTrue(environment.speechOutput is SystemSpeechOutput)
+        XCTAssertTrue(environment.speechOutput is UmpireSpeech)
         XCTAssertTrue(environment.clock is SystemClock)
         XCTAssertTrue(environment.matchRemote is SupabaseMatchRemote)
     }

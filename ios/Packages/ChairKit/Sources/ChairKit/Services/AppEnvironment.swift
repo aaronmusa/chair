@@ -91,6 +91,7 @@ public struct UnavailableService: AuthService, SpeechOutput, SpeechInput, CoachS
         }
     #endif
 
+    public func speak(_: [UmpireCall]) async {}
     public func speak(_: String) async {}
     public func stop() async {}
     public func route() async -> AudioRoute {
