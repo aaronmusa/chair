@@ -54,7 +54,7 @@ final class EndMatchTests: XCTestCase {
         }
 
         XCTAssertEqual(viewModel.phase, .finishing)
-        XCTAssertTrue(viewModel.announcementText.hasSuffix("Game, set and match Aaron"))
+        XCTAssertEqual(viewModel.announcementText, "Game, set and match, Aaron, six–love, six–love")
         XCTAssertEqual(try XCTUnwrap(repository.fetch().first).status, .completed)
     }
 

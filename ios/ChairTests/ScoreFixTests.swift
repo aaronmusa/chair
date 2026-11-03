@@ -38,16 +38,16 @@ final class ScoreFixTests: XCTestCase {
 
         XCTAssertNil(error)
         XCTAssertEqual(viewModel.scoreboard?.rows.map(\.games), [[3], [3]])
-        XCTAssertEqual(viewModel.announcementText, "Correction")
+        XCTAssertEqual(viewModel.announcementText, "Correction, love–all")
     }
 
-    func testSwapSidesReadsChangeEndsAndFlipsTheEnds() async throws {
+    func testSwapSidesReadsChangeOfEndsAndFlipsTheEnds() async throws {
         let viewModel = try makeViewModel()
         let before = try XCTUnwrap(viewModel.state?.ends)
 
         await viewModel.apply(.swapEnds)
 
-        XCTAssertEqual(viewModel.announcementText, "Change ends")
+        XCTAssertEqual(viewModel.announcementText, "Change of ends")
         XCTAssertEqual(viewModel.state?.ends[.a], before[.b])
         XCTAssertEqual(viewModel.state?.ends[.b], before[.a])
     }

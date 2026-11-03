@@ -61,12 +61,12 @@ final class MatchSessionViewModel {
     }
 
     var formatter: AnnouncementFormatter {
-        AnnouncementFormatter(names: teamNames)
+        AnnouncementFormatter(names: PlayerNames(names, doubles: state?.doublesOrder != nil))
     }
 
     var announcementText: String {
         guard let state else { return "" }
-        return announcements.isEmpty ? formatter.score(state) : formatter.text(announcements)
+        return announcements.isEmpty ? formatter.score(state) : formatter.text(announcements, after: state)
     }
 
     var getSet: GetSetPresentation? {

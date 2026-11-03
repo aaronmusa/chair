@@ -82,7 +82,7 @@ final class GetSetPresentationTests: XCTestCase {
             announcements: [.game(.b)]
         )
 
-        XCTAssertEqual(presentation.strip, "Game Juan and Lia")
+        XCTAssertEqual(presentation.strip, "Game, Juan–Lia")
     }
 
     @discardableResult
