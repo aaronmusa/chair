@@ -62,6 +62,16 @@ final class WatchScoreViewSnapshotTests: XCTestCase {
         assertWatchSnapshot(of: view, named: "ack", sizes: [.mm41])
     }
 
+    func testWatchScoreCrownConfirm() {
+        var view = page(WatchHomeViewSnapshotTests.state)
+        view.crownPendingMe = true
+        assertWatchSnapshot(of: view, named: "crown")
+    }
+
+    func testWatchSettings() {
+        assertWatchSnapshot(of: WatchSettingsPage(holdToScore: .constant(false)), named: "settings")
+    }
+
     func testWatchControls() {
         assertWatchSnapshot(of: WatchControlsPage { _ in }, named: "controls")
     }

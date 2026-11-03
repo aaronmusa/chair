@@ -33,6 +33,8 @@ public final class WatchMatchModel {
     @ObservationIgnored public let link: WatchLink
     @ObservationIgnored private let haptics: any WatchHaptics
     @ObservationIgnored public let keepAlive: any WatchKeepAlive
+    @ObservationIgnored public let gate = InputGate()
+    @ObservationIgnored public let crown: CrownScorer
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var pendingUndoID: UUID?
     private var answeredServe: Set<Int> = []
@@ -41,8 +43,10 @@ public final class WatchMatchModel {
     public init(
         link: WatchLink,
         haptics: any WatchHaptics = SilentWatchHaptics(),
-        keepAlive: any WatchKeepAlive = NoKeepAlive()
+        keepAlive: any WatchKeepAlive = NoKeepAlive(),
+        crown: CrownScorer = CrownScorer()
     ) {
+        self.crown = crown
         self.link = link
         self.haptics = haptics
         self.keepAlive = keepAlive
@@ -170,14 +174,40 @@ public final class WatchMatchModel {
     }
 
     public func score(me: Bool) async {
-        guard let state else { return }
-        await send(.point(me ? state.mySide : state.theirSide))
+        guard gate.allows() else { return }
+        await sendPoint(me: me, click: true)
     }
 
-    public func send(_ action: WatchInput.Action) async {
+    public func turnCrown(up: Bool) {
+        guard gate.allows() else { return }
+        if crown.detent(up: up, onScore: handleCrownScore()) {
+            haptics.play(.click)
+        }
+    }
+
+    private func handleCrownScore() -> (Bool) -> Void {
+        { [weak self] me in
+            Task { await self?.sendPoint(me: me, click: false) }
+        }
+    }
+
+    private func sendPoint(
+        me: Bool,
+        click: Bool
+    ) async {
+        guard let state else { return }
+        await send(.point(me ? state.mySide : state.theirSide), click: click)
+    }
+
+    public func send(
+        _ action: WatchInput.Action,
+        click: Bool = true
+    ) async {
         guard let state else { return }
         let input = WatchInput(action, matchID: state.matchID)
-        haptics.play(.click)
+        if click {
+            haptics.play(.click)
+        }
         if action == .undo {
             pendingUndoID = input.id
         } else {

@@ -11,7 +11,8 @@ Use a Debug build for the paired run: the watch score screen then shows the last
 | 1. Paired run: acks, Join, phone → watch |  |  |  |  |  |
 | 2. 90-minute match, phone in a bag |  |  |  |  |  |
 | 3. Out of range for 2 min |  |  |  |  |  |
-| 4. Accidental touch (10 forearm brushes) |  |  |  |  |  |
+| 4. Accidental touch (10 forearm brushes, both modes) |  |  |  |  |  |
+| 4b. Crown and Double Tap scoring |  |  |  |  |  |
 | 5. Always On |  |  |  |  |  |
 | 6. Workout keep-alive and Fitness (#108) |  |  |  |  |  |
 | 7. New match from the watch (#109) |  |  |  |  |  |
@@ -56,9 +57,24 @@ Pass: within 10 s of coming back both devices show the same score, and the phone
 
 ## 4. Accidental touch
 
-1. On the score screen with Hold to score on, brush the forearm and wrist across the screen 10 times, as when wiping sweat.
+Tap scoring is the default, so a brush on a raised, lit screen can score; the definition of done asks that it never scores silently.
 
-Pass: no point is scored (the phone's score doesn't change and no click haptic plays).
+1. Default (tap) mode: with the wrist down, brush the forearm across the screen 10 times, as when wiping sweat. Then raise the wrist and brush within a moment of the screen lighting.
+2. Hold to score on (watch Settings, last page): brush 10 times with the wrist raised.
+
+Pass:
+- Wrist down, and brushes that wake the screen, score nothing (the wrist-up gate drops anything in the first 300 ms of full brightness).
+- Any point a brush does score in tap mode shows in the umpire bar and is removed by one left swipe on the score.
+- With Hold to score on, no brush scores.
+
+## 4b. Crown and Double Tap
+
+1. On the score screen, turn the Crown up one notch: "Me?" shows, and after 1 s the point goes to you. Turn up then straight back down: nothing is sent. Spin it up hard: one point only. Turn down one notch: the point goes to them.
+2. Check the Crown never flips to page 2; a vertical swipe still does.
+3. With Water Lock on, the Crown still scores.
+4. Series 9 / Ultra 2 or later: Double Tap with the wrist raised scores Me.
+
+Pass: every step behaves as described.
 
 ## 5. Always On
 
