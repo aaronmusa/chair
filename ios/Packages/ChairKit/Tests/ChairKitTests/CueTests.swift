@@ -11,19 +11,21 @@ import XCTest
 import ChairKit
 import ChairTestSupport
 
+@MainActor
 final class CueTests: XCTestCase {
     func testAPointPlaysThePointCueAndSpeechFollowsWithin50ms() async throws {
         let cues = FakeCuePlayer()
-        let speech = FakeSpeechOutput()
+        let synthesizer = FakeSynthesizer(duration: .zero)
         let calls: [Announcement] = [.out, .score(a: .fifteen, b: .love, serverSide: .a)]
+        let speech = UmpireSpeech(synthesizer: synthesizer, cues: cues)
 
-        await CuedSpeech(cues: cues, speech: speech).say("Out. Fifteen–love", cue: CueKind(calls))
+        await speech.speak([UmpireCall(cue: CueKind(calls), text: "Out. Fifteen–love", priority: .call)])
+        await speech.drained()
 
         let played = await cues.played
         let cueEnds = await cues.endedAt
-        let speechStarts = await speech.spokenAt
         let cueEnd = try XCTUnwrap(cueEnds.first)
-        let speechStart = try XCTUnwrap(speechStarts.first)
+        let speechStart = try XCTUnwrap(synthesizer.saidAt.first)
         XCTAssertEqual(played, [.point])
         XCTAssertLessThan(AVAudioTime.seconds(forHostTime: speechStart - cueEnd), 0.05)
     }
@@ -31,8 +33,10 @@ final class CueTests: XCTestCase {
     func testASetWonPlaysTheSetCueOnce() async {
         let cues = FakeCuePlayer(duration: .zero)
         let calls: [Announcement] = [.net, .game(.b), .changeEnds, .gameAndSet(.b, SetScore(a: 3, b: 6))]
+        let speech = UmpireSpeech(synthesizer: FakeSynthesizer(duration: .zero), cues: cues)
 
-        await CuedSpeech(cues: cues, speech: FakeSpeechOutput()).say("Game and set", cue: CueKind(calls))
+        await speech.speak([UmpireCall(cue: CueKind(calls), text: "Game and set", priority: .structural)])
+        await speech.drained()
 
         let played = await cues.played
         XCTAssertEqual(played, [.set])
@@ -55,17 +59,18 @@ final class CueTests: XCTestCase {
 
     func testWithCuesOffSpeechStartsWithNoCue() async {
         let cues = FakeCuePlayer()
-        let speech = FakeSpeechOutput()
+        let synthesizer = FakeSynthesizer(duration: .zero)
+        let speech = UmpireSpeech(synthesizer: synthesizer, cues: cues)
+        speech.cuesEnabled = false
 
-        await CuedSpeech(cues: cues, speech: speech, cuesEnabled: false).say("Fifteen–love", cue: .point)
+        await speech.speak([UmpireCall(cue: .point, text: "Fifteen–love", priority: .score)])
+        await speech.drained()
 
         let played = await cues.played
-        let spoken = await speech.spoken
         XCTAssertTrue(played.isEmpty)
-        XCTAssertEqual(spoken, ["Fifteen–love"])
+        XCTAssertEqual(synthesizer.said, ["Fifteen–love"])
     }
 
-    @MainActor
     func testTheRealPlayerHandsOverWithin50msOfTheCueEnding() async throws {
         let player = CuePlayer()
         let length = try AVAudioFile(forReading: XCTUnwrap(CueKind.point.url)).duration
