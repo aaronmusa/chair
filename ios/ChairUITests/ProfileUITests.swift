@@ -19,7 +19,10 @@ final class ProfileUITests: XCTestCase {
         app.launch()
         app.tabBars.buttons["Settings"].tap()
         let account = app.buttons["settings.account"]
-        XCTAssertTrue(account.waitForExistence(timeout: 5))
+        for _ in 0 ..< 5 where !account.waitForExistence(timeout: 1) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(account.exists)
         XCTAssertTrue(account.label.contains("@aaron"))
         account.tap()
 

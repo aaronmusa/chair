@@ -18,6 +18,7 @@ struct MatchSessionView: View {
     @State private var showsScoreFix = false
     @State private var showsEndMatch = false
     @State private var showsDelete = false
+    @State private var showsSpeakerTip = false
 
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) private var environment
@@ -33,11 +34,7 @@ struct MatchSessionView: View {
         NavigationStack {
             content
                 .navigationBarTitleDisplayMode(.inline)
-                .safeAreaInset(edge: .top) {
-                    if let umpire, viewModel.isLive {
-                        UmpirePill(isMuted: umpire.isMuted, routeName: umpire.routeName, onToggle: handleToggleUmpire())
-                    }
-                }
+                .safeAreaInset(edge: .top) { umpireHeader }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         if viewModel.phase == .complete {
@@ -344,6 +341,31 @@ struct PendingPoint: Identifiable {
 }
 
 private extension MatchSessionView {
+    @ViewBuilder
+    var umpireHeader: some View {
+        if let umpire, viewModel.isLive {
+            VStack(spacing: Spacing.chair.xs) {
+                UmpirePill(isMuted: umpire.isMuted, routeName: umpire.routeName, onToggle: handleToggleUmpire())
+                if showsSpeakerTip {
+                    SpeakerTip(onDismiss: handleDismissSpeakerTip())
+                }
+            }
+            .task(handleOfferSpeakerTip())
+        }
+    }
+
+    func handleOfferSpeakerTip() -> @MainActor @Sendable () async -> Void {
+        { [umpire] in
+            guard let umpire, umpire.showsSpeakerTip else { return }
+            showsSpeakerTip = true
+            umpire.dismissSpeakerTip()
+        }
+    }
+
+    func handleDismissSpeakerTip() -> () -> Void {
+        { showsSpeakerTip = false }
+    }
+
     var stripText: String {
         let text = if !showsAnnouncement, let state = viewModel.state {
             viewModel.formatter.score(state)

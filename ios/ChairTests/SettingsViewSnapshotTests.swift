@@ -35,7 +35,9 @@ final class SettingsViewSnapshotTests: XCTestCase {
                 environment: environment,
                 info: ["CFBundleShortVersionString": "1.0.0", "CFBundleVersion": "1"]
             )
+            let umpire = UmpireCoordinator(speech: FakeSpeechOutput(), settings: .fake())
             let view = NavigationStack { SettingsView(viewModel: viewModel) }
+                .environment(\.umpire, umpire)
                 .environment(\.dynamicTypeSize, variant.typeSize)
             assertSnapshot(
                 of: UIHostingController(rootView: view),

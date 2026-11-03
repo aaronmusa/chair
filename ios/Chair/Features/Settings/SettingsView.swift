@@ -18,6 +18,7 @@ struct SettingsView: View {
     @Environment(\.syncCoordinator) private var sync
     @Environment(\.profileRepository) private var profiles
     @Environment(\.matchRepository) private var matches
+    @Environment(\.umpire) private var umpire
 
     init(viewModel: SettingsViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -39,6 +40,7 @@ struct SettingsView: View {
         .tint(Color.chair.accent)
         .navigationTitle("Settings")
         .task(handleWatchAccount())
+        .onChange(of: umpire?.settings.preferences, handleUmpireSettingsChange())
         .sheet(isPresented: $viewModel.isShowingSignIn) {
             SignInView(viewModel: viewModel.makeSignInViewModel())
         }
@@ -78,15 +80,29 @@ struct SettingsView: View {
         }
     }
 
+    @ViewBuilder
     private var umpireSection: some View {
-        Section {
-            Toggle("Umpire voice", isOn: .constant(false))
-                .disabled(true)
-        } header: {
-            Text("Umpire")
-        } footer: {
-            Text("Available with umpire voice.")
+        if let umpire {
+            UmpireSettingsSection(
+                settings: umpire.settings,
+                routeName: umpire.routeName,
+                voices: VoiceCatalog.englishVoices().sorted { $0.label < $1.label },
+                onPreview: handlePreview(umpire),
+                onTestCall: handleTestCall(umpire)
+            )
         }
+    }
+
+    private func handlePreview(_ umpire: UmpireCoordinator) -> () -> Void {
+        { Task { await umpire.preview() } }
+    }
+
+    private func handleTestCall(_ umpire: UmpireCoordinator) -> () -> Void {
+        { Task { await umpire.testCall() } }
+    }
+
+    private func handleUmpireSettingsChange() -> () -> Void {
+        { [umpire] in Task { await umpire?.applySettings() } }
     }
 
     private var accountSection: some View {
