@@ -11,6 +11,7 @@ import AVFoundation
 public protocol Synthesizing: AnyObject {
     var voiceID: String? { get set }
     var volume: Float { get set }
+    var startedAt: UInt64? { get }
 
     func say(_ text: String) async
     func stopAtWordBoundary()

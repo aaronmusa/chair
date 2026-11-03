@@ -146,6 +146,10 @@
         public private(set) var voices: [String?] = []
         public private(set) var interrupted: [String] = []
         public private(set) var warmUps = 0
+        public var startedAt: UInt64? {
+            saidAt.last
+        }
+
         private let duration: Duration
         private var stopping = false
 

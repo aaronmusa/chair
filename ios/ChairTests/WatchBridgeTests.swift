@@ -184,7 +184,7 @@ final class WatchBridgeTests: XCTestCase {
         }
 
         XCTAssertEqual(subject.session.sent.count { $0.isState }, 1)
-        XCTAssertEqual(subject.session.sent.last, .announcement(text: screen.announcementText))
+        XCTAssertEqual(subject.session.sent.last, .announcement(text: screen.spokenText))
     }
 
     func testChoosingTheSecondPartnerToServeShowsOnThePhonesGetSet() async throws {

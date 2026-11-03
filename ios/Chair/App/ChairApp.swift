@@ -14,6 +14,7 @@ import ChairKit
 struct ChairApp: App {
     private let environment: AppEnvironment
     private let watch: WatchBridge
+    private let umpire: UmpireCoordinator
     private let container: ModelContainer
     private let repository: any MatchRepository
     private let sync: SyncCoordinator?
@@ -59,6 +60,12 @@ struct ChairApp: App {
             repository: repository,
             makeSession: WatchBridge.sessionFactory(environment: environment, repository: repository)
         )
+        umpire = UmpireCoordinator(
+            speech: environment.speechOutput,
+            settings: UmpireSettings(),
+            audio: UmpireAudioSession(routing: AudioRouting())
+        )
+        watch.onNewSession = umpire.handleNewSession()
         watch.start()
     }
 
@@ -72,6 +79,7 @@ struct ChairApp: App {
                 .environment(\.profileRepository, profiles)
                 .environment(\.inviteCenter, invites)
                 .environment(\.watchBridge, watch)
+                .environment(\.umpire, umpire)
                 .modelContainer(container)
                 .accountPrompt(accountPrompt)
                 .onChange(of: scenePhase, initial: true, handleScenePhase())

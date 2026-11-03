@@ -47,14 +47,33 @@ final class AudioRouting {
 }
 
 struct RoutePicker: UIViewRepresentable {
+    var presentCount = 0
+
     func makeUIView(context _: Context) -> AVRoutePickerView {
         let picker = AVRoutePickerView()
         picker.prioritizesVideoDevices = false
+        picker.accessibilityElementsHidden = true
         return picker
     }
 
     func updateUIView(
-        _: AVRoutePickerView,
-        context _: Context
-    ) {}
+        _ picker: AVRoutePickerView,
+        context: Context
+    ) {
+        guard presentCount != context.coordinator.presented else { return }
+        context.coordinator.presented = presentCount
+        picker.subviews.compactMap { $0 as? UIButton }.first?.sendActions(for: .touchUpInside)
+    }
+
+    func makeCoordinator() -> Presented {
+        Presented(presented: presentCount)
+    }
+
+    final class Presented {
+        var presented: Int
+
+        init(presented: Int) {
+            self.presented = presented
+        }
+    }
 }

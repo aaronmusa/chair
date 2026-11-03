@@ -21,6 +21,7 @@ struct MatchSessionView: View {
 
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) private var environment
+    @Environment(\.umpire) private var umpire
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -32,6 +33,11 @@ struct MatchSessionView: View {
         NavigationStack {
             content
                 .navigationBarTitleDisplayMode(.inline)
+                .safeAreaInset(edge: .top) {
+                    if let umpire, viewModel.isLive {
+                        UmpirePill(isMuted: umpire.isMuted, routeName: umpire.routeName, onToggle: handleToggleUmpire())
+                    }
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         if viewModel.phase == .complete {
@@ -131,7 +137,7 @@ struct MatchSessionView: View {
             ContentUnavailableView("Match unavailable", systemImage: "exclamationmark.triangle", description: Text(message))
         case .getSet:
             if let getSet = viewModel.getSet {
-                GetSetView(presentation: getSet, actions: getSetActions)
+                GetSetView(presentation: getSet.noted(umpire?.stripNote), actions: getSetActions)
             }
         case .rally:
             if let scoreboard = viewModel.scoreboard, let getSet = viewModel.getSet {
@@ -151,11 +157,6 @@ struct MatchSessionView: View {
                 MatchSummaryView(model: summary)
             }
         }
-    }
-
-    private var stripText: String {
-        guard !showsAnnouncement, let state = viewModel.state else { return viewModel.announcementText }
-        return viewModel.formatter.score(state)
     }
 
     private var getSetActions: GetSetActions {
@@ -184,13 +185,6 @@ struct MatchSessionView: View {
             onSwapSides: handle(.swapEnds),
             onFixScore: handleShowScoreFix(),
             onEndMatch: handleShowEndMatch()
-        )
-    }
-
-    private var errorBinding: Binding<Bool> {
-        Binding(
-            get: { viewModel.errorMessage != nil },
-            set: { if !$0 { viewModel.dismissError() } }
         )
     }
 
@@ -288,6 +282,13 @@ struct MatchSessionView: View {
 }
 
 private extension MatchSessionView {
+    var errorBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.dismissError() } }
+        )
+    }
+
     func handle(_ event: MatchEvent) -> () -> Void {
         { [viewModel] in
             Task { await viewModel.apply(event) }
@@ -339,5 +340,20 @@ struct PendingPoint: Identifiable {
 
     var id: Side {
         side
+    }
+}
+
+private extension MatchSessionView {
+    var stripText: String {
+        let text = if !showsAnnouncement, let state = viewModel.state {
+            viewModel.formatter.score(state)
+        } else {
+            viewModel.announcementText
+        }
+        return [text, umpire?.stripNote].compactMap(\.self).joined(separator: " · ")
+    }
+
+    func handleToggleUmpire() -> () -> Void {
+        { [umpire] in umpire?.toggleMute() }
     }
 }
