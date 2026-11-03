@@ -64,6 +64,7 @@ def main():
     write("point", whistle, 0.25)
     write("game", chime, 0.35)
     write("set", double_chime, 0.38)
+    write("silence", lambda t, length: 0.0, 1.0)
 
 
 if __name__ == "__main__":
