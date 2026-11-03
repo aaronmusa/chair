@@ -1,6 +1,6 @@
 # Epic 2b: Watch manual scorer
 
-Mirrors the [Epic 2b doc](https://claude.ai/artifact/Ckw9qv3rQJcETv6yqQZdRX) (rev 19). Each ticket is a GitHub issue labelled `epic-2b`, with native blocked-by links.
+Mirrors the [Epic 2b doc](https://claude.ai/artifact/Ckw9qv3rQJcETv6yqQZdRX) (rev 22). Each ticket is a GitHub issue labelled `epic-2b`, with native blocked-by links.
 
 ## Epic goal
 
@@ -11,7 +11,7 @@ When Epic 2b is done, a player can start a no-camera match from the phone, put t
 - [ ] A full best-of-3 singles match is scored from a real Apple Watch with the phone locked in a bag, and the phone's history shows it correctly afterwards
 - [ ] The watch stays on the score screen for 90 min on a Series 7 or later via a workout session; wrist-down then wrist-up shows the score within 1 s
 - [ ] After the watch is out of range for 2 min and comes back, both devices show the same score within 10 s and no event is lost or duplicated
-- [ ] No scoring input fires from a wrist brush or a sweaty forearm: idle-state scoring needs a deliberate gesture, prompted states use large buttons
+- [ ] A wrist brush or sweaty forearm never scores silently: tap scoring is read back by the umpire and undone in one swipe, Hold to score is available for players who want a guard, and Crown scoring cannot be triggered by touch at all
 - [ ] Snapshot tests for every watch screen in ChairWatchTests (ImageRenderer) at 41 mm and 45 mm, AX large text
 
 **Out of scope.** Referee role, disputes, rally-lost prompts, side ownership (Epic 7). Camera positions on the watch court (Epic 5). PicklGo-style gesture scoring (Epic 7 follow-on). Watch-only matches with no phone (the engine stays on the phone). Complications and Smart Stack (later).
@@ -83,15 +83,21 @@ Blocked by: E2b-1
 Wireframe "Referee watch · idle": the screen worn for the whole match.
 
 - `WatchScoreView`: set/game label, two score rows (names truncated to 8 chars, set games, current points in `Font.chair.score`, server dot), a one-line serve strip ("You serve · deuce"), the Me / Them buttons (44 pt tall each). Me maps to mySide from WatchState (the user's own side per E2a-8), Them to the other; for an owner today that is side A, so the acceptance reads .point(.a).
-- Deliberate input, to pass the DoD's no-accident rule: Me/Them require a **press-and-hold of 400 ms** with a filling ring (Reduce Motion: a 400 ms delay with a colour change, no ring); release before 400 ms cancels. A setting "Hold to score" (on by default) lives on the watch, in a Settings page of the watch app, stored in the watch's own UserDefaults and not synced; it can switch to single tap for users who want speed.
+- Touch input: Me/Them are a **single tap** by default (a point ends, you tap, done). Accidental taps are covered by the one-swipe undo and the umpire reading the score back. A watch-side setting "Hold to score" (off by default; Settings page of the watch app, stored in the watch's own `UserDefaults`, not synced) switches to a **press-and-hold of 400 ms** with a filling ring (Reduce Motion: a 400 ms delay with a colour change, no ring); release before 400 ms cancels.
 - Secondary inputs on a vertical page swipe (`TabView(.verticalPage)`): page 2 with Fault, Let, Swap ends, Undo (large buttons, tap only, since they are intentional). Undo also on a **swipe left** on the score rows with a confirming haptic.
-- Digital Crown: scrolls between pages only; not an input.
+- Digital Crown scoring, always on: on the score screen, turning the Crown **up by one detent = Me**, **down = Them** (`digitalCrownRotation` with `.discrete` sensitivity, reading the sign of the delta). A `.click` haptic fires and a 1 s "Me? / Them?" confirm band shows; turning the opposite way within 1 s cancels, otherwise the input is sent. Further detents in the same direction within the window are ignored, so a long spin never sends two points. The Crown never scrolls on the score screen; pages still change by vertical swipe. Can't fire from a brush, so it satisfies the no-accident rule regardless of the tap setting.
+- Wrist-up gate: every scoring input (tap, hold, Crown) is accepted only while the screen is at full luminance (`@Environment(\.isLuminanceReduced) == false`) **and** has been so for at least 300 ms, tracked by an `InputGate` observable. A brush that wakes the screen and taps in the same motion is dropped; a dimmed, wrist-down watch ignores everything. watchOS exposes no "wearer is looking" API, so this is the closest available signal.
+- Double Tap (Series 9 / Ultra 2 and later, watchOS 11): the Me button carries `.handGestureShortcut(.primaryAction)`, so a Double Tap scores Me without touching the screen; the system only recognises it with the wrist raised. Them stays on tap or Crown down.
+- Settings page hint "Lock touch during play": explains Water Lock (swipe up, tap the drop) and that Crown scoring and Double Tap keep working under it. There is no API to enable Water Lock for the user.
 - Announcement text from `.announcement` shows as a 2 s overlay on the score screen (static text when Reduce Motion).
 - Doubles: names show as "You + Ana" / "Ben + Cy"; Me/Them stay team-level.
 
 Acceptance:
 
-- [ ] Given a 200 ms touch on Me, then no input is sent; given a 400 ms hold, then `.point(.a)` is sent and a `.click` haptic fires
+- [ ] Given the default setting, when Me is tapped, then `.point(.a)` is sent and a `.click` haptic fires; given Hold to score on, then a 200 ms touch sends nothing and a 400 ms hold sends `.point(.a)`
+  - [ ] Given the screen dimmed (wrist down), when Me is tapped or the Crown turned, then nothing is sent; given the screen at full luminance for 200 ms then a tap, then nothing is sent; at 300 ms or more, then the tap is accepted
+  - [ ] Given a Series 9 or later, when Double Tap fires on the score screen, then `.point(.a)` is sent (device)
+- [ ] Given one Crown detent up, then after 1 s `.point(.a)` is sent; given one detent up then one down within 1 s, then nothing is sent; given five detents up in one spin, then exactly one `.point(.a)` is sent
 - [ ] Given a double fault scored on the phone, then the watch shows the new score and "Double fault" overlay from the delivered state (timing measured in E2b-7)
 - [ ] Given swipe left on the score rows, then `.undo` is sent and the strip reads Correction after the ack
 - [ ] Given AX large text, then both score rows and both buttons stay on screen on 41 mm

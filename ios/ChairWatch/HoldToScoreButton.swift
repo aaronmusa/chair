@@ -13,6 +13,7 @@ import ChairUI
 struct HoldToScoreButton: View {
     let title: String
     let requiresHold: Bool
+    var isPrimary = false
     let identifier: String
     let onScore: () -> Void
 
@@ -20,16 +21,16 @@ struct HoldToScoreButton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        label
-            .contentShape(.capsule)
-            .gesture(holdGesture, isEnabled: requiresHold)
-            .onTapGesture(perform: handleTap())
-            .accessibilityElement()
-            .accessibilityLabel(title)
-            .accessibilityHint(requiresHold ? "Press and hold to score" : "")
-            .accessibilityAddTraits(.isButton)
-            .accessibilityAction(.default, handleAccessibilityScore())
-            .accessibilityIdentifier(identifier)
+        Button(action: onScore) {
+            label
+        }
+        .buttonStyle(.plain)
+        .contentShape(.capsule)
+        .highPriorityGesture(holdGesture, isEnabled: requiresHold)
+        .handGestureShortcut(.primaryAction, isEnabled: isPrimary)
+        .accessibilityLabel(title)
+        .accessibilityHint(requiresHold ? "Press and hold to score" : "")
+        .accessibilityIdentifier(identifier)
     }
 
     private var label: some View {
@@ -57,14 +58,6 @@ struct HoldToScoreButton: View {
 
     private func handleRelease() -> (DragGesture.Value) -> Void {
         { _ in gate.end() }
-    }
-
-    private func handleTap() -> () -> Void {
-        { if !requiresHold { onScore() } }
-    }
-
-    private func handleAccessibilityScore() -> () -> Void {
-        { onScore() }
     }
 }
 

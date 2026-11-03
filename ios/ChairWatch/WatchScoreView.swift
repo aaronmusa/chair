@@ -17,8 +17,10 @@ struct WatchScoreView: View {
     let heartRate: Int?
     let notice: String?
 
-    @AppStorage(Self.holdToScoreKey) private var holdToScore = true
+    @AppStorage(Self.holdToScoreKey) private var holdToScore = false
     @State private var visibleAnnouncement: String?
+    @State private var crownValue = 0.0
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -37,18 +39,30 @@ struct WatchScoreView: View {
                     heartRate: heartRate,
                     notice: notice,
                     lastAck: model.link.lastAckLatency,
+                    crownPendingMe: model.crown.pendingMe,
                     actions: WatchScoreActions(onScore: handleScore(), onUndo: handleSend(.undo))
                 )
+                .focusable()
+                .digitalCrownRotation(
+                    $crownValue,
+                    from: -100_000,
+                    through: 100_000,
+                    by: 1,
+                    sensitivity: .low,
+                    isContinuous: false,
+                    isHapticFeedbackEnabled: false
+                )
+                .onChange(of: crownValue, handleCrown())
                 WatchControlsPage(onSend: handleSendAction())
                 WatchEndMatchPage(onEnd: handleEnd())
-                Form {
-                    Toggle("Hold to score", isOn: $holdToScore)
-                        .accessibilityIdentifier("watch.holdToScore")
+                ScrollView {
+                    WatchSettingsPage(holdToScore: $holdToScore)
                 }
             }
             .tabViewStyle(.verticalPage)
             .background(Color.black)
             .task(id: model.announcementID, handleAnnouncement)
+            .onChange(of: isLuminanceReduced, initial: true, handleLuminance())
         } else {
             ProgressView()
         }
@@ -64,6 +78,22 @@ struct WatchScoreView: View {
             visibleAnnouncement = nil
         } else {
             withAnimation { visibleAnnouncement = nil }
+        }
+    }
+
+    private func handleCrown() -> (Double, Double) -> Void {
+        { old, new in
+            guard new != old else { return }
+            model.turnCrown(up: new > old)
+        }
+    }
+
+    private func handleLuminance() -> (Bool, Bool) -> Void {
+        { _, reduced in
+            model.gate.update(isLuminanceReduced: reduced)
+            if reduced {
+                model.crown.cancel()
+            }
         }
     }
 

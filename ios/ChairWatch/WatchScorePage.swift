@@ -24,6 +24,7 @@ struct WatchScorePage: View {
     var heartRate: Int?
     var notice: String?
     var lastAck: Duration?
+    var crownPendingMe: Bool?
     let actions: WatchScoreActions
 
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
@@ -100,12 +101,26 @@ struct WatchScorePage: View {
             }
             Spacer(minLength: 0)
             HStack(spacing: Spacing.chair.xs) {
-                HoldToScoreButton(title: "Me", requiresHold: requiresHold, identifier: "watch.me", onScore: handleScore(me: true))
+                HoldToScoreButton(
+                    title: "Me",
+                    requiresHold: requiresHold,
+                    isPrimary: true,
+                    identifier: "watch.me",
+                    onScore: handleScore(me: true)
+                )
                 HoldToScoreButton(title: "Them", requiresHold: requiresHold, identifier: "watch.them", onScore: handleScore(me: false))
             }
         }
         .overlay(alignment: .bottom) {
-            if let announcement {
+            if let crownPendingMe {
+                Text(crownPendingMe ? "Me?" : "Them?")
+                    .chairFont(.headline)
+                    .foregroundStyle(Color.black)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(Color.chair.accent, in: .capsule)
+                    .accessibilityLabel(crownPendingMe ? "Point to you? Turn back to cancel" : "Point to them? Turn back to cancel")
+                    .accessibilityIdentifier("watch.crownConfirm")
+            } else if let announcement {
                 Text(announcement)
                     .chairFont(.headline)
                     .foregroundStyle(Color.black)

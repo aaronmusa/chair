@@ -132,6 +132,7 @@ final class WatchScoringTests: XCTestCase {
         let haptics = HapticsSpy()
         let model = WatchMatchModel(link: WatchLink(transport: session), haptics: haptics)
         model.apply(.state(WatchMessageTests.sampleState))
+        model.gate.update(isLuminanceReduced: false, at: .now - .seconds(1))
         return Subject(model: model, session: session, haptics: haptics)
     }
 
