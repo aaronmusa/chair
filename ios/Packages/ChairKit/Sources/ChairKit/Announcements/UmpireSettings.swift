@@ -18,6 +18,7 @@ public struct UmpirePreferences: Codable, Equatable, Sendable {
     public var volume: Float
     public var respectsSilentMode: Bool
     public var keepsAudioAlive: Bool
+    public var speakerTipShown: Bool
 
     public init(
         isEnabled: Bool = true,
@@ -26,7 +27,8 @@ public struct UmpirePreferences: Codable, Equatable, Sendable {
         cuesEnabled: Bool = true,
         volume: Float = 1,
         respectsSilentMode: Bool = false,
-        keepsAudioAlive: Bool = false
+        keepsAudioAlive: Bool = false,
+        speakerTipShown: Bool = false
     ) {
         self.isEnabled = isEnabled
         self.voiceID = voiceID
@@ -35,6 +37,7 @@ public struct UmpirePreferences: Codable, Equatable, Sendable {
         self.volume = volume
         self.respectsSilentMode = respectsSilentMode
         self.keepsAudioAlive = keepsAudioAlive
+        self.speakerTipShown = speakerTipShown
     }
 
     public init(from decoder: any Decoder) throws {
@@ -47,6 +50,7 @@ public struct UmpirePreferences: Codable, Equatable, Sendable {
         volume = try container.decodeIfPresent(Float.self, forKey: .volume) ?? fallback.volume
         respectsSilentMode = try container.decodeIfPresent(Bool.self, forKey: .respectsSilentMode) ?? fallback.respectsSilentMode
         keepsAudioAlive = try container.decodeIfPresent(Bool.self, forKey: .keepsAudioAlive) ?? fallback.keepsAudioAlive
+        speakerTipShown = try container.decodeIfPresent(Bool.self, forKey: .speakerTipShown) ?? fallback.speakerTipShown
     }
 
     public var clampedVolume: Float {

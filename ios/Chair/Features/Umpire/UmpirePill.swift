@@ -29,7 +29,7 @@ struct UmpirePill: View {
             .accessibilityHint("Double-tap to mute this match. Touch and hold to choose the speaker.")
             .accessibilityAction(named: "Choose speaker", handleChooseSpeaker())
             .accessibilityIdentifier("session.umpire")
-            .background(RoutePicker(presentCount: routePickerCount).frame(width: 1, height: 1).opacity(0.01).accessibilityHidden(true))
+            .background(RoutePicker(presentCount: routePickerCount).frame(width: 1, height: 1).opacity(0).accessibilityHidden(true))
     }
 
     private var title: String {

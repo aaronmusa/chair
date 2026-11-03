@@ -357,4 +357,16 @@
             )
         }
     }
+
+    public extension UmpireSettings {
+        @MainActor
+        static func fake(_ preferences: UmpirePreferences = UmpirePreferences()) -> UmpireSettings {
+            let suite = "chair.fake.umpire.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite) ?? .standard
+            defaults.removePersistentDomain(forName: suite)
+            let settings = UmpireSettings(userDefaults: defaults)
+            settings.preferences = preferences
+            return settings
+        }
+    }
 #endif

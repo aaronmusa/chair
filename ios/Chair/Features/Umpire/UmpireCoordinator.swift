@@ -20,8 +20,9 @@ final class UmpireCoordinator {
 
     let routing: AudioRouting
 
+    let settings: UmpireSettings
+
     @ObservationIgnored private let speech: any SpeechOutput
-    @ObservationIgnored private let settings: UmpireSettings
     @ObservationIgnored private let audio: UmpireAudioSession?
     @ObservationIgnored private let correctionWindow: Duration
     @ObservationIgnored private let audioEndDelay: Duration
@@ -89,6 +90,28 @@ final class UmpireCoordinator {
         Task { [speech] in await speech.stop() }
     }
 
+    var showsSpeakerTip: Bool {
+        !settings.preferences.speakerTipShown && routing.currentRouteName == AudioRouting.speakerName
+    }
+
+    func dismissSpeakerTip() {
+        settings.preferences.speakerTipShown = true
+    }
+
+    func formatter(for names: PlayerNames) -> AnnouncementFormatter {
+        AnnouncementFormatter(names: names, verbosity: settings.preferences.verbosity)
+    }
+
+    func preview() async {
+        await applySettings()
+        await speech.speak([UmpireCall(cue: nil, text: "Fifteen–love", priority: .structural)])
+    }
+
+    func testCall() async {
+        await applySettings()
+        await speech.speak([UmpireCall(cue: .set, text: "Game, set and match", priority: .structural)])
+    }
+
     func applySettings() async {
         session?.verbosity = settings.preferences.verbosity
         await (speech as? UmpireSpeech)?.apply(settings.preferences)
@@ -102,7 +125,7 @@ final class UmpireCoordinator {
         } else {
             beginAudio()
         }
-        let formatter = AnnouncementFormatter(names: session.playerNames, verbosity: settings.preferences.verbosity)
+        let formatter = formatter(for: session.playerNames)
         let isCorrection = output.announcements.contains(where: Self.isCorrection)
         pendingCorrection?.cancel()
         guard let call = call(for: output, formatter: formatter) else { return }
