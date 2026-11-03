@@ -19,7 +19,8 @@ let package = Package(
     targets: [
         .target(
             name: "ChairKit",
-            dependencies: [.product(name: "Supabase", package: "supabase-swift")]
+            dependencies: [.product(name: "Supabase", package: "supabase-swift")],
+            resources: [.process("Announcements/Cues")]
         ),
         .target(
             name: "ChairTestSupport",

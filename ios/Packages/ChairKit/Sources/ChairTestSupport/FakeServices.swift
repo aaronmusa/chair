@@ -82,6 +82,7 @@
 
     public actor FakeSpeechOutput: SpeechOutput {
         public private(set) var spoken: [String] = []
+        public private(set) var spokenAt: [UInt64] = []
         public private(set) var stopCount = 0
         public var currentRoute = AudioRoute.speaker
 
@@ -89,6 +90,7 @@
 
         public func speak(_ text: String) async {
             spoken.append(text)
+            spokenAt.append(mach_absolute_time())
         }
 
         public func stop() async {
@@ -97,6 +99,22 @@
 
         public func route() async -> AudioRoute {
             currentRoute
+        }
+    }
+
+    public actor FakeCuePlayer: CuePlaying {
+        public private(set) var played: [CueKind] = []
+        public private(set) var endedAt: [UInt64] = []
+        private let duration: Duration
+
+        public init(duration: Duration = .milliseconds(250)) {
+            self.duration = duration
+        }
+
+        public func play(_ cue: CueKind) async {
+            played.append(cue)
+            try? await Task.sleep(for: duration)
+            endedAt.append(mach_absolute_time())
         }
     }
 
