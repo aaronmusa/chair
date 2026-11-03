@@ -10,6 +10,7 @@ import AVFoundation
 public protocol CuePlaying: Sendable {
     func play(_ cue: CueKind) async
     func stop() async
+    func setVolume(_ volume: Float) async
 }
 
 @MainActor
@@ -24,10 +25,6 @@ public final class CuePlayer: CuePlaying {
         }
     }
 
-    public var volume: Float = 1 {
-        didSet { players.values.forEach { $0.volume = volume } }
-    }
-
     public func play(_ cue: CueKind) async {
         guard let player = players[cue] else { return }
         let lead = 0.03
@@ -40,5 +37,9 @@ public final class CuePlayer: CuePlaying {
 
     public func stop() async {
         players.values.forEach { $0.stop() }
+    }
+
+    public func setVolume(_ volume: Float) async {
+        players.values.forEach { $0.volume = volume }
     }
 }

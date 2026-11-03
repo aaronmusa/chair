@@ -57,6 +57,11 @@ public struct AnnouncementFormatter: Sendable {
         return "\(names.spokenName(output.preRally.server)) to serve, \(side) side"
     }
 
+    public func resumption(_ state: MatchState) -> String {
+        let server = "\(names.spokenName(state.server)) to serve"
+        return "\(score(state)), \(state.faultCount > 0 ? "\(server), second serve" : server)"
+    }
+
     public func score(_ state: MatchState) -> String {
         score(state.currentGame, serverSide: state.server.side)
     }

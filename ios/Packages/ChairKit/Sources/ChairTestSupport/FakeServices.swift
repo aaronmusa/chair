@@ -129,6 +129,12 @@
         public func stop() async {
             stopCount += 1
         }
+
+        public private(set) var volume: Float = 1
+
+        public func setVolume(_ volume: Float) async {
+            self.volume = volume
+        }
     }
 
     @MainActor

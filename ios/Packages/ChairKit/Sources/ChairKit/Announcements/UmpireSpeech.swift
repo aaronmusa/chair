@@ -73,6 +73,13 @@ public final class UmpireSpeech: SpeechOutput {
         }
     }
 
+    public func apply(_ preferences: UmpirePreferences) async {
+        cuesEnabled = preferences.cuesEnabled
+        synthesizer.voiceID = preferences.voiceID
+        synthesizer.volume = preferences.clampedVolume
+        await cues.setVolume(preferences.clampedVolume)
+    }
+
     public func warmUp() {
         synthesizer.warmUp()
     }
