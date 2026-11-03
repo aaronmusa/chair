@@ -25,7 +25,7 @@ struct GetSetPresentation {
         announcements: [Announcement] = []
     ) {
         let preRally = state.preRally
-        let formatter = AnnouncementFormatter(names: Self.teamNames(names, doubles: state.doublesOrder != nil))
+        let formatter = AnnouncementFormatter(names: PlayerNames(names, doubles: state.doublesOrder != nil))
         let score = formatter.score(state)
         let side = preRally.serverCourtSide == .deuce ? "deuce" : "ad"
         let serve = preRally.serve == .first ? "1st serve" : "2nd serve"
@@ -33,7 +33,7 @@ struct GetSetPresentation {
 
         serverName = Self.name(preRally.server, in: names)
         serveLabel = "\(serverName) serves · \(side) side · \(serve)"
-        strip = announcements.isEmpty ? score : formatter.text(announcements)
+        strip = announcements.isEmpty ? score : formatter.text(announcements, after: state)
         accessibilitySentence = "\(serverName) serves from the \(side) side, \(spokenServe). \(score)"
         markers = Self.markers(preRally, names: names, doubles: state.doublesOrder != nil)
         isDoubles = state.doublesOrder != nil
@@ -55,19 +55,6 @@ struct GetSetPresentation {
 
     private static func isBeforeFirstPoint(of state: MatchState) -> Bool {
         state.currentSet == SetScore(a: 0, b: 0) && state.currentGame == .loveAll && state.faultCount == 0
-    }
-
-    private static func teamNames(
-        _ names: [PlayerSlot: String],
-        doubles: Bool
-    ) -> [Side: String] {
-        guard doubles else {
-            return [.a: name(.a1, in: names), .b: name(.b1, in: names)]
-        }
-        return [
-            .a: "\(name(.a1, in: names)) and \(name(.a2, in: names))",
-            .b: "\(name(.b1, in: names)) and \(name(.b2, in: names))",
-        ]
     }
 
     private static func name(

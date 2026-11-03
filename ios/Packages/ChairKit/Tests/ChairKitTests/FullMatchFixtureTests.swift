@@ -22,9 +22,22 @@ final class FullMatchFixtureTests: XCTestCase {
 
     func testTheSinglesAnnouncementsMatchTheGoldenFile() throws {
         let played = try FixtureMatch.play(named: "full_singles_bo3")
-        let transcript = played.transcript.joined(separator: "\n") + "\n"
-        let golden = "full_singles_bo3.announcements.txt"
 
+        try assertGolden(played.transcript, named: "full_singles_bo3.announcements.txt")
+    }
+
+    func testTheSinglesCallsMatchTheGoldenFile() throws {
+        let played = try FixtureMatch.play(named: "full_singles_bo3")
+        let formatter = AnnouncementFormatter(names: FixtureMatch.singlesNames)
+
+        try assertGolden(played.outputs.map(formatter.spoken).filter { !$0.isEmpty }, named: "singles_bo3.calls.txt")
+    }
+
+    private func assertGolden(
+        _ lines: [String],
+        named golden: String
+    ) throws {
+        let transcript = lines.joined(separator: "\n") + "\n"
         if ProcessInfo.processInfo.environment["CHAIR_RECORD_GOLDEN"] == "1" {
             let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appending(path: "Fixtures/\(golden)")
             try transcript.write(to: url, atomically: true, encoding: .utf8)
@@ -32,7 +45,7 @@ final class FullMatchFixtureTests: XCTestCase {
             return
         }
         let expected = try XCTUnwrap(String(data: TestBundle.data(named: golden, in: .module), encoding: .utf8))
-        XCTAssertEqual(transcript, expected, "announcements changed; rerun with CHAIR_RECORD_GOLDEN=1 if intended")
+        XCTAssertEqual(transcript, expected, "\(golden) changed; rerun with CHAIR_RECORD_GOLDEN=1 if intended")
     }
 
     private func assertFixture(named name: String) throws {
@@ -52,7 +65,10 @@ struct FixtureMatch: Decodable {
         let log: MatchLog
         let gameServers: [PlayerSlot]
         let transcript: [String]
+        let outputs: [EngineOutput]
     }
+
+    static let singlesNames = PlayerNames([.a1: "Musa", .b1: "Cruz"], doubles: false)
 
     let rules: MatchRules
     let format: MatchFormat
@@ -66,6 +82,7 @@ struct FixtureMatch: Decodable {
         var log = try MatchLog(rules: fixture.rules, format: fixture.format)
         var servers: [PlayerSlot] = []
         var transcript: [String] = []
+        var outputs: [EngineOutput] = []
         var lastGame: [Int]?
         for (index, timed) in fixture.events.enumerated() {
             let game = [log.state.sets.count, log.state.currentSet.a + log.state.currentSet.b]
@@ -75,8 +92,9 @@ struct FixtureMatch: Decodable {
             }
             let calls = try log.append(timed)
             transcript.append("\(index) \(text(timed.event)): \(calls.map(text).joined(separator: ", "))")
+            outputs.append(EngineOutput(state: log.state, announcements: calls))
         }
-        return Played(fixture: fixture, log: log, gameServers: servers, transcript: transcript)
+        return Played(fixture: fixture, log: log, gameServers: servers, transcript: transcript, outputs: outputs)
     }
 
     static func scoreline(_ sets: [SetSummary]) -> String {
