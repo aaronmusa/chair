@@ -33,6 +33,7 @@ final class MatchSessionViewModel {
     private(set) var pendingPoint: Side?
     private(set) var log: MatchLog?
     private(set) var mySlot = PlayerSlot.a1
+    var verbosity = Verbosity.normal
     var onChange: (() -> Void)?
 
     let matchID: UUID
@@ -43,6 +44,7 @@ final class MatchSessionViewModel {
     private let firstMatchPrompt: FirstMatchPrompt?
     private var match: Match?
     private var session: MatchSession?
+    @ObservationIgnored private var outputListeners: [UUID: AsyncStream<EngineOutput>.Continuation] = [:]
 
     init(
         matchID: UUID,
@@ -60,25 +62,12 @@ final class MatchSessionViewModel {
         self.clock = clock
     }
 
-    var formatter: AnnouncementFormatter {
-        AnnouncementFormatter(names: PlayerNames(names, doubles: state?.doublesOrder != nil))
-    }
-
-    var announcementText: String {
-        guard let state else { return "" }
-        return announcements.isEmpty ? formatter.score(state) : formatter.text(announcements, after: state)
-    }
-
-    var getSet: GetSetPresentation? {
-        state.map { GetSetPresentation(state: $0, names: names, announcements: announcements) }
-    }
-
-    var scoreboard: ScoreboardModel? {
-        state.map { ScoreboardModel(state: $0, names: teamNames) }
-    }
-
-    func name(of side: Side) -> String {
-        teamNames[side] ?? (side == .a ? "Player A" : "Player B")
+    func outputs() -> AsyncStream<EngineOutput> {
+        let (stream, continuation) = AsyncStream.makeStream(of: EngineOutput.self)
+        let id = UUID()
+        outputListeners[id] = continuation
+        continuation.onTermination = handleOutputsEnded(id)
+        return stream
     }
 
     func load() {
@@ -286,12 +275,13 @@ final class MatchSessionViewModel {
             phase = .getSet
         }
         onChange?()
+        let output = EngineOutput(state: state, announcements: announcements)
+        outputListeners.values.forEach { $0.yield(output) }
     }
 
-    private var teamNames: [Side: String] {
-        let doubles = state?.doublesOrder != nil
-        let name = { (slot: PlayerSlot) in self.names[slot] ?? "Player \(slot.rawValue)" }
-        guard doubles else { return [.a: name(.a1), .b: name(.b1)] }
-        return [.a: "\(name(.a1)) and \(name(.a2))", .b: "\(name(.b1)) and \(name(.b2))"]
+    private func handleOutputsEnded(_ id: UUID) -> @Sendable (AsyncStream<EngineOutput>.Continuation.Termination) -> Void {
+        { [weak self] _ in
+            Task { @MainActor in self?.outputListeners[id] = nil }
+        }
     }
 }

@@ -30,7 +30,7 @@ final class FullMatchFixtureTests: XCTestCase {
         let played = try FixtureMatch.play(named: "full_singles_bo3")
         let formatter = AnnouncementFormatter(names: FixtureMatch.singlesNames)
 
-        try assertGolden(played.outputs.map(formatter.spoken).filter { !$0.isEmpty }, named: "singles_bo3.calls.txt")
+        try assertGolden(played.outputs.map { formatter.spoken($0) }.filter { !$0.isEmpty }, named: "singles_bo3.calls.txt")
     }
 
     private func assertGolden(

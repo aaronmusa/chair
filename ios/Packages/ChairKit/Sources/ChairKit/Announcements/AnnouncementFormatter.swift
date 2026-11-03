@@ -40,9 +40,12 @@ public struct AnnouncementFormatter: Sendable {
         Self.sentence(Self.umpireOrder(announcements).map { text($0, setNumber: state?.sets.count) })
     }
 
-    public func spoken(_ output: EngineOutput) -> String {
+    public func spoken(
+        _ output: EngineOutput,
+        includesPreRally: Bool = true
+    ) -> String {
         let calls = Self.umpireOrder(output.announcements).map { text($0, setNumber: output.state.sets.count) }
-        return Self.sentence(calls + [preRally(output) ?? ""])
+        return Self.sentence(calls + [includesPreRally ? preRally(output) ?? "" : ""])
     }
 
     public func preRally(_ output: EngineOutput) -> String? {

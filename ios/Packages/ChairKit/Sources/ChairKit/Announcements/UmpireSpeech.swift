@@ -17,6 +17,7 @@ public final class UmpireSpeech: SpeechOutput {
     private var waiting: [UmpireCall] = []
     private var current: UmpireCall?
     private var inWords = false
+    private var cueStartedAt: UInt64?
     private var cueTask: Task<Void, Never>?
     private var worker: Task<Void, Never>?
 
@@ -65,6 +66,14 @@ public final class UmpireSpeech: SpeechOutput {
             }
         #endif
         return .speaker
+    }
+
+    public var lastStartedAt: UInt64? {
+        synthesizer.startedAt
+    }
+
+    public func firstSound(after time: UInt64) -> UInt64? {
+        [cueStartedAt, synthesizer.startedAt].compactMap(\.self).filter { $0 > time }.min()
     }
 
     public func drained() async {
@@ -126,6 +135,7 @@ public final class UmpireSpeech: SpeechOutput {
     private func playCue(of call: UmpireCall) async -> Bool {
         guard cuesEnabled, let cue = call.cue else { return true }
         let cues = cues
+        cueStartedAt = mach_absolute_time()
         let task = Task { await cues.play(cue) }
         cueTask = task
         await task.value

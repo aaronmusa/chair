@@ -18,6 +18,7 @@ final class WatchBridge {
     typealias SessionFactory = (UUID) -> MatchSessionViewModel
 
     var isActive = false
+    @ObservationIgnored var onNewSession: (MatchSessionViewModel) -> Void = { _ in }
 
     @ObservationIgnored private(set) var session: MatchSessionViewModel?
     @ObservationIgnored private let link: WatchLink
@@ -91,6 +92,7 @@ final class WatchBridge {
         }
         let made = makeSession(matchID)
         made.onChange = handleSessionChange()
+        onNewSession(made)
         made.load()
         session = made
         sentAnnouncementID = made.announcementID
@@ -188,7 +190,7 @@ final class WatchBridge {
         guard session.announcementID != sentAnnouncementID else { return }
         sentAnnouncementID = session.announcementID
         if !session.announcements.isEmpty {
-            await link.send(.announcement(text: session.announcementText))
+            await link.send(.announcement(text: session.spokenText))
         }
     }
 

@@ -11,7 +11,7 @@ import ChairUI
 struct GetSetPresentation {
     let serverName: String
     let serveLabel: String
-    let strip: String
+    private(set) var strip: String
     let accessibilitySentence: String
     let markers: [PlayerMarker]
     let isDoubles: Bool
@@ -40,6 +40,13 @@ struct GetSetPresentation {
         receivingSide = preRally.receiver.side
         canSwapServer = !Self.isOver(state) && Self.isBeforeFirstPoint(of: state)
         canSwapSides = !Self.isOver(state)
+    }
+
+    func noted(_ note: String?) -> GetSetPresentation {
+        guard let note else { return self }
+        var noted = self
+        noted.strip = "\(strip) · \(note)"
+        return noted
     }
 
     var canSwapReceivers: Bool {
