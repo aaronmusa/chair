@@ -38,6 +38,7 @@ public final class SyncCoordinator {
     public private(set) var lastError: String?
 
     private let repository: SyncingMatchRepository
+    private let courts: SyncingSavedCourtRepository?
     private let auth: any AuthService
     private let network: any NetworkMonitor
     private let clock: any ClockProvider
@@ -49,9 +50,11 @@ public final class SyncCoordinator {
         auth: any AuthService,
         network: any NetworkMonitor,
         clock: any ClockProvider = SystemClock(),
-        migration: AccountMigration? = nil
+        migration: AccountMigration? = nil,
+        courts: SyncingSavedCourtRepository? = nil
     ) {
         self.repository = repository
+        self.courts = courts
         self.auth = auth
         self.network = network
         self.clock = clock
@@ -86,6 +89,7 @@ public final class SyncCoordinator {
         defer { isSyncing = false }
         do {
             try await repository.sync(as: session.userID)
+            try await courts?.sync(as: session.userID)
             lastSyncedAt = clock.now
             lastError = nil
         } catch {
@@ -95,6 +99,7 @@ public final class SyncCoordinator {
     }
 
     public func refreshPending() {
-        pendingCount = (try? repository.pendingCount()) ?? pendingCount
+        guard let matches = try? repository.pendingCount() else { return }
+        pendingCount = matches + ((try? courts?.pendingCount()) ?? 0)
     }
 }

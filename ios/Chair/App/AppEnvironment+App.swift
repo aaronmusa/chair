@@ -75,7 +75,8 @@ extension AppEnvironment {
             matchDefaults: UserDefaultsMatchDefaultsStore(),
             matchRemote: SupabaseMatchRemote(client: client),
             profileRemote: SupabaseProfileRemote(client: client),
-            inviteRemote: SupabaseInviteRemote(client: client)
+            inviteRemote: SupabaseInviteRemote(client: client),
+            savedCourtRemote: SupabaseSavedCourtRemote(client: client)
         )
     }
 }

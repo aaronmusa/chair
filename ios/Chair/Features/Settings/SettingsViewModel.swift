@@ -63,9 +63,16 @@ final class SettingsViewModel {
 
     func makeProfileViewModel(
         profiles: ProfileRepository,
-        matches: (any MatchRepository)?
+        matches: (any MatchRepository)?,
+        courts: (any SavedCourtRepository)?
     ) -> ProfileViewModel {
-        ProfileViewModel(environment: environment, profiles: profiles, matches: matches, onSignedOut: handleSignedOut())
+        ProfileViewModel(
+            environment: environment,
+            profiles: profiles,
+            matches: matches,
+            courts: courts,
+            onSignedOut: handleSignedOut()
+        )
     }
 
     private func handleSignedOut() -> () -> Void {

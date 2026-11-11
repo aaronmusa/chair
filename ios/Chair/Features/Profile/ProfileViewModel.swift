@@ -56,6 +56,7 @@ final class ProfileViewModel {
     private let remote: (any ProfileRemote)?
     private let profiles: ProfileRepository
     private let matches: (any MatchRepository)?
+    private let courts: (any SavedCourtRepository)?
     private let accountStore: any AccountStore
     private let debounce: Duration
     private let onSignedOut: () -> Void
@@ -65,6 +66,7 @@ final class ProfileViewModel {
         environment: AppEnvironment,
         profiles: ProfileRepository,
         matches: (any MatchRepository)?,
+        courts: (any SavedCourtRepository)? = nil,
         accountStore: any AccountStore = UserDefaultsAccountStore(),
         debounce: Duration = .milliseconds(400),
         onSignedOut: @escaping () -> Void
@@ -73,6 +75,7 @@ final class ProfileViewModel {
         remote = environment.profileRemote
         self.profiles = profiles
         self.matches = matches
+        self.courts = courts
         self.accountStore = accountStore
         self.debounce = debounce
         self.onSignedOut = onSignedOut
@@ -133,6 +136,7 @@ final class ProfileViewModel {
             return
         }
         try? matches?.clearLocal()
+        try? courts?.clearLocal()
         try? profiles.clear()
         accountStore.lastUserID = nil
         onSignedOut()

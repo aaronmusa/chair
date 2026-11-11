@@ -34,13 +34,16 @@ public final class UserDefaultsAccountStore: AccountStore {
 public final class AccountMigration {
     private let repository: SyncingMatchRepository
     private let store: any AccountStore
+    private let courts: SyncingSavedCourtRepository?
 
     public init(
         repository: SyncingMatchRepository,
-        store: any AccountStore
+        store: any AccountStore,
+        courts: SyncingSavedCourtRepository? = nil
     ) {
         self.repository = repository
         self.store = store
+        self.courts = courts
     }
 
     public func pendingPrompt(for userID: UUID) throws -> AccountPrompt? {
@@ -66,6 +69,7 @@ public final class AccountMigration {
 
     public func replace(for userID: UUID) throws {
         try repository.clearLocal()
+        try courts?.clearLocal()
         store.lastUserID = userID
     }
 }

@@ -74,8 +74,8 @@ insert into public.point_events (match_id, index, at, winner_side, outcome, sour
   ('11111111-1111-1111-1111-111111111111', 1, now(), 'B', 'winner', 'manual'),
   ('11111111-1111-1111-1111-111111111111', 2, now(), 'A', 'unforcedError', 'manual');
 
-insert into public.saved_courts (owner_id, name, corners, placement) values
-  ('00000000-0000-0000-0000-0000000001aa', 'Home', '[]', 'netPost');
+insert into public.saved_courts (owner_id, name, calibration, placement) values
+  ('00000000-0000-0000-0000-0000000001aa', 'Home', '{}', 'netPost');
 
 -- The owner reads and writes their own rows
 
