@@ -1,0 +1,215 @@
+{
+  "clip": "synthetic-netPost",
+  "frameSize": {
+    "width": 1920,
+    "height": 1080
+  },
+  "keypoints": [
+    {
+      "frame": 0,
+      "points": [
+        {
+          "keypoint": "singlesRight-farBaseline",
+          "pixel": {
+            "x": 178.06,
+            "y": 529.95
+          }
+        },
+        {
+          "keypoint": "doublesRight-farBaseline",
+          "pixel": {
+            "x": 266.85,
+            "y": 520.15
+          }
+        },
+        {
+          "keypoint": "centre-farService",
+          "pixel": {
+            "x": 275.59,
+            "y": 583.95
+          }
+        },
+        {
+          "keypoint": "singlesRight-farService",
+          "pixel": {
+            "x": 538.93,
+            "y": 529.95
+          }
+        },
+        {
+          "keypoint": "centre-nearService",
+          "pixel": {
+            "x": 1644.41,
+            "y": 583.95
+          }
+        },
+        {
+          "keypoint": "singlesRight-nearService",
+          "pixel": {
+            "x": 1381.07,
+            "y": 529.95
+          }
+        },
+        {
+          "keypoint": "singlesRight-nearBaseline",
+          "pixel": {
+            "x": 1741.94,
+            "y": 529.95
+          }
+        },
+        {
+          "keypoint": "doublesRight-nearBaseline",
+          "pixel": {
+            "x": 1653.15,
+            "y": 520.15
+          }
+        }
+      ]
+    }
+  ],
+  "groundPoints": [
+    {
+      "name": "singlesRight-farBaseline",
+      "pixel": {
+        "x": 178.06,
+        "y": 529.95
+      },
+      "court": {
+        "x": 4.115,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "doublesRight-farBaseline",
+      "pixel": {
+        "x": 266.85,
+        "y": 520.15
+      },
+      "court": {
+        "x": 5.485,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "centre-farService",
+      "pixel": {
+        "x": 275.59,
+        "y": 583.95
+      },
+      "court": {
+        "x": 0.0,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "singlesRight-farService",
+      "pixel": {
+        "x": 538.93,
+        "y": 529.95
+      },
+      "court": {
+        "x": 4.115,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "centre-nearService",
+      "pixel": {
+        "x": 1644.41,
+        "y": 583.95
+      },
+      "court": {
+        "x": 0.0,
+        "y": -6.4
+      }
+    },
+    {
+      "name": "singlesRight-nearService",
+      "pixel": {
+        "x": 1381.07,
+        "y": 529.95
+      },
+      "court": {
+        "x": 4.115,
+        "y": -6.4
+      }
+    },
+    {
+      "name": "singlesRight-nearBaseline",
+      "pixel": {
+        "x": 1741.94,
+        "y": 529.95
+      },
+      "court": {
+        "x": 4.115,
+        "y": -11.885
+      }
+    },
+    {
+      "name": "doublesRight-nearBaseline",
+      "pixel": {
+        "x": 1653.15,
+        "y": 520.15
+      },
+      "court": {
+        "x": 5.485,
+        "y": -11.885
+      }
+    },
+    {
+      "name": "right doubles sideline at the net",
+      "pixel": {
+        "x": 960.0,
+        "y": 520.15
+      },
+      "court": {
+        "x": 5.485,
+        "y": 0.0
+      }
+    },
+    {
+      "name": "right singles sideline at the net",
+      "pixel": {
+        "x": 960.0,
+        "y": 529.95
+      },
+      "court": {
+        "x": 4.115,
+        "y": 0.0
+      }
+    },
+    {
+      "name": "centre of the court",
+      "pixel": {
+        "x": 960.0,
+        "y": 583.95
+      },
+      "court": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "name": "right doubles sideline, far service line level",
+      "pixel": {
+        "x": 586.74,
+        "y": 520.15
+      },
+      "court": {
+        "x": 5.485,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "right doubles sideline, near service line level",
+      "pixel": {
+        "x": 1333.26,
+        "y": 520.15
+      },
+      "court": {
+        "x": 5.485,
+        "y": -6.4
+      }
+    }
+  ]
+}

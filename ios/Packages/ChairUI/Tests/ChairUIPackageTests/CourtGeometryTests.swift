@@ -8,6 +8,8 @@
 import CoreGraphics
 import XCTest
 
+import ChairKit
+
 @testable import ChairUI
 
 final class CourtGeometryTests: XCTestCase {

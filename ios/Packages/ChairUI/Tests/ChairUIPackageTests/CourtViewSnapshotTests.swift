@@ -10,6 +10,8 @@ import XCTest
 
 import SnapshotTesting
 
+import ChairKit
+
 @testable import ChairUI
 
 @MainActor
