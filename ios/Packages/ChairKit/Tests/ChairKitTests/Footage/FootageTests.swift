@@ -5,8 +5,12 @@
 //  Created by Aaron Musa on 11/11/26.
 //
 
+import CoreGraphics
 import Foundation
+import ImageIO
 import XCTest
+
+import ChairKit
 
 final class FootageTests: XCTestCase {
     private struct MissingFootage: LocalizedError {
@@ -72,6 +76,43 @@ final class FootageTests: XCTestCase {
                 XCTAssertLessThan(max(lines, errors.baselines ?? 0), 0.20, clip.entry.id)
             }
         }
+    }
+
+    func testSuggestedKeypointsLandWithinTwoPercentOnFourFifthsOfClips() async throws {
+        var rows: [String] = []
+        var passing = 0
+        for clip in footage.clips {
+            let truth = try XCTUnwrap(clip.groundTruth?.keypoints.min { $0.frame < $1.frame }?.pixels, clip.entry.id)
+            let size = try XCTUnwrap(clip.groundTruth?.frameSize)
+            let image: LumaImage = if let still = clip.entry.still {
+                try Self.still(footage.folder.appending(path: still))
+            } else {
+                try await CourtLineDetectorTests.firstFrame(clip.url)
+            }
+            let suggestion = CourtLineDetector.suggest(
+                in: image,
+                placement: clip.entry.placement,
+                frameSize: CGSize(width: size.width, height: size.height)
+            )
+            var worst = 0.0
+            let header = String(format: "%@ (%@), confidence %.2f", clip.entry.id, clip.entry.placement.rawValue, suggestion.confidence)
+            rows.append(header)
+            for (keypoint, pixel) in truth.sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
+                let error = suggestion.keypoints[keypoint].map { hypot($0.x - pixel.x, $0.y - pixel.y) / size.width * 100 }
+                worst = max(worst, error ?? 100)
+                rows.append("  \(keypoint.rawValue): " + (error.map { String(format: "%.2f %%", $0) } ?? "missing"))
+            }
+            passing += worst < 2 ? 1 : 0
+        }
+        print(rows.joined(separator: "\n"))
+        let summary = "\(passing) of \(footage.clips.count) clips within 2 %"
+        XCTAssertGreaterThanOrEqual(Double(passing), Double(footage.clips.count) * 0.8, summary)
+    }
+
+    private static func still(_ url: URL) throws -> LumaImage {
+        let source = try XCTUnwrap(CGImageSourceCreateWithURL(url as CFURL, nil))
+        let image = try XCTUnwrap(CGImageSourceCreateImageAtIndex(source, 0, nil))
+        return try XCTUnwrap(LumaImage(cgImage: image))
     }
 
     func testEveryClipMatchesItsManifestEntry() async throws {

@@ -15,7 +15,7 @@ import tempfile
 OUT = "ios/Packages/ChairKit/Tests/ChairKitTests/Fixtures/Footage"
 WIDTH, HEIGHT = 1920, 1080
 CAMERAS = [
-    ("synthetic-baseline", "baseline", (0.0, -19.0, 4.0), (0.0, -2.0, 0.0), 1100.0),
+    ("synthetic-baseline", "baseline", (0.0, -18.5, 3.5), (0.0, -3.0, 0.0), 697.0),
     ("synthetic-netPost", "netPost", (-6.4, 0.0, 1.3), (3.0, 0.0, 0.0), 697.0),
 ]
 FPS = 60

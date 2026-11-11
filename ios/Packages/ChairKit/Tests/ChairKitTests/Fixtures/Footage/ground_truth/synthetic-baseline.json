@@ -11,29 +11,29 @@
         {
           "keypoint": "doublesLeft-farBaseline",
           "pixel": {
-            "x": 765.25,
-            "y": 427.08
+            "x": 834.28,
+            "y": 464.85
           }
         },
         {
           "keypoint": "doublesRight-farBaseline",
           "pixel": {
-            "x": 1154.75,
-            "y": 427.08
+            "x": 1085.72,
+            "y": 464.85
           }
         },
         {
           "keypoint": "doublesLeft-nearBaseline",
           "pixel": {
-            "x": 190.62,
-            "y": 857.58
+            "x": 430.75,
+            "y": 728.84
           }
         },
         {
           "keypoint": "doublesRight-nearBaseline",
           "pixel": {
-            "x": 1729.38,
-            "y": 857.58
+            "x": 1489.25,
+            "y": 728.84
           }
         }
       ]
@@ -43,8 +43,8 @@
     {
       "name": "doublesLeft-farBaseline",
       "pixel": {
-        "x": 765.25,
-        "y": 427.08
+        "x": 834.28,
+        "y": 464.85
       },
       "court": {
         "x": -5.485,
@@ -54,8 +54,8 @@
     {
       "name": "singlesLeft-farBaseline",
       "pixel": {
-        "x": 813.89,
-        "y": 427.08
+        "x": 865.68,
+        "y": 464.85
       },
       "court": {
         "x": -4.115,
@@ -65,8 +65,8 @@
     {
       "name": "singlesRight-farBaseline",
       "pixel": {
-        "x": 1106.11,
-        "y": 427.08
+        "x": 1054.32,
+        "y": 464.85
       },
       "court": {
         "x": 4.115,
@@ -76,8 +76,8 @@
     {
       "name": "doublesRight-farBaseline",
       "pixel": {
-        "x": 1154.75,
-        "y": 427.08
+        "x": 1085.72,
+        "y": 464.85
       },
       "court": {
         "x": 5.485,
@@ -87,8 +87,8 @@
     {
       "name": "singlesLeft-farService",
       "pixel": {
-        "x": 783.47,
-        "y": 457.46
+        "x": 845.55,
+        "y": 482.41
       },
       "court": {
         "x": -4.115,
@@ -99,7 +99,7 @@
       "name": "centre-farService",
       "pixel": {
         "x": 960.0,
-        "y": 457.46
+        "y": 482.41
       },
       "court": {
         "x": 0.0,
@@ -109,8 +109,8 @@
     {
       "name": "singlesRight-farService",
       "pixel": {
-        "x": 1136.53,
-        "y": 457.46
+        "x": 1074.45,
+        "y": 482.41
       },
       "court": {
         "x": 4.115,
@@ -120,8 +120,8 @@
     {
       "name": "singlesLeft-nearService",
       "pixel": {
-        "x": 616.59,
-        "y": 624.1
+        "x": 731.89,
+        "y": 581.51
       },
       "court": {
         "x": -4.115,
@@ -132,7 +132,7 @@
       "name": "centre-nearService",
       "pixel": {
         "x": 960.0,
-        "y": 624.1
+        "y": 581.51
       },
       "court": {
         "x": 0.0,
@@ -142,8 +142,8 @@
     {
       "name": "singlesRight-nearService",
       "pixel": {
-        "x": 1303.41,
-        "y": 624.1
+        "x": 1188.11,
+        "y": 581.51
       },
       "court": {
         "x": 4.115,
@@ -153,8 +153,8 @@
     {
       "name": "doublesLeft-nearBaseline",
       "pixel": {
-        "x": 190.62,
-        "y": 857.58
+        "x": 430.75,
+        "y": 728.84
       },
       "court": {
         "x": -5.485,
@@ -164,8 +164,8 @@
     {
       "name": "singlesLeft-nearBaseline",
       "pixel": {
-        "x": 382.79,
-        "y": 857.58
+        "x": 562.94,
+        "y": 728.84
       },
       "court": {
         "x": -4.115,
@@ -175,8 +175,8 @@
     {
       "name": "singlesRight-nearBaseline",
       "pixel": {
-        "x": 1537.21,
-        "y": 857.58
+        "x": 1357.06,
+        "y": 728.84
       },
       "court": {
         "x": 4.115,
@@ -186,8 +186,8 @@
     {
       "name": "doublesRight-nearBaseline",
       "pixel": {
-        "x": 1729.38,
-        "y": 857.58
+        "x": 1489.25,
+        "y": 728.84
       },
       "court": {
         "x": 5.485,
@@ -197,8 +197,8 @@
     {
       "name": "left doubles sideline at the net",
       "pixel": {
-        "x": 649.17,
-        "y": 514.04
+        "x": 756.83,
+        "y": 515.52
       },
       "court": {
         "x": -5.485,
@@ -208,8 +208,8 @@
     {
       "name": "right doubles sideline at the net",
       "pixel": {
-        "x": 1270.83,
-        "y": 514.04
+        "x": 1163.17,
+        "y": 515.52
       },
       "court": {
         "x": 5.485,
@@ -219,8 +219,8 @@
     {
       "name": "right singles sideline at the net",
       "pixel": {
-        "x": 1193.19,
-        "y": 514.04
+        "x": 1112.43,
+        "y": 515.52
       },
       "court": {
         "x": 4.115,
@@ -231,7 +231,7 @@
       "name": "centre of the court",
       "pixel": {
         "x": 960.0,
-        "y": 514.04
+        "y": 515.52
       },
       "court": {
         "x": 0.0,
@@ -241,8 +241,8 @@
     {
       "name": "right doubles sideline, far service line level",
       "pixel": {
-        "x": 1195.31,
-        "y": 457.46
+        "x": 1112.56,
+        "y": 482.41
       },
       "court": {
         "x": 5.485,
@@ -252,8 +252,8 @@
     {
       "name": "right doubles sideline, near service line level",
       "pixel": {
-        "x": 1417.73,
-        "y": 624.1
+        "x": 1264.05,
+        "y": 581.51
       },
       "court": {
         "x": 5.485,

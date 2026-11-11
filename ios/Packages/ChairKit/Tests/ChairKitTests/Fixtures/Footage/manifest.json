@@ -10,7 +10,7 @@
       "duration": 2,
       "frameRate": 60,
       "device": "Synthetic pinhole camera",
-      "height": 4.0
+      "height": 3.5
     },
     {
       "id": "synthetic-netPost",
