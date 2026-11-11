@@ -105,21 +105,7 @@ final class CalibrationViewModel {
     }
 
     var projectedLines: [[CGPoint]] {
-        guard let homography else { return [] }
-        let bounds = CGRect(origin: .zero, size: frameSize).insetBy(dx: -frameSize.width, dy: -frameSize.height)
-        return CourtModel.lines.map { segment in
-            (0 ... 24).compactMap { step -> CGPoint? in
-                let t = Double(step) / 24
-                let court = CourtPoint(
-                    x: segment.from.x + (segment.to.x - segment.from.x) * t,
-                    y: segment.from.y + (segment.to.y - segment.from.y) * t
-                )
-                let pixel = homography.toPixel(court)
-                guard bounds.contains(pixel), homography.toCourt(pixel) != nil else { return nil }
-                return pixel
-            }
-        }
-        .filter { $0.count > 1 }
+        homography.map { CourtOverlay.lines(through: $0, frameSize: frameSize) } ?? []
     }
 
     var pills: [ReadinessPill] {

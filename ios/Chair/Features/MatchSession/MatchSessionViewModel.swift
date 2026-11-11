@@ -33,6 +33,7 @@ final class MatchSessionViewModel {
     private(set) var pendingPoint: Side?
     private(set) var log: MatchLog?
     private(set) var mySlot = PlayerSlot.a1
+    private(set) var calibration: CourtCalibration?
     var verbosity = Verbosity.normal
     var onChange: (() -> Void)?
 
@@ -62,6 +63,10 @@ final class MatchSessionViewModel {
         self.clock = clock
     }
 
+    var repositoryForCamera: (any MatchRepository)? {
+        repository
+    }
+
     func outputs() -> AsyncStream<EngineOutput> {
         let (stream, continuation) = AsyncStream.makeStream(of: EngineOutput.self)
         let id = UUID()
@@ -85,6 +90,7 @@ final class MatchSessionViewModel {
             show(log.state, announcements: [])
             isReadOnly = match.record.isReadOnly
             mySlot = match.localUserSlot
+            calibration = match.calibration
             if match.status != .inProgress || isReadOnly {
                 phase = .complete
             }
