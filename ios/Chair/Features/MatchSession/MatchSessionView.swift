@@ -11,7 +11,7 @@ import ChairKit
 import ChairUI
 
 struct MatchSessionView: View {
-    @State private var viewModel: MatchSessionViewModel
+    @State var viewModel: MatchSessionViewModel
     @State private var showsAnnouncement = true
     @State private var isPaused = false
     @State private var showsPointLog = false
@@ -19,10 +19,12 @@ struct MatchSessionView: View {
     @State private var showsEndMatch = false
     @State private var showsDelete = false
     @State private var showsSpeakerTip = false
+    @State var camera: CameraPanelModel?
 
     @Environment(\.appRouter) private var router
-    @Environment(\.appEnvironment) private var environment
+    @Environment(\.appEnvironment) var environment
     @Environment(\.umpire) private var umpire
+    @Environment(\.makeCapture) var makeCapture
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -122,6 +124,7 @@ struct MatchSessionView: View {
         }
         .accessibilityIdentifier("match.session")
         .task(handleLoad())
+        .onDisappear(perform: handleStopCamera())
         .task(id: viewModel.announcementID, handleAnnouncementTimer())
     }
 
@@ -143,7 +146,8 @@ struct MatchSessionView: View {
                     getSet: getSet,
                     announcement: stripText,
                     names: [.a: viewModel.name(of: .a), .b: viewModel.name(of: .b)],
-                    actions: rallyActions
+                    actions: rallyActions,
+                    camera: camera
                 )
             }
         case .finishing:
@@ -318,7 +322,10 @@ private extension MatchSessionView {
     }
 
     func handleLoad() -> @MainActor @Sendable () async -> Void {
-        { [viewModel] in viewModel.load() }
+        { [viewModel] in
+            viewModel.load()
+            await startCamera()
+        }
     }
 
     func handleAnnouncementTimer() -> @MainActor @Sendable () async -> Void {

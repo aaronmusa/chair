@@ -24,6 +24,7 @@ struct RallyView: View {
     let announcement: String
     let names: [Side: String]
     var actions = RallyActions()
+    var camera: CameraPanelModel?
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -31,9 +32,19 @@ struct RallyView: View {
     var body: some View {
         if horizontalSizeClass == .regular {
             HStack(spacing: 0) {
-                cameraPlaceholder
+                if let camera {
+                    CameraPanelView(model: camera)
+                } else {
+                    cameraPlaceholder
+                }
                 sidePanel
                     .frame(width: 420)
+            }
+        } else if let camera {
+            VStack(spacing: 0) {
+                CameraPanelView(model: camera)
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                sidePanel
             }
         } else {
             sidePanel

@@ -157,16 +157,7 @@ struct CalibrationView: View {
     }
 
     private func courtOverlay(_ mapping: FrameMapping) -> some View {
-        Canvas { context, _ in
-            for line in viewModel.projectedLines {
-                var path = Path()
-                path.addLines(line.map(mapping.toView))
-                context.stroke(path, with: .color(.black.opacity(0.5)), style: StrokeStyle(lineWidth: 4))
-                context.stroke(path, with: .color(.white), style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
-            }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        CourtLinesOverlay(lines: viewModel.projectedLines, mapping: mapping)
     }
 
     private func handle(
