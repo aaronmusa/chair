@@ -6,7 +6,10 @@
 //
 
 import AVFoundation
+import CoreGraphics
 import Foundation
+
+import ChairKit
 
 struct FootageManifest: Codable, Equatable {
     var clips: [FootageClip]
@@ -14,14 +17,13 @@ struct FootageManifest: Codable, Equatable {
 
 struct FootageClip: Codable, Equatable {
     enum Surface: String, Codable, CaseIterable { case hard, clay, grass }
-    enum Placement: String, Codable, CaseIterable { case netPost, baseline, chair }
     enum Light: String, Codable, CaseIterable { case bright, overcast, evening }
 
     var id: String
     var file: String
     var court: String
     var surface: Surface
-    var placement: Placement
+    var placement: CameraPlacement
     var light: Light
     var duration: Double
     var frameRate: Double
@@ -43,9 +45,18 @@ struct GroundTruth: Codable, Equatable {
         var height: Double
     }
 
-    struct Corners: Codable, Equatable {
+    struct Mark: Codable, Equatable {
+        var keypoint: CourtKeypoint
+        var pixel: Point
+    }
+
+    struct Keypoints: Codable, Equatable {
         var frame: Int
-        var points: [Point]
+        var points: [Mark]
+
+        var pixels: [CourtKeypoint: CGPoint] {
+            Dictionary(points.map { ($0.keypoint, CGPoint(x: $0.pixel.x, y: $0.pixel.y)) }) { first, _ in first }
+        }
     }
 
     struct GroundPoint: Codable, Equatable {
@@ -56,7 +67,7 @@ struct GroundTruth: Codable, Equatable {
 
     var clip: String
     var frameSize: Size
-    var corners: [Corners]
+    var keypoints: [Keypoints]
     var groundPoints: [GroundPoint]
 }
 
@@ -67,7 +78,8 @@ struct FootageSet {
         let url: URL
     }
 
-    static let cornerInterval = 600
+    static let keypointInterval = 600
+    static let maximumReprojectionError = 3.0
     static let minimumGroundPoints = 10
     static let halfWidth = 5.485
     static let halfLength = 11.885
@@ -121,13 +133,13 @@ extension FootageSet.Clip {
         if truth.clip != entry.id {
             found.append("ground truth names clip \(truth.clip)")
         }
-        let expected = Set(stride(from: 0, to: entry.frameCount, by: FootageSet.cornerInterval))
-        let marked = Set(truth.corners.map(\.frame))
+        let expected = Set(stride(from: 0, to: entry.frameCount, by: FootageSet.keypointInterval))
+        let marked = Set(truth.keypoints.map(\.frame))
         for frame in expected.subtracting(marked).sorted() {
-            found.append("no corners at frame \(frame)")
+            found.append("no keypoints at frame \(frame)")
         }
-        for corners in truth.corners {
-            found += cornerProblems(corners, in: truth.frameSize).map { "frame \(corners.frame): \($0)" }
+        for keypoints in truth.keypoints {
+            found += keypointProblems(keypoints, in: truth.frameSize).map { "frame \(keypoints.frame): \($0)" }
         }
         if truth.groundPoints.count < FootageSet.minimumGroundPoints {
             found.append("\(truth.groundPoints.count) ground points, need \(FootageSet.minimumGroundPoints)")
@@ -161,19 +173,49 @@ extension FootageSet.Clip {
         return found
     }
 
-    private func cornerProblems(
-        _ corners: GroundTruth.Corners,
+    private func keypointProblems(
+        _ keypoints: GroundTruth.Keypoints,
         in size: GroundTruth.Size
     ) -> [String] {
-        guard corners.points.count == 4 else { return ["\(corners.points.count) corners, need 4"] }
-        var found: [String] = []
-        if !corners.points.allSatisfy({ $0.isInside(size) }) {
-            found.append("a corner lies outside the frame")
+        let pixels = keypoints.pixels
+        guard pixels.count == keypoints.points.count else { return ["a keypoint is marked twice"] }
+        guard pixels.count >= Homography.minimumPoints else {
+            return ["\(pixels.count) keypoints, need \(Homography.minimumPoints)"]
         }
-        if !corners.points.isConvexClockwise {
-            found.append("corners are not ordered far-left, far-right, near-right, near-left")
+        var found: [String] = []
+        if !keypoints.points.allSatisfy({ $0.pixel.isInside(size) }) {
+            found.append("a keypoint lies outside the frame")
+        }
+        guard let homography = Homography(pixels) else { return found + ["keypoints do not define a homography"] }
+        let error = homography.reprojectionError(pixels)
+        if error > FootageSet.maximumReprojectionError {
+            found.append("keypoints disagree by \(String(format: "%.1f", error)) px; check their names")
         }
         return found
+    }
+
+    func mappingErrors() -> (lines: Double?, baselines: Double?) {
+        guard let truth = groundTruth,
+              let first = truth.keypoints.min(by: { $0.frame < $1.frame }),
+              let homography = Homography(first.pixels) else { return (nil, nil) }
+        var lines: [Double] = []
+        var baselines: [Double] = []
+        for point in truth.groundPoints {
+            let court = CourtPoint(x: point.court.x, y: point.court.y)
+            let error = homography.toCourt(CGPoint(x: point.pixel.x, y: point.pixel.y))?.distance(to: court) ?? .infinity
+            if abs(abs(court.y) - CourtDimensions.halfLength) < FootageSet.courtTolerance {
+                baselines.append(error)
+            } else {
+                lines.append(error)
+            }
+        }
+        return (lines.mean, baselines.mean)
+    }
+}
+
+private extension [Double] {
+    var mean: Double? {
+        isEmpty ? nil : reduce(0, +) / Double(count)
     }
 }
 
@@ -185,16 +227,5 @@ private extension GroundTruth.Point {
 
     func isInside(_ size: GroundTruth.Size) -> Bool {
         (0 ... size.width).contains(x) && (0 ... size.height).contains(y)
-    }
-}
-
-private extension [GroundTruth.Point] {
-    var isConvexClockwise: Bool {
-        indices.allSatisfy { index in
-            let a = self[index]
-            let b = self[(index + 1) % count]
-            let c = self[(index + 2) % count]
-            return (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x) > 0
-        }
     }
 }

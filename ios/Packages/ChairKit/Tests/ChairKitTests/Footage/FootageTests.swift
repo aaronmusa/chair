@@ -49,6 +49,27 @@ final class FootageTests: XCTestCase {
         XCTAssertEqual(footage.problems, [])
     }
 
+    func testGroundPointsMapWithinTheTargetsForEachPlacement() throws {
+        for clip in footage.clips {
+            let errors = clip.mappingErrors()
+            let lines = try XCTUnwrap(errors.lines, clip.entry.id)
+            print(String(
+                format: "%@ (%@): lines %.1f cm, baselines %@",
+                clip.entry.id,
+                clip.entry.placement.rawValue,
+                lines * 100,
+                errors.baselines.map { String(format: "%.1f cm", $0 * 100) } ?? "none marked"
+            ))
+            switch clip.entry.placement {
+            case .netPost, .chair:
+                XCTAssertLessThan(lines, 0.15, clip.entry.id)
+                XCTAssertLessThan(errors.baselines ?? 0, 0.30, clip.entry.id)
+            case .baseline:
+                XCTAssertLessThan(max(lines, errors.baselines ?? 0), 0.20, clip.entry.id)
+            }
+        }
+    }
+
     func testEveryClipMatchesItsManifestEntry() async throws {
         for clip in footage.clips where FileManager.default.fileExists(atPath: clip.url.path) {
             let problems = try await clip.mediaProblems()

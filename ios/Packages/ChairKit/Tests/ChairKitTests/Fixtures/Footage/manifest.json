@@ -10,6 +10,17 @@
       "duration": 2,
       "frameRate": 60,
       "device": "Synthetic pinhole camera"
+    },
+    {
+      "id": "synthetic-netPost",
+      "file": "synthetic-netPost.mp4",
+      "court": "Synthetic",
+      "surface": "hard",
+      "placement": "netPost",
+      "light": "bright",
+      "duration": 2,
+      "frameRate": 60,
+      "device": "Synthetic pinhole camera"
     }
   ]
 }

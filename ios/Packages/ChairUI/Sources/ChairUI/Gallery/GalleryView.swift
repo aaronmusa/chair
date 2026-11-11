@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import ChairKit
+
 #if DEBUG && os(iOS)
     public struct GalleryView: View {
         enum Appearance: String, CaseIterable {
