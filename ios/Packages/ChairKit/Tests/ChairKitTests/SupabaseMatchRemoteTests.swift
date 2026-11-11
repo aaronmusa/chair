@@ -34,6 +34,25 @@ final class SupabaseMatchRemoteTests: XCTestCase {
     }
 
     @MainActor
+    func testACameraMatchSyncsItsPlacementAndCalibration() async throws {
+        let first = try await Self.device(signedInAs: "test@chair.local")
+        let second = try await Self.device(signedInAs: "test@chair.local")
+        let match = Match(playedAt: .now, format: .singles, inputMode: InputMode.camera.rawValue, createdAt: .now, updatedAt: .now)
+        match.players = [MatchPlayer.sample(.a1, name: "Aaron"), MatchPlayer.sample(.b1, name: "Juan")]
+        let calibration = SavedCourtRepositoryTests.court(name: "Home").calibration
+        match.cameraPlacementValue = .netPost
+        match.calibration = calibration
+        try first.repository.save(match)
+
+        try await first.repository.sync()
+        try await second.repository.sync()
+
+        let copy = try XCTUnwrap(second.repository.fetch().first { $0.remoteID == match.remoteID })
+        XCTAssertEqual(copy.cameraPlacementValue, .netPost)
+        XCTAssertEqual(copy.calibration?.keypoints, calibration?.keypoints)
+    }
+
+    @MainActor
     func testTwoDevicesSignedInAsTheSeedUserShareAMatchAndItsUndo() async throws {
         let first = try await Self.device(signedInAs: "test@chair.local")
         let second = try await Self.device(signedInAs: "test@chair.local")

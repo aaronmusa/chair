@@ -50,12 +50,12 @@ final class NewMatchUITests: XCTestCase {
 
     @MainActor
     func testACameraMatchShowsPlacementBeforeTheLiveScreen() {
-        let app = launchOnNewMatch()
+        let app = launchOnNewMatch(resettingCamera: true)
 
         startCameraMatch(in: app)
 
         XCTAssertTrue(app.buttons["placement.openCamera"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["placement.illustration"].exists || app.images["placement.illustration"].exists)
+        XCTAssertTrue(app.staticTexts["Net post"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["getSet.playPoint"].exists)
     }
 
@@ -80,11 +80,10 @@ final class NewMatchUITests: XCTestCase {
         let opponent = app.textFields["newMatch.name.B1"]
         opponent.tap()
         opponent.typeText("Juan")
-        let camera = app.buttons["newMatch.input.camera"]
-        for _ in 0 ..< 4 where !camera.isHittable {
-            app.swipeUp()
-        }
-        camera.tap()
+        let form = app.collectionViews.firstMatch
+        form.swipeUp()
+        form.swipeUp()
+        app.buttons["newMatch.input.camera"].tap()
         app.buttons["newMatch.start"].tap()
     }
 

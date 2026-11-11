@@ -97,6 +97,8 @@ public struct MatchRecord: Codable, Equatable, Sendable {
     public var points: [Point]
     public var ownerID: UUID?
     public var localUserSlot: PlayerSlot?
+    public var cameraPlacement: String?
+    public var calibration: CourtCalibration?
 
     public var mySide: Side {
         (localUserSlot ?? .a1).side
@@ -140,7 +142,9 @@ public extension Match {
                 )
             },
             ownerID: ownerID,
-            localUserSlot: localUserSlot
+            localUserSlot: localUserSlot,
+            cameraPlacement: cameraPlacement,
+            calibration: calibration
         )
     }
 
@@ -170,6 +174,10 @@ public extension Match {
         status = record.status
         inputMode = record.inputMode
         refereeMode = record.refereeMode
+        cameraPlacement = record.cameraPlacement ?? cameraPlacement
+        if let calibration = record.calibration {
+            self.calibration = calibration
+        }
         sets = record.sets
         createdAt = record.createdAt
         updatedAt = record.updatedAt

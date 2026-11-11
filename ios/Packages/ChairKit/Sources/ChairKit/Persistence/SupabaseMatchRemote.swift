@@ -77,6 +77,8 @@ private struct MatchRow: Decodable {
     let status: MatchStatus
     let inputMode: String
     let refereeMode: String
+    let cameraPlacement: String?
+    let calibration: CourtCalibration?
     let sets: [SetScore]
     let createdAt: Date
     let updatedAt: Date
@@ -89,6 +91,8 @@ private struct MatchRow: Decodable {
         case playedAt = "played_at"
         case inputMode = "input_mode"
         case refereeMode = "referee_mode"
+        case cameraPlacement = "camera_placement"
+        case calibration
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case players = "match_players"
@@ -109,7 +113,9 @@ private struct MatchRow: Decodable {
             updatedAt: updatedAt,
             players: players.sorted { $0.slot < $1.slot }.map(\.player),
             points: points.sorted { $0.index < $1.index }.map(\.point),
-            ownerID: ownerID
+            ownerID: ownerID,
+            cameraPlacement: cameraPlacement,
+            calibration: calibration
         )
     }
 }
@@ -123,6 +129,8 @@ private struct MatchFields: Encodable {
     let status: MatchStatus
     let inputMode: String
     let refereeMode: String
+    let cameraPlacement: String?
+    let calibration: CourtCalibration?
     let sets: [SetScore]
     let createdAt: Date
     let updatedAt: Date
@@ -136,6 +144,8 @@ private struct MatchFields: Encodable {
         status = record.status
         inputMode = record.inputMode
         refereeMode = record.refereeMode
+        cameraPlacement = record.cameraPlacement
+        calibration = record.calibration
         sets = record.sets
         createdAt = record.createdAt
         updatedAt = record.updatedAt
@@ -147,6 +157,8 @@ private struct MatchFields: Encodable {
         case playedAt = "played_at"
         case inputMode = "input_mode"
         case refereeMode = "referee_mode"
+        case cameraPlacement = "camera_placement"
+        case calibration
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -161,6 +173,8 @@ private struct MatchFields: Encodable {
         try container.encode(status, forKey: .status)
         try container.encode(inputMode, forKey: .inputMode)
         try container.encode(refereeMode, forKey: .refereeMode)
+        try container.encodeIfPresent(cameraPlacement, forKey: .cameraPlacement)
+        try container.encodeIfPresent(calibration, forKey: .calibration)
         try container.encode(sets, forKey: .sets)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
