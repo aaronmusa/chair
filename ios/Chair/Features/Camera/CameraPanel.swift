@@ -10,6 +10,7 @@ import CoreMedia
 import Foundation
 import Observation
 import SwiftUI
+import UIKit
 
 import ChairKit
 import ChairUI
@@ -25,6 +26,7 @@ final class CameraPanelModel {
     private(set) var captureState = CaptureState.idle
     private(set) var still: CGImage?
     var isRecalibrating = false
+    var showsDiagnostics = true
 
     private let makeCapture: () -> any CaptureSource
     private let suggester: any KeypointSuggesting
@@ -61,8 +63,20 @@ final class CameraPanelModel {
     }
 
     var chip: String {
-        guard case let .running(format) = captureState else { return "Calibrated" }
-        return "\(format.frameRate) fps · Calibrated"
+        guard case let .running(format) = captureState else { return "Calibrated" + diagnostics }
+        return "\(format.frameRate) fps · Calibrated" + diagnostics
+    }
+
+    private var diagnostics: String {
+        #if DEBUG
+            guard showsDiagnostics else { return "" }
+            UIDevice.current.isBatteryMonitoringEnabled = true
+            let battery = UIDevice.current.batteryLevel
+            let level = battery < 0 ? "–" : "\(Int((battery * 100).rounded())) %"
+            return " · \(ProcessInfo.processInfo.thermalState.label) · \(level)"
+        #else
+            return ""
+        #endif
     }
 
     func start() async {
@@ -190,5 +204,17 @@ struct CameraPanelView: View {
 
     private func handleRecalibrate() -> () -> Void {
         { Task { await model.recalibrate() } }
+    }
+}
+
+private extension ProcessInfo.ThermalState {
+    var label: String {
+        switch self {
+        case .nominal: "nominal"
+        case .fair: "fair"
+        case .serious: "serious"
+        case .critical: "critical"
+        @unknown default: "unknown"
+        }
     }
 }

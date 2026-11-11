@@ -61,6 +61,17 @@ final class CameraPanelTests: XCTestCase {
         await panel.stop()
     }
 
+    func testDebugBuildsShowThermalStateAndBatteryOnTheChip() async throws {
+        let (repository, match) = try makeCameraMatch()
+        let panel = try makePanel(match: match, calibration: XCTUnwrap(match.calibration), repository: repository)
+        panel.showsDiagnostics = true
+        await panel.start()
+
+        XCTAssertTrue(panel.chip.hasPrefix("60 fps · Calibrated · "), panel.chip)
+        XCTAssertTrue(["nominal", "fair", "serious", "critical"].contains { panel.chip.contains($0) }, panel.chip)
+        await panel.stop()
+    }
+
     func testAnInterruptionShowsTheBannerAndThePreviewResumes() async throws {
         let (repository, match) = try makeCameraMatch()
         let capture = FakeCaptureSession(source: .blank(width: 640, height: 360))
@@ -155,7 +166,7 @@ final class CameraPanelTests: XCTestCase {
         repository: LocalMatchRepository,
         makeCapture: @escaping () -> any CaptureSource = { FakeCaptureSession(source: .blank(width: 640, height: 360)) }
     ) -> CameraPanelModel {
-        CameraPanelModel(
+        let panel = CameraPanelModel(
             matchID: match.remoteID,
             calibration: calibration,
             makeCapture: makeCapture,
@@ -163,6 +174,8 @@ final class CameraPanelTests: XCTestCase {
             repository: repository,
             clock: FixedClock(Fixtures.matchDay)
         )
+        panel.showsDiagnostics = false
+        return panel
     }
 
     private func waitUntil(_ condition: () -> Bool) async throws {
