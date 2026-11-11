@@ -27,7 +27,20 @@ public struct NoUndistortion: Undistorter {
 }
 
 public struct Homography: Sendable {
+    public enum Refusal: Error, Equatable, Sendable {
+        case tooFewPoints(Int)
+        case collinear
+
+        public var message: String {
+            switch self {
+            case let .tooFewPoints(count): "Place at least \(Homography.minimumPoints) points (\(count) placed)"
+            case .collinear: "Add a point off the line: the placed points sit on too few lines"
+            }
+        }
+    }
+
     public static let minimumPoints = 4
+    private static let collinearTolerance = 1e-6
 
     public let matrix: simd_double3x3
     public let undistorter: any Undistorter
@@ -38,6 +51,7 @@ public struct Homography: Sendable {
         _ keypoints: [CourtKeypoint: CGPoint],
         undistorter: any Undistorter = NoUndistortion()
     ) {
+        guard Self.refusal(for: Array(keypoints.keys)) == nil else { return nil }
         let pairs = keypoints.map { (court: $0.key.court, pixel: undistorter.undistort($0.value)) }
         self.init(pairs: pairs, undistorter: undistorter)
     }
@@ -47,7 +61,7 @@ public struct Homography: Sendable {
         pixels: [CGPoint],
         undistorter: any Undistorter = NoUndistortion()
     ) {
-        guard court.count == pixels.count else { return nil }
+        guard court.count == pixels.count, Self.refusal(for: court) == nil else { return nil }
         let pairs = zip(court, pixels).map { (court: $0, pixel: undistorter.undistort($1)) }
         self.init(pairs: pairs, undistorter: undistorter)
     }
@@ -72,6 +86,40 @@ public struct Homography: Sendable {
         self.undistorter = undistorter
         let first = matrix * SIMD3(pairs[0].court.x, pairs[0].court.y, 1)
         facing = first.z < 0 ? -1 : 1
+    }
+
+    public static func refusal(for keypoints: [CourtKeypoint]) -> Refusal? {
+        refusal(for: keypoints.map(\.court))
+    }
+
+    public static func refusal(for court: [CourtPoint]) -> Refusal? {
+        guard court.count >= minimumPoints else { return .tooFewPoints(court.count) }
+        return hasGeneralQuad(court) ? nil : .collinear
+    }
+
+    private static func hasGeneralQuad(_ points: [CourtPoint]) -> Bool {
+        let n = points.count
+        for a in 0 ..< n {
+            for b in a + 1 ..< n {
+                for c in b + 1 ..< n where !collinear(points[a], points[b], points[c]) {
+                    for d in c + 1 ..< n
+                        where !collinear(points[a], points[b], points[d])
+                        && !collinear(points[a], points[c], points[d])
+                        && !collinear(points[b], points[c], points[d]) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    private static func collinear(
+        _ a: CourtPoint,
+        _ b: CourtPoint,
+        _ c: CourtPoint
+    ) -> Bool {
+        abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) < collinearTolerance
     }
 
     public func toPixel(_ court: CourtPoint) -> CGPoint {

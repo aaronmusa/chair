@@ -16,20 +16,6 @@
           }
         },
         {
-          "keypoint": "singlesLeft-farBaseline",
-          "pixel": {
-            "x": 813.89,
-            "y": 427.08
-          }
-        },
-        {
-          "keypoint": "singlesRight-farBaseline",
-          "pixel": {
-            "x": 1106.11,
-            "y": 427.08
-          }
-        },
-        {
           "keypoint": "doublesRight-farBaseline",
           "pixel": {
             "x": 1154.75,
@@ -37,65 +23,9 @@
           }
         },
         {
-          "keypoint": "singlesLeft-farService",
-          "pixel": {
-            "x": 783.47,
-            "y": 457.46
-          }
-        },
-        {
-          "keypoint": "centre-farService",
-          "pixel": {
-            "x": 960.0,
-            "y": 457.46
-          }
-        },
-        {
-          "keypoint": "singlesRight-farService",
-          "pixel": {
-            "x": 1136.53,
-            "y": 457.46
-          }
-        },
-        {
-          "keypoint": "singlesLeft-nearService",
-          "pixel": {
-            "x": 616.59,
-            "y": 624.1
-          }
-        },
-        {
-          "keypoint": "centre-nearService",
-          "pixel": {
-            "x": 960.0,
-            "y": 624.1
-          }
-        },
-        {
-          "keypoint": "singlesRight-nearService",
-          "pixel": {
-            "x": 1303.41,
-            "y": 624.1
-          }
-        },
-        {
           "keypoint": "doublesLeft-nearBaseline",
           "pixel": {
             "x": 190.62,
-            "y": 857.58
-          }
-        },
-        {
-          "keypoint": "singlesLeft-nearBaseline",
-          "pixel": {
-            "x": 382.79,
-            "y": 857.58
-          }
-        },
-        {
-          "keypoint": "singlesRight-nearBaseline",
-          "pixel": {
-            "x": 1537.21,
             "y": 857.58
           }
         },

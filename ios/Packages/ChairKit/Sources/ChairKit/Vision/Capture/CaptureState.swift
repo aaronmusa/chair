@@ -7,6 +7,36 @@
 
 import Foundation
 
+public enum CaptureLens: String, Codable, Sendable {
+    case ultraWide
+    case wide
+}
+
+public struct CaptureFormat: Equatable, Sendable {
+    public static let fullHD = (width: 1920, height: 1080)
+
+    public let lens: CaptureLens
+    public let width: Int
+    public let height: Int
+    public let frameRate: Int
+
+    public init(
+        lens: CaptureLens,
+        width: Int = CaptureFormat.fullHD.width,
+        height: Int = CaptureFormat.fullHD.height,
+        frameRate: Int
+    ) {
+        self.lens = lens
+        self.width = width
+        self.height = height
+        self.frameRate = frameRate
+    }
+
+    public func with(frameRate: Int) -> CaptureFormat {
+        CaptureFormat(lens: lens, width: width, height: height, frameRate: frameRate)
+    }
+}
+
 public enum CaptureState: Equatable, Sendable {
     public enum Interruption: Equatable, Sendable {
         case otherApp
@@ -22,10 +52,19 @@ public enum CaptureState: Equatable, Sendable {
     }
 
     case idle
-    case running(frameRate: Int)
+    case running(CaptureFormat)
     case interrupted(Interruption)
     case pausedForHeat
     case unavailable(Unavailable)
+}
+
+public extension CaptureState {
+    static func running(
+        frameRate: Int,
+        lens: CaptureLens = .ultraWide
+    ) -> CaptureState {
+        .running(CaptureFormat(lens: lens, frameRate: frameRate))
+    }
 }
 
 public enum CameraPermission: Equatable, Sendable {

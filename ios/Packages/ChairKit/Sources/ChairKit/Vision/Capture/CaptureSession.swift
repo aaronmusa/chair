@@ -27,30 +27,20 @@
     }
 
     public final class CaptureSession: NSObject, CaptureSource, @unchecked Sendable {
-        public enum Lens: String, Sendable {
-            case ultraWide
-            case wide
-        }
-
         public struct Choice {
-            public let lens: Lens
+            public let lens: CaptureLens
             public let format: AVCaptureDevice.Format
-            public let frameRate: Int
-        }
-
-        public struct Configuration: Equatable, Sendable {
-            public let lens: Lens
             public let frameRate: Int
         }
 
         public static let preferredFrameRate = 60
         public static let settleDelay: TimeInterval = 2
-        public static let width: Int32 = 1920
-        public static let height: Int32 = 1080
+        public static let width = Int32(CaptureFormat.fullHD.width)
+        public static let height = Int32(CaptureFormat.fullHD.height)
 
         public let fanOut = FrameFanOut()
         public let session = AVCaptureSession()
-        public private(set) var configuration: Configuration?
+        public private(set) var configuration: CaptureFormat?
         private let queue = DispatchQueue(label: "chair.capture", qos: .userInitiated)
         private let feed = CaptureStateFeed()
         private let authorization: any CameraAuthorizing
@@ -99,7 +89,7 @@
             await setIdleTimerDisabled(false)
         }
 
-        public static func choose(_ devices: [(Lens, [AVCaptureDevice.Format])]) -> Choice? {
+        public static func choose(_ devices: [(CaptureLens, [AVCaptureDevice.Format])]) -> Choice? {
             let candidates = devices.flatMap { lens, formats in
                 formats.filter(isFullHD).map { Choice(lens: lens, format: $0, frameRate: maxFrameRate($0)) }
             }
@@ -121,7 +111,10 @@
         }
 
         private func configureAndRun() -> CaptureState {
-            let lenses: [(Lens, AVCaptureDevice.DeviceType)] = [(.ultraWide, .builtInUltraWideCamera), (.wide, .builtInWideAngleCamera)]
+            let lenses: [(CaptureLens, AVCaptureDevice.DeviceType)] = [
+                (.ultraWide, .builtInUltraWideCamera),
+                (.wide, .builtInWideAngleCamera),
+            ]
             let available = lenses.compactMap { lens, type in
                 AVCaptureDevice.default(type, for: .video, position: .back).map { (lens, $0) }
             }
@@ -157,12 +150,13 @@
                 return .unavailable(.failed)
             }
             device = camera
-            configuration = Configuration(lens: choice.lens, frameRate: frameRate)
+            let format = CaptureFormat(lens: choice.lens, frameRate: frameRate)
+            configuration = format
             fanOut.setFrameRate(frameRate)
             session.startRunning()
             queue.asyncAfter(deadline: .now() + Self.settleDelay, execute: handleSettle())
             let thermal = ThermalPolicy.frameRate(for: ProcessInfo.processInfo.thermalState, preferred: frameRate)
-            return thermal.map { .running(frameRate: $0) } ?? .pausedForHeat
+            return thermal.map { .running(format.with(frameRate: $0)) } ?? .pausedForHeat
         }
 
         private func apply(
@@ -260,7 +254,7 @@
             }
             queue.async(execute: handleFrameRate(frameRate))
             fanOut.setFrameRate(frameRate)
-            feed.send(.running(frameRate: frameRate))
+            feed.send(.running(configuration.with(frameRate: frameRate)))
         }
 
         private func handlePause() -> @Sendable () -> Void {

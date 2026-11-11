@@ -33,13 +33,14 @@ If iCloud has offloaded a clip, open the folder in Finder and choose Download No
 
 For whoever films. One clip per setup.
 
-- Note the phone model in the manifest's `device` field.
+- Note the phone model in the manifest's `device` field, and the measured lens height in metres in `height`.
 - 0.5× lens (ultra-wide), 1080p at 60 fps. Lock exposure (long-press on the court in the Camera app until AE/AF LOCK shows).
-- Landscape, phone 1–1.5 m off the ground.
-- Net post and umpire chair: the far sideline, both far corners and both centre-line T's in frame. The near corners can't be seen from there on any lens, and that's expected.
+- Landscape, with the lens 1.5–2 m off the ground where possible (a fence post, tripod or net-post clamp). Higher is better because the far lines are thin from the net. Include at least two clips at about 1 m so the low mount is covered.
+- Net post and umpire chair: the far sideline, both far corners and both service-line T's in frame. The near corners can't be seen from there on any lens, and that's expected.
 - Baseline: all four outer corners in frame.
 - 30–120 s per clip, with play in it.
 - Take a photo of the phone mount for each setup and keep it next to the clip in the shared folder (`<clip id>.jpg`).
+- For each net-post and chair clip, also take one full-resolution still from the same position (0.5×, the Camera app's photo mode). Save it as `<clip id>-still.heic` and name it in the manifest's `still` field. E4-4 detects the court on a still, because the far lines are under a pixel tall in 1080p video.
 
 The set needs:
 
@@ -62,11 +63,13 @@ The set needs:
      "light": "overcast",
      "duration": 94.5,
      "frameRate": 60,
-     "device": "iPhone 13"
+     "device": "iPhone 13",
+     "height": 1.7,
+     "still": "riverside-netPost-overcast-1-still.heic"
    }
    ```
 
-   `surface` is `hard`, `clay` or `grass`; `placement` is `netPost`, `baseline` or `chair`; `light` is `bright`, `overcast` or `evening`. `duration` is in seconds.
+   `surface` is `hard`, `clay` or `grass`; `placement` is `netPost`, `baseline` or `chair`; `light` is `bright`, `overcast` or `evening`. `duration` is in seconds and `height` in metres. `still` is required for net-post and chair clips.
 
 3. Hand-mark `ground_truth/<clip id>.json`. Pixel coordinates are in the clip's own frame, with the origin at the top-left. Court coordinates are in metres, with the origin at the centre of the net, x along the net (−5.485 to +5.485, left to right as seen from the near baseline), and y along the court (−11.885 to +11.885, positive towards the far end).
 
@@ -87,7 +90,7 @@ The set needs:
    }
    ```
 
-   - `keypoints`: the named line intersections you can see, at frame 0 and every 600 frames after that, at least 4 per frame. A name is `<across>-<along>`:
+   - `keypoints`: the placement's keypoints that you can see, at frame 0 and every 600 frames after that. Mark at least 4 per frame, and only names from the placement's set (below). A name is `<across>-<along>`:
      - across: `doublesLeft`, `singlesLeft`, `centre`, `singlesRight` or `doublesRight`
      - along: `farBaseline`, `farService`, `nearService` or `nearBaseline`
      - The doubles sidelines meet only the baselines; the centre line meets only the service lines.
@@ -96,4 +99,4 @@ The set needs:
      - Baseline: the four `doubles…Baseline` corners.
    - `groundPoints`: at least 10 points, each with its pixel and court position, for measuring error. Use the centre of the painted lines.
 
-4. Run `make footage && make test-footage`. The consistency test names anything that doesn't add up: a missing file, a missing keypoint frame, fewer than 4 keypoints, keypoints that disagree by more than 3 px (usually a wrong name), too few ground points, or a point off the court. `testGroundPointsMapWithinTheTargetsForEachPlacement` prints the mapping error for each clip.
+4. Run `make footage && make test-footage`. The consistency test names anything that doesn't add up: a missing file, a missing keypoint frame, fewer than 4 keypoints, a keypoint outside the placement's set, keypoints that disagree by more than 3 px (usually a wrong name), too few ground points, or a point off the court. `testGroundPointsMapWithinTheTargetsForEachPlacement` prints the mapping error for each clip.

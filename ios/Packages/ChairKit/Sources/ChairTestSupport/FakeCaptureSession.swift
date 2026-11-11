@@ -40,6 +40,7 @@
         private let rate: Double
         private let preferredFrameRate: Int
         private let authorization: any CameraAuthorizing
+        private let lens: CaptureLens
         private let lock = NSLock()
         private var replay: Task<Void, Never>?
         private var thermal = ProcessInfo.ThermalState.nominal
@@ -49,8 +50,10 @@
         public init(
             source: Source,
             rate: Double = 60,
+            lens: CaptureLens = .ultraWide,
             authorization: any CameraAuthorizing = FakeCameraAuthorization(.authorized)
         ) {
+            self.lens = lens
             self.source = source
             self.rate = rate
             preferredFrameRate = Int(rate.rounded())
@@ -115,7 +118,7 @@
                 return
             }
             fanOut.setFrameRate(frameRate)
-            feed.send(.running(frameRate: frameRate))
+            feed.send(.running(frameRate: frameRate, lens: lens))
         }
 
         private func runReplay() async {
@@ -127,7 +130,7 @@
                 guard let pixelBuffer = await frames.next() else { return }
                 try? await clock.sleep(until: start + .seconds(Double(index) / rate))
                 guard !Task.isCancelled else { return }
-                if case let .running(frameRate) = state, Self.keeps(index, of: rate, at: frameRate) {
+                if case let .running(format) = state, Self.keeps(index, of: rate, at: format.frameRate) {
                     fanOut.deliver(Frame(pixelBuffer: pixelBuffer, time: CMTime(seconds: Double(index) / rate, preferredTimescale: 600)))
                     lock.withLock { sent += 1 }
                 }

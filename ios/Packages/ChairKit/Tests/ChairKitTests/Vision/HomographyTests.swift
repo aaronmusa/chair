@@ -13,7 +13,7 @@ import ChairKit
 final class HomographyTests: XCTestCase {
     func testRandomCourtPointsRoundTripWithinOneCentimetre() throws {
         let camera = PinholeCamera.behindBaseline
-        let homography = try XCTUnwrap(Homography(camera.keypoints(CameraPlacement.baseline.keypoints)))
+        let homography = try XCTUnwrap(Homography(camera.keypoints(CourtKeypoint.defaultSet(for: .baseline))))
         var generator = SeededGenerator(seed: 7)
 
         for _ in 0 ..< 100 {
@@ -28,7 +28,7 @@ final class HomographyTests: XCTestCase {
 
     func testTheNetPostKeypointsMapTheWholeCourtFromTheFarSide() throws {
         let camera = PinholeCamera.netPost
-        let keypoints = camera.keypoints(CameraPlacement.netPost.keypoints)
+        let keypoints = camera.keypoints(CourtKeypoint.defaultSet(for: .netPost))
         XCTAssertEqual(keypoints.count, 8)
         XCTAssertTrue(keypoints.keys.allSatisfy { camera.inFrame($0.court) })
         let homography = try XCTUnwrap(Homography(keypoints))
@@ -55,7 +55,7 @@ final class HomographyTests: XCTestCase {
     func testExtraNoisyKeypointsAreAveragedByLeastSquares() throws {
         let camera = PinholeCamera.netPost
         var generator = SeededGenerator(seed: 3)
-        let noisy = camera.keypoints(CameraPlacement.netPost.keypoints).mapValues { pixel in
+        let noisy = camera.keypoints(CourtKeypoint.defaultSet(for: .netPost)).mapValues { pixel in
             CGPoint(x: pixel.x + .random(in: -1 ... 1, using: &generator), y: pixel.y + .random(in: -1 ... 1, using: &generator))
         }
 
@@ -69,7 +69,7 @@ final class HomographyTests: XCTestCase {
 
     func testAPixelAboveTheHorizonHasNoCourtPoint() throws {
         let camera = PinholeCamera.behindBaseline
-        let homography = try XCTUnwrap(Homography(camera.keypoints(CameraPlacement.baseline.keypoints)))
+        let homography = try XCTUnwrap(Homography(camera.keypoints(CourtKeypoint.defaultSet(for: .baseline))))
 
         XCTAssertNil(homography.toCourt(CGPoint(x: 960, y: 10)))
         XCTAssertNotNil(homography.toCourt(CGPoint(x: 960, y: 700)))
@@ -77,7 +77,7 @@ final class HomographyTests: XCTestCase {
 
     func testAKeypointOnTheHorizonGivesNilWithoutCrashing() throws {
         let camera = PinholeCamera.behindBaseline
-        let homography = try XCTUnwrap(Homography(camera.keypoints(CameraPlacement.baseline.keypoints)))
+        let homography = try XCTUnwrap(Homography(camera.keypoints(CourtKeypoint.defaultSet(for: .baseline))))
         let horizon = try XCTUnwrap((0 ..< 1080).first { homography.toCourt(CGPoint(x: 960, y: Double($0) + 0.5)) != nil })
 
         XCTAssertNil(homography.toCourt(CGPoint(x: 960, y: Double(horizon) - 1)))
@@ -86,7 +86,7 @@ final class HomographyTests: XCTestCase {
 
     func testFewerThanFourOrCollinearPointsBuildNothing() {
         let camera = PinholeCamera.behindBaseline
-        let three = camera.keypoints(Array(CameraPlacement.baseline.keypoints.prefix(3)))
+        let three = camera.keypoints(Array(CourtKeypoint.defaultSet(for: .baseline).prefix(3)))
         let baselineOnly = camera.keypoints([
             CourtKeypoint(.doublesLeft, .farBaseline),
             CourtKeypoint(.singlesLeft, .farBaseline),
@@ -98,10 +98,22 @@ final class HomographyTests: XCTestCase {
         XCTAssertNil(Homography(baselineOnly))
     }
 
+    func testARefusalSaysWhy() {
+        let sideline = [CourtKeypoint.Along.farBaseline, .farService, .nearService, .nearBaseline]
+            .compactMap { CourtKeypoint(.singlesRight, $0) }
+        let farCorner = CourtKeypoint(.doublesRight, .farBaseline)
+
+        XCTAssertEqual(Homography.refusal(for: Array(sideline.prefix(3))), .tooFewPoints(3))
+        XCTAssertEqual(Homography.refusal(for: sideline + [farCorner].compactMap(\.self)), .collinear)
+        XCTAssertEqual(Homography.refusal(for: CourtKeypoint.defaultSet(for: .netPost)), nil)
+        XCTAssertEqual(Homography.refusal(for: CourtKeypoint.defaultSet(for: .baseline)), nil)
+        XCTAssertEqual(Homography.Refusal.tooFewPoints(3).message, "Place at least 4 points (3 placed)")
+    }
+
     func testTheUndistorterIsAppliedBothWays() throws {
         let shift = ShiftUndistorter(offset: 5)
         let camera = PinholeCamera.behindBaseline
-        let distorted = camera.keypoints(CameraPlacement.baseline.keypoints).mapValues { CGPoint(x: $0.x + 5, y: $0.y) }
+        let distorted = camera.keypoints(CourtKeypoint.defaultSet(for: .baseline)).mapValues { CGPoint(x: $0.x + 5, y: $0.y) }
 
         let homography = try XCTUnwrap(Homography(distorted, undistorter: shift))
 

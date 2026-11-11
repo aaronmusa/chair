@@ -163,10 +163,20 @@ def keypoints():
             yield f"{across}-{along}", x, y
 
 
+DEFAULT_SETS = {
+    "netPost": [
+        "doublesRight-farBaseline", "singlesRight-farBaseline", "singlesRight-farService", "centre-farService",
+        "centre-nearService", "singlesRight-nearService", "singlesRight-nearBaseline", "doublesRight-nearBaseline",
+    ],
+    "baseline": ["doublesLeft-farBaseline", "doublesRight-farBaseline", "doublesRight-nearBaseline", "doublesLeft-nearBaseline"],
+}
+
+
 def clip(clip_id, placement, camera):
     visible = [(name, x, y) for name, x, y in keypoints() if camera.sees(x, y)]
+    marked = [(name, x, y) for name, x, y in visible if name in DEFAULT_SETS[placement]]
     extras = [(name, x, y) for name, x, y in EXTRA_GROUND_POINTS if camera.sees(x, y)]
-    marks = [{"keypoint": name, "pixel": point(*camera.project(x, y))} for name, x, y in visible]
+    marks = [{"keypoint": name, "pixel": point(*camera.project(x, y))} for name, x, y in marked]
     ground = [
         {"name": name, "pixel": point(*camera.project(x, y)), "court": {"x": x, "y": y}}
         for name, x, y in visible + extras
@@ -181,6 +191,7 @@ def clip(clip_id, placement, camera):
         "duration": SECONDS,
         "frameRate": FPS,
         "device": "Synthetic pinhole camera",
+        "height": camera.position[2],
     }
     truth = {
         "clip": clip_id,

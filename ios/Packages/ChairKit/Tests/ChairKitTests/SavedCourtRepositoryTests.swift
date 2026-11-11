@@ -182,7 +182,7 @@ final class SavedCourtRepositoryTests: XCTestCase {
     static func court(name: String) -> SavedCourt {
         let camera = PinholeCamera.netPost
         let calibration = CourtCalibration(
-            keypoints: camera.keypoints(CameraPlacement.netPost.keypoints),
+            keypoints: camera.keypoints(CourtKeypoint.defaultSet(for: .netPost)),
             placement: .netPost,
             frameSize: camera.size,
             date: Fixtures.matchDay

@@ -78,11 +78,12 @@ public struct CourtCalibration: Codable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case keypoints, placement, frameWidth, frameHeight, intrinsicsID, quality, date
+        case keypoints, placement, lens, frameWidth, frameHeight, intrinsicsID, quality, date
     }
 
     public let keypoints: [CourtKeypoint: CGPoint]
     public let placement: CameraPlacement
+    public let lens: CaptureLens
     public let frameSize: CGSize
     public let intrinsicsID: String?
     public let quality: CalibrationQuality
@@ -92,6 +93,7 @@ public struct CourtCalibration: Codable, Sendable {
     public init?(
         keypoints: [CourtKeypoint: CGPoint],
         placement: CameraPlacement,
+        lens: CaptureLens = .ultraWide,
         frameSize: CGSize,
         intrinsicsID: String? = nil,
         date: Date
@@ -99,6 +101,7 @@ public struct CourtCalibration: Codable, Sendable {
         guard let homography = Homography(keypoints) else { return nil }
         self.keypoints = keypoints
         self.placement = placement
+        self.lens = lens
         self.frameSize = frameSize
         self.intrinsicsID = intrinsicsID
         self.date = date
@@ -111,6 +114,7 @@ public struct CourtCalibration: Codable, Sendable {
         let marks = try container.decode([Mark].self, forKey: .keypoints)
         keypoints = Dictionary(marks.map { ($0.keypoint, CGPoint(x: $0.x, y: $0.y)) }) { first, _ in first }
         placement = try container.decode(CameraPlacement.self, forKey: .placement)
+        lens = try container.decode(CaptureLens.self, forKey: .lens)
         frameSize = try CGSize(
             width: container.decode(Double.self, forKey: .frameWidth),
             height: container.decode(Double.self, forKey: .frameHeight)
@@ -135,6 +139,7 @@ public struct CourtCalibration: Codable, Sendable {
         }
         try container.encode(marks, forKey: .keypoints)
         try container.encode(placement, forKey: .placement)
+        try container.encode(lens, forKey: .lens)
         try container.encode(Double(frameSize.width), forKey: .frameWidth)
         try container.encode(Double(frameSize.height), forKey: .frameHeight)
         try container.encodeIfPresent(intrinsicsID, forKey: .intrinsicsID)
@@ -150,6 +155,7 @@ extension CourtCalibration: Equatable {
     ) -> Bool {
         lhs.keypoints == rhs.keypoints
             && lhs.placement == rhs.placement
+            && lhs.lens == rhs.lens
             && lhs.frameSize == rhs.frameSize
             && lhs.intrinsicsID == rhs.intrinsicsID
             && lhs.quality == rhs.quality

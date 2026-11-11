@@ -21,7 +21,8 @@ struct CaptureStatus: Equatable {
         switch state {
         case .idle:
             return nil
-        case let .running(frameRate):
+        case let .running(format):
+            let frameRate = format.frameRate
             guard frameRate < CaptureSession.preferredFrameRate else { return nil }
             self.init(
                 symbol: "thermometer.medium",
