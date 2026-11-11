@@ -47,11 +47,21 @@ final class CalibrationViewModel {
     private(set) var debugMask: CGImage?
     private(set) var errorMessage: String?
     var isShowingMask = false
+    private(set) var savedCourts: [SavedCourt] = []
+    private(set) var courtInUse: SavedCourt?
+    private(set) var positionDiffers = false
+    var isOfferingSave = false
+    var saveName = ""
 
     private let suggester: any KeypointSuggesting
     private let repository: (any MatchRepository)?
     private let clock: any ClockProvider
     private let onNext: (UUID) -> Void
+    private let courts: (any SavedCourtRepository)?
+    private let locator: (any CourtLocating)?
+    private var location: CourtLocation?
+    private var checksCourt = false
+    private var finished: CourtCalibration?
     private var suggesting: Task<Void, Never>?
     private var watching: Task<Void, Never>?
 
@@ -63,8 +73,12 @@ final class CalibrationViewModel {
         repository: (any MatchRepository)?,
         clock: any ClockProvider,
         initial: [CourtKeypoint: CGPoint] = [:],
+        courts: (any SavedCourtRepository)? = nil,
+        locator: (any CourtLocating)? = nil,
         onNext: @escaping (UUID) -> Void
     ) {
+        self.courts = courts
+        self.locator = locator
         self.matchID = matchID
         self.placement = placement
         order = CourtKeypoint.defaultSet(for: placement)
@@ -113,6 +127,17 @@ final class CalibrationViewModel {
     }
 
     func start() async {
+        savedCourts = ((try? courts?.fetch()) ?? []).filter { $0.calibration?.placement == placement }
+        if location == nil, let locator {
+            location = await locator.currentLocation()
+        }
+        if courtInUse == nil, keypoints.isEmpty, let here = location {
+            let records = savedCourts.compactMap(\.record)
+            if let nearest = SavedCourtMatching.nearest(records, to: here),
+               let court = savedCourts.first(where: { $0.remoteID == nearest.id }) {
+                use(court)
+            }
+        }
         await capture.start()
         captureState = capture.state
         watching?.cancel()
@@ -145,6 +170,17 @@ final class CalibrationViewModel {
               let image = await LumaImage.from(Frame(pixelBuffer: buffer, time: .zero)) else { return }
         meanLuminance = image.meanLuminance
         still = image.cgImage()
+        if checksCourt, let saved = courtInUse?.calibration?.keypoints {
+            checksCourt = false
+            let suggestion = await suggester.suggest(in: image, placement: placement, frameSize: frameSize)
+            guard suggestion.confidence >= CourtLineDetector.minimumConfidence else { return }
+            positionDiffers = SavedCourtMatching.differs(
+                saved: saved,
+                suggested: suggestion.keypoints,
+                frameWidth: Double(frameSize.width)
+            )
+            return
+        }
         guard !isTouched else { return }
         let suggestion = await suggester.suggest(in: image, placement: placement, frameSize: frameSize)
         guard !isTouched, suggestion.confidence >= CourtLineDetector.minimumConfidence else { return }
@@ -181,6 +217,8 @@ final class CalibrationViewModel {
         keypoints = [:]
         skipped = []
         isTouched = false
+        courtInUse = nil
+        positionDiffers = false
     }
 
     func finish() {
@@ -203,9 +241,24 @@ final class CalibrationViewModel {
             match.cameraPlacementValue = placement
             match.calibration = calibration
             try repository.save(match)
-            onNext(matchID)
         } catch {
             errorMessage = "Couldn't save the calibration. Try again."
+            return
+        }
+        guard let courts else {
+            onNext(matchID)
+            return
+        }
+        finished = calibration
+        if let court = courtInUse {
+            court.calibration = calibration
+            court.lastUsedAt = clock.now
+            court.thumbnailFile = CourtThumbnails.save(still, id: court.remoteID) ?? court.thumbnailFile
+            try? courts.save(court)
+            onNext(matchID)
+        } else {
+            saveName = "Court \(savedCourts.count + 1)"
+            isOfferingSave = true
         }
     }
 
@@ -213,8 +266,10 @@ final class CalibrationViewModel {
         guard case let .running(format) = captureState else { return .ultraWide }
         return format.lens
     }
+}
 
-    private var framingPill: ReadinessPill? {
+private extension CalibrationViewModel {
+    var framingPill: ReadinessPill? {
         let corners = order.filter { $0.along == .farBaseline || $0.along == .nearBaseline }
             .filter { $0.across == .doublesLeft || $0.across == .doublesRight }
         guard let homography else {
@@ -226,14 +281,14 @@ final class CalibrationViewModel {
         return ReadinessPill(id: "framing", title: inFrame ? title : "Corners out of frame", level: inFrame ? .ok : .warning)
     }
 
-    private var cameraPill: ReadinessPill? {
+    var cameraPill: ReadinessPill? {
         guard case let .running(format) = captureState else { return nil }
         let lensTitle = format.lens == .ultraWide ? "0.5×" : "1×"
         let level: ReadinessPill.Level = format.lens == .ultraWide && format.frameRate >= CaptureSession.preferredFrameRate ? .ok : .warning
         return ReadinessPill(id: "camera", title: "\(lensTitle) · \(format.frameRate) fps", level: level)
     }
 
-    private var lightPill: ReadinessPill? {
+    var lightPill: ReadinessPill? {
         guard let meanLuminance else { return nil }
         if meanLuminance < Self.lowLight {
             return ReadinessPill(id: "light", title: "Low light", level: .warning)
@@ -244,7 +299,7 @@ final class CalibrationViewModel {
         return ReadinessPill(id: "light", title: "Light OK", level: .ok)
     }
 
-    private var depthPill: ReadinessPill? {
+    var depthPill: ReadinessPill? {
         guard let error = quality?.baselineError else { return nil }
         let centimetres = Int((error * 2).rounded())
         return ReadinessPill(
@@ -254,10 +309,49 @@ final class CalibrationViewModel {
         )
     }
 
-    private var fitPill: ReadinessPill? {
+    var fitPill: ReadinessPill? {
         guard let quality, keypoints.count > Homography.minimumPoints else { return nil }
         let error = quality.reprojectionError
         let level: ReadinessPill.Level = error <= Self.fitTarget ? .ok : error > Self.fitLimit ? .warning : .neutral
         return ReadinessPill(id: "fit", title: "Fit \(Int(error.rounded())) px", level: level)
+    }
+}
+
+extension CalibrationViewModel {
+    func use(_ court: SavedCourt) {
+        guard let calibration = court.calibration else { return }
+        keypoints = calibration.keypoints
+        skipped = []
+        isTouched = true
+        courtInUse = court
+        positionDiffers = false
+        checksCourt = true
+    }
+
+    func saveCourt() {
+        isOfferingSave = false
+        guard let courts, let calibration = finished else { return onNext(matchID) }
+        let name = saveName.trimmingCharacters(in: .whitespaces)
+        let court = SavedCourt(
+            name: name.isEmpty ? "Court \(savedCourts.count + 1)" : name,
+            calibration: calibration,
+            lastUsedAt: clock.now,
+            latitude: location?.latitude,
+            longitude: location?.longitude,
+            createdAt: clock.now,
+            updatedAt: clock.now
+        )
+        court.thumbnailFile = CourtThumbnails.save(still, id: court.remoteID)
+        do {
+            try courts.save(court)
+        } catch {
+            errorMessage = "Couldn't save the court. The match still has its calibration."
+        }
+        onNext(matchID)
+    }
+
+    func skipSavingCourt() {
+        isOfferingSave = false
+        onNext(matchID)
     }
 }

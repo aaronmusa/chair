@@ -14,6 +14,8 @@ struct RootView: View {
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) private var environment
     @Environment(\.matchRepository) private var repository
+    @Environment(\.savedCourtRepository) private var courts
+    @Environment(\.makeCapture) private var makeCapture
     @Environment(\.inviteCenter) private var invites
     @Environment(\.watchBridge) private var watchBridge
     @State private var firstMatchPrompt = FirstMatchPrompt.make()
@@ -188,10 +190,12 @@ struct RootView: View {
             CalibrationView(viewModel: CalibrationViewModel(
                 matchID: matchID,
                 placement: placement(of: matchID),
-                capture: CaptureSession(),
+                capture: makeCapture(),
                 suggester: CourtLineSuggester(),
                 repository: repository,
                 clock: environment.clock,
+                courts: courts,
+                locator: CameraSettings().locator,
                 onNext: handleStartSession()
             ))
         }

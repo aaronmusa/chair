@@ -30,6 +30,8 @@ final class CameraPanelModel {
     private let suggester: any KeypointSuggesting
     private let repository: (any MatchRepository)?
     private let clock: any ClockProvider
+    private let courts: (any SavedCourtRepository)?
+    private let locator: (any CourtLocating)?
     private var watching: Task<Void, Never>?
     private var previewing: Task<Void, Never>?
 
@@ -39,8 +41,12 @@ final class CameraPanelModel {
         makeCapture: @escaping () -> any CaptureSource,
         suggester: any KeypointSuggesting,
         repository: (any MatchRepository)?,
-        clock: any ClockProvider
+        clock: any ClockProvider,
+        courts: (any SavedCourtRepository)? = nil,
+        locator: (any CourtLocating)? = nil
     ) {
+        self.courts = courts
+        self.locator = locator
         self.matchID = matchID
         self.calibration = calibration
         self.makeCapture = makeCapture
@@ -106,6 +112,8 @@ final class CameraPanelModel {
             repository: repository,
             clock: clock,
             initial: calibration.keypoints,
+            courts: courts,
+            locator: locator,
             onNext: handleRecalibrated()
         )
     }

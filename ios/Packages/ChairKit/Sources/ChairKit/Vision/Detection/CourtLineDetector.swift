@@ -14,6 +14,14 @@ public struct CourtSuggestion: Equatable, Sendable {
     public let confidence: Double
 
     public static let none = CourtSuggestion(keypoints: [:], confidence: 0)
+
+    public init(
+        keypoints: [CourtKeypoint: CGPoint],
+        confidence: Double
+    ) {
+        self.keypoints = keypoints
+        self.confidence = confidence
+    }
 }
 
 public enum CourtLineDetector {

@@ -15,6 +15,7 @@ import ChairUI
 
 struct SettingsView: View {
     @State private var viewModel: SettingsViewModel
+    @State private var camera = CameraSettings()
     @Environment(\.syncCoordinator) private var sync
     @Environment(\.profileRepository) private var profiles
     @Environment(\.matchRepository) private var matches
@@ -30,6 +31,7 @@ struct SettingsView: View {
             Group {
                 matchDefaultsSection
                 umpireSection
+                CameraSettingsSection(settings: camera, courts: courts)
                 accountSection
                 syncSection
                 aboutSection

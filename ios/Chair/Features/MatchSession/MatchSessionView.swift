@@ -25,6 +25,7 @@ struct MatchSessionView: View {
     @Environment(\.appEnvironment) var environment
     @Environment(\.umpire) private var umpire
     @Environment(\.makeCapture) var makeCapture
+    @Environment(\.savedCourtRepository) var courts
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
