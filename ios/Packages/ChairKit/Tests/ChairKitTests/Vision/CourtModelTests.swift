@@ -69,9 +69,9 @@ final class CourtKeypointTests: XCTestCase {
     }
 
     func testEachPlacementHasItsDefaultSet() {
-        XCTAssertEqual(CameraPlacement.netPost.keypoints.count, 8)
-        XCTAssertEqual(CameraPlacement.chair.keypoints, CameraPlacement.netPost.keypoints)
-        XCTAssertEqual(CameraPlacement.baseline.keypoints.map(\.rawValue), [
+        XCTAssertEqual(CourtKeypoint.defaultSet(for: .netPost).count, 8)
+        XCTAssertEqual(CourtKeypoint.defaultSet(for: .chair), CourtKeypoint.defaultSet(for: .netPost))
+        XCTAssertEqual(CourtKeypoint.defaultSet(for: .baseline).map(\.rawValue), [
             "doublesLeft-farBaseline", "doublesRight-farBaseline", "doublesRight-nearBaseline", "doublesLeft-nearBaseline",
         ])
     }
@@ -86,7 +86,7 @@ final class CourtCalibrationTests: XCTestCase {
 
         XCTAssertEqual(decoded, calibration)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        XCTAssertEqual(Set(json.keys), ["keypoints", "placement", "frameWidth", "frameHeight", "quality", "date"])
+        XCTAssertEqual(Set(json.keys), ["keypoints", "placement", "lens", "frameWidth", "frameHeight", "quality", "date"])
         let first = try XCTUnwrap((json["keypoints"] as? [[String: Any]])?.first)
         XCTAssertEqual(first["keypoint"] as? String, "singlesRight-farBaseline")
     }
@@ -125,7 +125,7 @@ final class CourtCalibrationTests: XCTestCase {
         camera: PinholeCamera
     ) throws -> CourtCalibration {
         try XCTUnwrap(CourtCalibration(
-            keypoints: camera.keypoints(placement.keypoints),
+            keypoints: camera.keypoints(CourtKeypoint.defaultSet(for: placement)),
             placement: placement,
             frameSize: camera.size,
             date: Date(timeIntervalSince1970: 1_800_000_000)

@@ -17,11 +17,12 @@ final class FootageFixtureTests: XCTestCase {
         XCTAssertEqual(set.clips.map(\.entry.id), ["synthetic-baseline", "synthetic-netPost"])
         XCTAssertEqual(set.clips.map(\.entry.placement), [.baseline, .netPost])
         XCTAssertEqual(set.clips.map(\.entry.frameCount), [120, 120])
-        XCTAssertEqual(set.clips.map { $0.groundTruth?.keypoints.first?.points.count }, [14, 8])
+        XCTAssertEqual(set.clips.map { $0.groundTruth?.keypoints.first?.points.count }, [4, 8])
         XCTAssertEqual(
             Set(set.clips[1].groundTruth?.keypoints.first?.points.map(\.keypoint) ?? []),
-            Set(CameraPlacement.netPost.keypoints)
+            Set(CourtKeypoint.defaultSet(for: .netPost))
         )
+        XCTAssertEqual(set.clips.map(\.entry.height), [4, 1.3])
         XCTAssertTrue(set.missingFiles().isEmpty)
     }
 
@@ -35,8 +36,18 @@ final class FootageFixtureTests: XCTestCase {
         }
     }
 
-    func testAMislabelledKeypointIsReported() throws {
+    func testAKeypointOutsideThePlacementSetIsReported() throws {
         let clip = try Self.fixture().clips[0]
+        var truth = try XCTUnwrap(clip.groundTruth)
+        truth.keypoints[0].points[0].keypoint = try XCTUnwrap(CourtKeypoint(.centre, .farService))
+
+        let broken = FootageSet.Clip(entry: clip.entry, groundTruth: truth, url: clip.url)
+
+        XCTAssertTrue(broken.problems.contains("frame 0: centre-farService is not in the baseline set"), "\(broken.problems)")
+    }
+
+    func testAMislabelledKeypointIsReported() throws {
+        let clip = try Self.fixture().clips[1]
         var truth = try XCTUnwrap(clip.groundTruth)
         let first = truth.keypoints[0].points[0].keypoint
         truth.keypoints[0].points[0].keypoint = truth.keypoints[0].points[5].keypoint

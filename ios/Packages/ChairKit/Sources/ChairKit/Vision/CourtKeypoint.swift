@@ -75,6 +75,29 @@ public struct CourtKeypoint: Hashable, Sendable, CustomStringConvertible {
     public var court: CourtPoint {
         CourtPoint(x: across.x, y: along.y)
     }
+
+    public static func defaultSet(for placement: CameraPlacement) -> [CourtKeypoint] {
+        switch placement {
+        case .netPost, .chair:
+            [
+                CourtKeypoint(.doublesRight, .farBaseline),
+                CourtKeypoint(.singlesRight, .farBaseline),
+                CourtKeypoint(.singlesRight, .farService),
+                CourtKeypoint(.centre, .farService),
+                CourtKeypoint(.centre, .nearService),
+                CourtKeypoint(.singlesRight, .nearService),
+                CourtKeypoint(.singlesRight, .nearBaseline),
+                CourtKeypoint(.doublesRight, .nearBaseline),
+            ].compactMap(\.self)
+        case .baseline:
+            [
+                CourtKeypoint(.doublesLeft, .farBaseline),
+                CourtKeypoint(.doublesRight, .farBaseline),
+                CourtKeypoint(.doublesRight, .nearBaseline),
+                CourtKeypoint(.doublesLeft, .nearBaseline),
+            ].compactMap(\.self)
+        }
+    }
 }
 
 extension CourtKeypoint: Codable {
@@ -96,27 +119,4 @@ public enum CameraPlacement: String, Codable, CaseIterable, Sendable {
     case netPost
     case baseline
     case chair
-
-    public var keypoints: [CourtKeypoint] {
-        switch self {
-        case .netPost, .chair:
-            [
-                CourtKeypoint(.doublesRight, .farBaseline),
-                CourtKeypoint(.singlesRight, .farBaseline),
-                CourtKeypoint(.singlesRight, .farService),
-                CourtKeypoint(.centre, .farService),
-                CourtKeypoint(.centre, .nearService),
-                CourtKeypoint(.singlesRight, .nearService),
-                CourtKeypoint(.singlesRight, .nearBaseline),
-                CourtKeypoint(.doublesRight, .nearBaseline),
-            ].compactMap(\.self)
-        case .baseline:
-            [
-                CourtKeypoint(.doublesLeft, .farBaseline),
-                CourtKeypoint(.doublesRight, .farBaseline),
-                CourtKeypoint(.doublesRight, .nearBaseline),
-                CourtKeypoint(.doublesLeft, .nearBaseline),
-            ].compactMap(\.self)
-        }
-    }
 }

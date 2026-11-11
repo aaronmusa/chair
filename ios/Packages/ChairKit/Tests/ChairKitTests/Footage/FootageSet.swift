@@ -28,6 +28,8 @@ struct FootageClip: Codable, Equatable {
     var duration: Double
     var frameRate: Double
     var device: String?
+    var height: Double?
+    var still: String?
 
     var frameCount: Int {
         Int((duration * frameRate).rounded())
@@ -87,6 +89,9 @@ struct FootageSet {
 
     let clips: [Clip]
     let strayGroundTruth: [String]
+    var folder: URL {
+        clips.first?.url.deletingLastPathComponent() ?? URL(filePath: "/")
+    }
 
     static func load(
         manifest: URL,
@@ -122,7 +127,14 @@ struct FootageSet {
     }
 
     func missingFiles() -> [String] {
-        clips.filter { !FileManager.default.fileExists(atPath: $0.url.path) }.map(\.entry.file)
+        clips.flatMap { clip in
+            [clip.entry.file] + (clip.entry.still.map { [$0] } ?? [])
+        }
+        .filter { !FileManager.default.fileExists(atPath: folder.appending(path: $0).path) }
+    }
+
+    var clipsWithoutStills: [String] {
+        clips.filter { [.netPost, .chair].contains($0.entry.placement) && $0.entry.still == nil }.map(\.entry.id)
     }
 }
 
@@ -183,6 +195,10 @@ extension FootageSet.Clip {
             return ["\(pixels.count) keypoints, need \(Homography.minimumPoints)"]
         }
         var found: [String] = []
+        let allowed = Set(CourtKeypoint.defaultSet(for: entry.placement))
+        for mark in keypoints.points where !allowed.contains(mark.keypoint) {
+            found.append("\(mark.keypoint) is not in the \(entry.placement.rawValue) set")
+        }
         if !keypoints.points.allSatisfy({ $0.pixel.isInside(size) }) {
             found.append("a keypoint lies outside the frame")
         }

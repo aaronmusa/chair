@@ -9,7 +9,8 @@
       "light": "bright",
       "duration": 2,
       "frameRate": 60,
-      "device": "Synthetic pinhole camera"
+      "device": "Synthetic pinhole camera",
+      "height": 4.0
     },
     {
       "id": "synthetic-netPost",
@@ -20,7 +21,8 @@
       "light": "bright",
       "duration": 2,
       "frameRate": 60,
-      "device": "Synthetic pinhole camera"
+      "device": "Synthetic pinhole camera",
+      "height": 1.3
     }
   ]
 }

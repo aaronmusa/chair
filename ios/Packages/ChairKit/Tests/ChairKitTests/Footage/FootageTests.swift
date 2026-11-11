@@ -45,6 +45,10 @@ final class FootageTests: XCTestCase {
         XCTAssertEqual(footage.missingFiles(), [], "Run make footage to fetch the missing clips")
     }
 
+    func testNetPostAndChairClipsHaveAStill() {
+        XCTAssertEqual(footage.clipsWithoutStills, [], "E4-4 detects on a full-resolution still")
+    }
+
     func testTheManifestAndGroundTruthAgree() {
         XCTAssertEqual(footage.problems, [])
     }
