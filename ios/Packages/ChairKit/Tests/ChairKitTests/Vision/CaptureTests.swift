@@ -158,6 +158,20 @@ final class CaptureTests: XCTestCase {
         XCTAssertEqual(consumer.frameSizes, [[1920, 1080]])
     }
 
+    func testAStillIsTheLatestFrame() async throws {
+        let capture = FakeCaptureSession(source: .blank(width: 640, height: 360))
+        let before = await capture.captureStill()
+        XCTAssertNil(before)
+
+        await capture.start()
+        try await Task.sleep(for: .milliseconds(100))
+        let captured = await capture.captureStill()
+        let still = try XCTUnwrap(captured)
+        await capture.stop()
+
+        XCTAssertEqual(CVPixelBufferGetWidth(still), 640)
+    }
+
     func testTheThermalPolicy() {
         XCTAssertEqual(ThermalPolicy.frameRate(for: .nominal, preferred: 60), 60)
         XCTAssertEqual(ThermalPolicy.frameRate(for: .fair, preferred: 60), 60)

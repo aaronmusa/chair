@@ -5,6 +5,7 @@
 //  Created by Aaron Musa on 11/11/26.
 //
 
+import CoreVideo
 import Foundation
 
 public enum CaptureLens: String, Codable, Sendable {
@@ -100,6 +101,7 @@ public protocol CaptureSource: AnyObject, Sendable {
     func states() -> AsyncStream<CaptureState>
     func start() async
     func stop() async
+    func captureStill() async -> CVPixelBuffer?
 }
 
 public final class CaptureStateFeed: @unchecked Sendable {

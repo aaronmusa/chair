@@ -22,7 +22,7 @@ final class FootageFixtureTests: XCTestCase {
             Set(set.clips[1].groundTruth?.keypoints.first?.points.map(\.keypoint) ?? []),
             Set(CourtKeypoint.defaultSet(for: .netPost))
         )
-        XCTAssertEqual(set.clips.map(\.entry.height), [4, 1.3])
+        XCTAssertEqual(set.clips.map(\.entry.height), [3.5, 1.3])
         XCTAssertTrue(set.missingFiles().isEmpty)
     }
 

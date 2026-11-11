@@ -46,6 +46,7 @@
         private var thermal = ProcessInfo.ThermalState.nominal
         private var interruption: CaptureState.Interruption?
         private var sent = 0
+        private var latest: CVPixelBuffer?
 
         public init(
             source: Source,
@@ -84,6 +85,10 @@
             publishState()
             replay?.cancel()
             replay = Task.detached(priority: .userInitiated) { [weak self] in await self?.runReplay() }
+        }
+
+        public func captureStill() async -> CVPixelBuffer? {
+            lock.withLock { latest }
         }
 
         public func stop() async {
@@ -128,6 +133,7 @@
             var frames = FrameSource(source)
             while !Task.isCancelled {
                 guard let pixelBuffer = await frames.next() else { return }
+                lock.withLock { latest = pixelBuffer }
                 try? await clock.sleep(until: start + .seconds(Double(index) / rate))
                 guard !Task.isCancelled else { return }
                 if case let .running(format) = state, Self.keeps(index, of: rate, at: format.frameRate) {

@@ -41,10 +41,12 @@
         public let fanOut = FrameFanOut()
         public let session = AVCaptureSession()
         public private(set) var configuration: CaptureFormat?
-        private let queue = DispatchQueue(label: "chair.capture", qos: .userInitiated)
+        let queue = DispatchQueue(label: "chair.capture", qos: .userInitiated)
         private let feed = CaptureStateFeed()
         private let authorization: any CameraAuthorizing
         private let output = AVCaptureVideoDataOutput()
+        let photoOutput = AVCapturePhotoOutput()
+        var stillRequests: [Int64: CheckedContinuation<CVPixelBuffer?, Never>] = [:]
         private var device: AVCaptureDevice?
         private var observers: [NSObjectProtocol] = []
 
@@ -125,20 +127,12 @@
             let frameRate = choice.frameRate
             do {
                 session.beginConfiguration()
-                session.sessionPreset = .inputPriority
-                session.inputs.forEach(session.removeInput)
-                let input = try AVCaptureDeviceInput(device: camera)
-                guard session.canAddInput(input) else { throw CaptureError.cannotAdd }
-                session.addInput(input)
-                if !session.outputs.contains(output) {
-                    output.alwaysDiscardsLateVideoFrames = true
-                    output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
-                    output.setSampleBufferDelegate(self, queue: queue)
-                    guard session.canAddOutput(output) else { throw CaptureError.cannotAdd }
-                    session.addOutput(output)
-                }
+                try configureIO(camera)
                 try camera.lockForConfiguration()
                 camera.activeFormat = choice.format
+                if camera.isGeometricDistortionCorrectionSupported {
+                    camera.isGeometricDistortionCorrectionEnabled = true
+                }
                 apply(frameRate: frameRate, to: camera)
                 camera.unlockForConfiguration()
                 if let connection = output.connection(with: .video), connection.isVideoRotationAngleSupported(0) {
@@ -157,6 +151,25 @@
             queue.asyncAfter(deadline: .now() + Self.settleDelay, execute: handleSettle())
             let thermal = ThermalPolicy.frameRate(for: ProcessInfo.processInfo.thermalState, preferred: frameRate)
             return thermal.map { .running(format.with(frameRate: $0)) } ?? .pausedForHeat
+        }
+
+        private func configureIO(_ camera: AVCaptureDevice) throws {
+            session.sessionPreset = .inputPriority
+            session.inputs.forEach(session.removeInput)
+            let input = try AVCaptureDeviceInput(device: camera)
+            guard session.canAddInput(input) else { throw CaptureError.cannotAdd }
+            session.addInput(input)
+            if !session.outputs.contains(output) {
+                output.alwaysDiscardsLateVideoFrames = true
+                output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+                output.setSampleBufferDelegate(self, queue: queue)
+                guard session.canAddOutput(output) else { throw CaptureError.cannotAdd }
+                session.addOutput(output)
+            }
+            if !session.outputs.contains(photoOutput), session.canAddOutput(photoOutput) {
+                session.addOutput(photoOutput)
+                photoOutput.maxPhotoQualityPrioritization = .speed
+            }
         }
 
         private func apply(
@@ -184,7 +197,20 @@
             }
         }
 
-        private func observe() {
+        private func onQueue(_ work: @escaping @Sendable () -> CaptureState) async -> CaptureState? {
+            await withCheckedContinuation { continuation in
+                queue.async { continuation.resume(returning: work()) }
+            }
+        }
+
+        @MainActor
+        private func setIdleTimerDisabled(_ disabled: Bool) {
+            UIApplication.shared.isIdleTimerDisabled = disabled
+        }
+    }
+
+    extension CaptureSession {
+        func observe() {
             let center = NotificationCenter.default
             observers = [
                 center.addObserver(
@@ -280,17 +306,6 @@
             default: .unknown
             }
         }
-
-        private func onQueue(_ work: @escaping @Sendable () -> CaptureState) async -> CaptureState? {
-            await withCheckedContinuation { continuation in
-                queue.async { continuation.resume(returning: work()) }
-            }
-        }
-
-        @MainActor
-        private func setIdleTimerDisabled(_ disabled: Bool) {
-            UIApplication.shared.isIdleTimerDisabled = disabled
-        }
     }
 
     extension CaptureSession: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -302,6 +317,48 @@
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
             fanOut.deliver(Frame(pixelBuffer: pixelBuffer, time: CMSampleBufferGetPresentationTimeStamp(sampleBuffer)))
         }
+    }
+
+    extension CaptureSession: AVCapturePhotoCaptureDelegate {
+        public func captureStill() async -> CVPixelBuffer? {
+            await withCheckedContinuation { continuation in
+                queue.async { [self] in
+                    guard session.isRunning, session.outputs.contains(photoOutput) else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    let settings = AVCapturePhotoSettings(format: [
+                        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
+                    ])
+                    settings.photoQualityPrioritization = .speed
+                    stillRequests[settings.uniqueID] = continuation
+                    photoOutput.capturePhoto(with: settings, delegate: self)
+                }
+            }
+        }
+
+        public func photoOutput(
+            _: AVCapturePhotoOutput,
+            didFinishProcessingPhoto photo: AVCapturePhoto,
+            error: (any Error)?
+        ) {
+            let id = photo.resolvedSettings.uniqueID
+            let buffer = error == nil ? photo.pixelBuffer : nil
+            queue.async(execute: handleStill(id, buffer.map { UncheckedBuffer(value: $0) }))
+        }
+
+        private func handleStill(
+            _ id: Int64,
+            _ buffer: UncheckedBuffer?
+        ) -> @Sendable () -> Void {
+            { [weak self] in
+                self?.stillRequests.removeValue(forKey: id)?.resume(returning: buffer?.value)
+            }
+        }
+    }
+
+    private struct UncheckedBuffer: @unchecked Sendable {
+        let value: CVPixelBuffer
     }
 
     private enum CaptureError: Error {
