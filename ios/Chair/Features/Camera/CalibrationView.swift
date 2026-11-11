@@ -87,6 +87,13 @@ struct CalibrationView: View {
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .accessibilityIdentifier("calibration.instruction")
+            if viewModel.isMeasuring, let measurement = viewModel.measurement {
+                Text(measurement)
+                    .chairFont(.headline)
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .accessibilityIdentifier("calibration.measurement")
+            }
             if viewModel.positionDiffers {
                 Label("Phone position differs from last time", systemImage: "exclamationmark.triangle")
                     .chairFont(.callout)
@@ -137,6 +144,10 @@ struct CalibrationView: View {
                 Button("Mask", systemImage: "square.grid.3x3", action: handleToggleMask())
                     .labelStyle(.iconOnly)
                     .tint(.white)
+                Button("Ruler", systemImage: "ruler", action: handleToggleRuler())
+                    .labelStyle(.iconOnly)
+                    .tint(viewModel.isMeasuring ? Color.chair.warning : .white)
+                    .accessibilityIdentifier("calibration.ruler")
             #endif
             if let next = viewModel.nextKeypoint, viewModel.keypoints.count >= Homography.minimumPoints {
                 Button("Skip", action: handleSkip(next))
@@ -248,7 +259,17 @@ private extension CalibrationView {
     }
 
     func handleTap(_ mapping: FrameMapping) -> (CGPoint) -> Void {
-        { location in viewModel.place(at: mapping.toFrame(location)) }
+        { location in
+            if viewModel.isMeasuring {
+                viewModel.measure(at: mapping.toFrame(location))
+            } else {
+                viewModel.place(at: mapping.toFrame(location))
+            }
+        }
+    }
+
+    func handleToggleRuler() -> () -> Void {
+        { viewModel.isMeasuring.toggle() }
     }
 
     func handleDrag(

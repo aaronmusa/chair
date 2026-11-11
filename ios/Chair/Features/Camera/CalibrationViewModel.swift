@@ -51,6 +51,8 @@ final class CalibrationViewModel {
     private(set) var courtInUse: SavedCourt?
     private(set) var positionDiffers = false
     var isOfferingSave = false
+    var isMeasuring = false
+    private(set) var measurement: String?
     var saveName = ""
 
     private let suggester: any KeypointSuggesting
@@ -353,5 +355,17 @@ extension CalibrationViewModel {
     func skipSavingCourt() {
         isOfferingSave = false
         onNext(matchID)
+    }
+}
+
+extension CalibrationViewModel {
+    func measure(at point: CGPoint) {
+        guard let court = homography?.toCourt(point) else {
+            measurement = "Place 4 points first"
+            return
+        }
+        let x = (court.x * 100).rounded() / 100 + 0
+        let y = (court.y * 100).rounded() / 100 + 0
+        measurement = String(format: "x %.2f m · y %.2f m", x, y)
     }
 }

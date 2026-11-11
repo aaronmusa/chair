@@ -94,6 +94,19 @@ final class CalibrationTests: XCTestCase {
         XCTAssertEqual(tooFew.refusal?.message, "Place at least 4 points (3 placed)")
     }
 
+    func testTheRulerReadsCourtPositionsInMetres() throws {
+        let truth = try Self.truth("synthetic-netPost")
+        let empty = makeModel()
+        empty.measure(at: CGPoint(x: 500, y: 500))
+        XCTAssertEqual(empty.measurement, "Place 4 points first")
+
+        let model = makeModel(initial: truth)
+        let tee = try XCTUnwrap(try truth[XCTUnwrap(CourtKeypoint(.centre, .farService))])
+        model.measure(at: tee)
+
+        XCTAssertEqual(model.measurement, "x 0.00 m · y 6.40 m")
+    }
+
     func testBackgroundAndResumeKeepThePointsAndRestartThePreview() async throws {
         let truth = try Self.truth("synthetic-netPost")
         let capture = FakeCaptureSession(source: .blank(width: 1920, height: 1080))
