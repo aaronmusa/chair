@@ -14,4 +14,9 @@ public extension Match {
     var inputModeValue: InputMode? {
         InputMode(rawValue: inputMode)
     }
+
+    var cameraPlacementValue: CameraPlacement? {
+        get { cameraPlacement.flatMap(CameraPlacement.init(rawValue:)) }
+        set { cameraPlacement = newValue?.rawValue }
+    }
 }

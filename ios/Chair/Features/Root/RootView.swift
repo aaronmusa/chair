@@ -164,16 +164,27 @@ struct RootView: View {
         }
     }
 
+    @ViewBuilder
     private func playDestination(_ destination: PlayDestination) -> some View {
-        NewMatchView(
-            viewModel: NewMatchViewModel(
-                defaults: environment.matchDefaults.load(),
+        switch destination {
+        case .newMatch:
+            NewMatchView(
+                viewModel: NewMatchViewModel(
+                    defaults: environment.matchDefaults.load(),
+                    repository: repository,
+                    clock: environment.clock,
+                    auth: environment.auth
+                ),
+                onStart: handleNewMatchStarted()
+            )
+        case let .placement(matchID):
+            PlacementView(viewModel: PlacementViewModel(
+                matchID: matchID,
                 repository: repository,
-                clock: environment.clock,
-                auth: environment.auth
-            ),
-            onStart: handleStartSession()
-        )
+                authorization: SystemCameraAuthorization(),
+                onOpen: handleStartSession()
+            ))
+        }
     }
 
     private func sessionView(_ match: PresentedMatch) -> some View {
@@ -205,6 +216,15 @@ struct RootView: View {
 
     private func handleStartSession() -> (UUID) -> Void {
         { matchID in router.startSession(for: matchID) }
+    }
+
+    private func handleNewMatchStarted() -> (UUID, InputMode) -> Void {
+        { matchID, mode in
+            switch mode {
+            case .manual: router.startSession(for: matchID)
+            case .camera: router.showPlacement(for: matchID)
+            }
+        }
     }
 
     private func handleOpenURL() -> (URL) -> Void {

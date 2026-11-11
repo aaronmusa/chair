@@ -43,7 +43,7 @@ final class NewMatchViewSnapshotTests: XCTestCase {
     ) {
         for variant in variants {
             let viewModel = NewMatchViewModel(defaults: defaults, repository: nil, clock: FixedClock(Fixtures.matchDay))
-            let view = NavigationStack { NewMatchView(viewModel: viewModel, onStart: { _ in }) }
+            let view = NavigationStack { NewMatchView(viewModel: viewModel, onStart: { _, _ in }) }
                 .environment(\.dynamicTypeSize, variant.typeSize)
             assertSnapshot(
                 of: UIHostingController(rootView: view),

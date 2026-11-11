@@ -41,6 +41,7 @@ public final class Match {
     public var rules: MatchRules
     public var status: MatchStatus
     public var inputMode: String
+    public var cameraPlacement: String?
     public var refereeMode: String
     public var sets: [SetScore]
     public var createdAt: Date

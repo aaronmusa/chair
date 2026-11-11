@@ -16,11 +16,11 @@ import ChairUI
 struct NewMatchView: View {
     @State private var viewModel: NewMatchViewModel
     @Environment(\.appEnvironment) private var environment
-    private let onStart: (UUID) -> Void
+    private let onStart: (UUID, InputMode) -> Void
 
     init(
         viewModel: NewMatchViewModel,
-        onStart: @escaping (UUID) -> Void
+        onStart: @escaping (UUID, InputMode) -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
         self.onStart = onStart
@@ -159,18 +159,34 @@ struct NewMatchView: View {
 
     private var inputSection: some View {
         Section("Scoring input") {
-            LabeledContent("Manual") {
-                Image(systemName: "checkmark")
-                    .foregroundStyle(Color.chair.accent)
-                    .accessibilityHidden(true)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isSelected)
-            LabeledContent("Camera + umpire", value: "Coming soon")
-                .foregroundStyle(Color.chair.inkSecondary)
-                .accessibilityElement(children: .combine)
-                .accessibilityAddTraits(.isStaticText)
+            ForEach(InputMode.allCases, id: \.self, content: inputRow)
         }
+    }
+
+    private func inputRow(_ mode: InputMode) -> some View {
+        let isSelected = viewModel.setup.inputMode == mode
+        return Button(action: handleSelectInput(mode)) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+                    Text(mode.title)
+                        .foregroundStyle(Color.chair.ink)
+                    Text(mode.detail)
+                        .chairFont(.callout)
+                        .foregroundStyle(Color.chair.inkSecondary)
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(Color.chair.accent)
+                        .accessibilityHidden(true)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityIdentifier("newMatch.input.\(mode.rawValue)")
     }
 
     private var startBar: some View {
@@ -216,10 +232,14 @@ struct NewMatchView: View {
         )
     }
 
+    private func handleSelectInput(_ mode: InputMode) -> () -> Void {
+        { viewModel.setup.inputMode = mode }
+    }
+
     private func handleStart() -> () -> Void {
         {
             guard let matchID = viewModel.start() else { return }
-            onStart(matchID)
+            onStart(matchID, viewModel.setup.inputMode)
         }
     }
 }
@@ -229,7 +249,7 @@ struct NewMatchView: View {
         NavigationStack {
             NewMatchView(
                 viewModel: NewMatchViewModel(defaults: MatchDefaults(), repository: nil, clock: FixedClock(.now)),
-                onStart: { _ in }
+                onStart: { _, _ in }
             )
         }
     }
@@ -238,9 +258,25 @@ struct NewMatchView: View {
         NavigationStack {
             NewMatchView(
                 viewModel: NewMatchViewModel(defaults: MatchDefaults(format: .doubles), repository: nil, clock: FixedClock(.now)),
-                onStart: { _ in }
+                onStart: { _, _ in }
             )
         }
         .environment(\.dynamicTypeSize, .accessibility5)
     }
 #endif
+
+private extension InputMode {
+    var title: String {
+        switch self {
+        case .manual: "Manual"
+        case .camera: "Camera + umpire"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .manual: "Tap the score on the phone or the watch"
+        case .camera: "Mount the phone at the net and calibrate the court"
+        }
+    }
+}

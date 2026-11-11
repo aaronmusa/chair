@@ -15,6 +15,7 @@ struct PresentedMatch: Identifiable, Hashable {
 
 enum PlayDestination: Hashable {
     case newMatch
+    case placement(UUID)
 }
 
 enum PendingRoute: Equatable {
@@ -69,6 +70,10 @@ final class AppRouter {
         } else {
             summaryMatchID = matchID
         }
+    }
+
+    func showPlacement(for matchID: UUID) {
+        playPath.append(.placement(matchID))
     }
 
     func startSession(for matchID: UUID) {

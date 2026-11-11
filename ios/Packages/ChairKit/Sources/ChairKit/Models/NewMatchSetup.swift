@@ -19,6 +19,7 @@ public struct NewMatchSetup: Equatable, Sendable {
     public var firstServers: [Side: PlayerSlot]
     public var deuceReceivers: [Side: PlayerSlot]
     public var links: [PlayerSlot: UUID] = [:]
+    public var inputMode = InputMode.manual
 
     public init(defaults: MatchDefaults) {
         format = defaults.format
@@ -64,7 +65,7 @@ public struct NewMatchSetup: Equatable, Sendable {
             format: format,
             rules: rules,
             status: .inProgress,
-            inputMode: InputMode.manual.rawValue,
+            inputMode: inputMode.rawValue,
             createdAt: date,
             updatedAt: date,
             localUserSlot: slots.first { seats[$0] == .a1 } ?? .a1
