@@ -24,7 +24,8 @@ extension MatchSessionView {
             makeCapture: makeCapture,
             suggester: CourtLineSuggester(),
             repository: viewModel.repositoryForCamera,
-            clock: environment.clock
+            clock: environment.clock,
+            courts: courts
         )
         camera = model
         await model.start()

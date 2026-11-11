@@ -61,6 +61,13 @@ struct CalibrationView: View {
         .onDisappear(perform: handleDisappear())
         .onAppear(perform: handleOrientation(.landscapeRight))
         .onChange(of: scenePhase, handleScenePhase())
+        .alert("Save this court?", isPresented: $viewModel.isOfferingSave) {
+            TextField("Name", text: $viewModel.saveName)
+            Button("Save", action: viewModel.saveCourt)
+            Button("Not now", role: .cancel, action: viewModel.skipSavingCourt)
+        } message: {
+            Text("Next time at this court, Chair places the points for you.")
+        }
         .environment(\.colorScheme, .dark)
     }
 
@@ -80,6 +87,12 @@ struct CalibrationView: View {
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .accessibilityIdentifier("calibration.instruction")
+            if viewModel.positionDiffers {
+                Label("Phone position differs from last time", systemImage: "exclamationmark.triangle")
+                    .chairFont(.callout)
+                    .foregroundStyle(Color.chair.warning)
+                    .accessibilityIdentifier("calibration.positionDiffers")
+            }
         }
         .padding(.vertical, Spacing.chair.xs)
         .padding(.horizontal, Spacing.chair.md)
@@ -129,6 +142,15 @@ struct CalibrationView: View {
                 Button("Skip", action: handleSkip(next))
                     .tint(.white)
                     .accessibilityIdentifier("calibration.skip")
+            }
+            if !viewModel.savedCourts.isEmpty {
+                Menu("Saved courts", systemImage: "mappin.and.ellipse") {
+                    ForEach(viewModel.savedCourts) { court in
+                        Button(court.name, action: handleUse(court))
+                    }
+                }
+                .tint(.white)
+                .accessibilityIdentifier("calibration.savedCourts")
             }
             Button("Redo", action: viewModel.redo)
                 .tint(.white)
@@ -241,6 +263,10 @@ private extension CalibrationView {
 
     func handleDragEnded() -> (DragGesture.Value) -> Void {
         { _ in dragging = nil }
+    }
+
+    func handleUse(_ court: SavedCourt) -> () -> Void {
+        { viewModel.use(court) }
     }
 
     func handleSkip(_ keypoint: CourtKeypoint) -> () -> Void {
