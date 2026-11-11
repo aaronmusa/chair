@@ -182,9 +182,24 @@ struct RootView: View {
                 matchID: matchID,
                 repository: repository,
                 authorization: SystemCameraAuthorization(),
-                onOpen: handleStartSession()
+                onOpen: handleOpenCalibration()
+            ))
+        case let .calibration(matchID):
+            CalibrationView(viewModel: CalibrationViewModel(
+                matchID: matchID,
+                placement: placement(of: matchID),
+                capture: CaptureSession(),
+                suggester: CourtLineSuggester(),
+                repository: repository,
+                clock: environment.clock,
+                onNext: handleStartSession()
             ))
         }
+    }
+
+    private func placement(of matchID: UUID) -> CameraPlacement {
+        let match = (try? repository?.fetch())?.first { $0.remoteID == matchID }
+        return match?.cameraPlacementValue ?? .netPost
     }
 
     private func sessionView(_ match: PresentedMatch) -> some View {
@@ -216,6 +231,10 @@ struct RootView: View {
 
     private func handleStartSession() -> (UUID) -> Void {
         { matchID in router.startSession(for: matchID) }
+    }
+
+    private func handleOpenCalibration() -> (UUID) -> Void {
+        { matchID in router.showCalibration(for: matchID) }
     }
 
     private func handleNewMatchStarted() -> (UUID, InputMode) -> Void {
