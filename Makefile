@@ -1,6 +1,8 @@
-.PHONY: build test test-kit test-all coverage lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
+.PHONY: build test test-kit test-all test-footage footage coverage lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
 
 project := ios/Chair.xcodeproj
+FOOTAGE_SOURCE ?= $(HOME)/Library/Mobile Documents/com~apple~CloudDocs/Chair Footage
+FOOTAGE_DIR ?= $(HOME)/chair-footage
 
 build:
 	@installed=$$(xcodebuild -version | awk 'NR == 1 { print $$2 }'); expected=$$(cat .xcode-version); \
@@ -16,6 +18,14 @@ test-kit:
 
 test-all:
 	ios/Scripts/test.sh --all
+
+footage:
+	@test -d "$(FOOTAGE_SOURCE)" || { echo "no footage folder at $(FOOTAGE_SOURCE); set FOOTAGE_SOURCE" >&2; exit 1; }
+	mkdir -p "$(FOOTAGE_DIR)"
+	rsync -av "$(FOOTAGE_SOURCE)/" "$(FOOTAGE_DIR)/"
+
+test-footage:
+	FOOTAGE_DIR="$(FOOTAGE_DIR)" CHAIR_FOOTAGE_REQUIRED=1 swift test --package-path ios/Packages/ChairKit --filter FootageTests
 
 coverage:
 	ios/Scripts/coverage.sh
