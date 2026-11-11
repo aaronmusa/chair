@@ -1,0 +1,164 @@
+{
+  "clip": "synthetic-baseline",
+  "frameSize": {
+    "width": 1920,
+    "height": 1080
+  },
+  "corners": [
+    {
+      "frame": 0,
+      "points": [
+        {
+          "x": 765.25,
+          "y": 427.08
+        },
+        {
+          "x": 1154.75,
+          "y": 427.08
+        },
+        {
+          "x": 1729.38,
+          "y": 857.58
+        },
+        {
+          "x": 190.62,
+          "y": 857.58
+        }
+      ]
+    }
+  ],
+  "groundPoints": [
+    {
+      "name": "far baseline, left doubles sideline",
+      "pixel": {
+        "x": 765.25,
+        "y": 427.08
+      },
+      "court": {
+        "x": -5.485,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "far baseline, right doubles sideline",
+      "pixel": {
+        "x": 1154.75,
+        "y": 427.08
+      },
+      "court": {
+        "x": 5.485,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "far baseline, left singles sideline",
+      "pixel": {
+        "x": 813.89,
+        "y": 427.08
+      },
+      "court": {
+        "x": -4.115,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "far baseline, right singles sideline",
+      "pixel": {
+        "x": 1106.11,
+        "y": 427.08
+      },
+      "court": {
+        "x": 4.115,
+        "y": 11.885
+      }
+    },
+    {
+      "name": "far service line, left singles sideline",
+      "pixel": {
+        "x": 783.47,
+        "y": 457.46
+      },
+      "court": {
+        "x": -4.115,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "far service line, right singles sideline",
+      "pixel": {
+        "x": 1136.53,
+        "y": 457.46
+      },
+      "court": {
+        "x": 4.115,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "far service line, centre service line",
+      "pixel": {
+        "x": 960.0,
+        "y": 457.46
+      },
+      "court": {
+        "x": 0.0,
+        "y": 6.4
+      }
+    },
+    {
+      "name": "near service line, centre service line",
+      "pixel": {
+        "x": 960.0,
+        "y": 624.1
+      },
+      "court": {
+        "x": 0.0,
+        "y": -6.4
+      }
+    },
+    {
+      "name": "near service line, left singles sideline",
+      "pixel": {
+        "x": 616.59,
+        "y": 624.1
+      },
+      "court": {
+        "x": -4.115,
+        "y": -6.4
+      }
+    },
+    {
+      "name": "near service line, right singles sideline",
+      "pixel": {
+        "x": 1303.41,
+        "y": 624.1
+      },
+      "court": {
+        "x": 4.115,
+        "y": -6.4
+      }
+    },
+    {
+      "name": "near baseline, left singles sideline",
+      "pixel": {
+        "x": 382.79,
+        "y": 857.58
+      },
+      "court": {
+        "x": -4.115,
+        "y": -11.885
+      }
+    },
+    {
+      "name": "near baseline, right singles sideline",
+      "pixel": {
+        "x": 1537.21,
+        "y": 857.58
+      },
+      "court": {
+        "x": 4.115,
+        "y": -11.885
+      }
+    }
+  ]
+}

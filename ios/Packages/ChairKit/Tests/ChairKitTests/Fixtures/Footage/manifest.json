@@ -1,0 +1,15 @@
+{
+  "clips": [
+    {
+      "id": "synthetic-baseline",
+      "file": "synthetic-baseline.mp4",
+      "court": "Synthetic",
+      "surface": "hard",
+      "placement": "baseline",
+      "light": "bright",
+      "duration": 2,
+      "frameRate": 60,
+      "device": "Synthetic pinhole camera"
+    }
+  ]
+}
