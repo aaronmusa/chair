@@ -17,6 +17,7 @@ struct ChairApp: App {
     private let umpire: UmpireCoordinator
     private let container: ModelContainer
     private let repository: any MatchRepository
+    private let courts: any SavedCourtRepository
     private let sync: SyncCoordinator?
     private let accountPrompt: AccountPromptModel?
     private let profiles: ProfileRepository
@@ -32,19 +33,25 @@ struct ChairApp: App {
         let repository: any MatchRepository
         if let remote = environment.matchRemote {
             let syncing = SyncingMatchRepository(context: container.mainContext, remote: remote, clock: environment.clock)
-            let migration = AccountMigration(repository: syncing, store: UserDefaultsAccountStore())
+            let syncingCourts = environment.savedCourtRemote.map {
+                SyncingSavedCourtRepository(context: container.mainContext, remote: $0, clock: environment.clock)
+            }
+            let migration = AccountMigration(repository: syncing, store: UserDefaultsAccountStore(), courts: syncingCourts)
             let sync = SyncCoordinator(
                 repository: syncing,
                 auth: environment.auth,
                 network: SystemNetworkMonitor(),
                 clock: environment.clock,
-                migration: migration
+                migration: migration,
+                courts: syncingCourts
             )
+            courts = syncingCourts ?? LocalSavedCourtRepository(context: container.mainContext, clock: environment.clock)
             repository = syncing
             self.sync = sync
             accountPrompt = AccountPromptModel(auth: environment.auth, migration: migration, sync: sync)
         } else {
             repository = LocalMatchRepository(context: container.mainContext, clock: environment.clock)
+            courts = LocalSavedCourtRepository(context: container.mainContext, clock: environment.clock)
             sync = nil
             accountPrompt = nil
         }
@@ -75,6 +82,7 @@ struct ChairApp: App {
                 .environment(\.appEnvironment, environment)
                 .environment(\.appRouter, router)
                 .environment(\.matchRepository, repository)
+                .environment(\.savedCourtRepository, courts)
                 .environment(\.syncCoordinator, sync)
                 .environment(\.profileRepository, profiles)
                 .environment(\.inviteCenter, invites)

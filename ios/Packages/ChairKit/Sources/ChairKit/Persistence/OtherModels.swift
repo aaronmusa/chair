@@ -8,45 +8,53 @@
 import Foundation
 import SwiftData
 
-public struct CourtCorner: Codable, Hashable, Sendable {
-    public var x: Double
-    public var y: Double
-
-    public init(
-        x: Double,
-        y: Double
-    ) {
-        self.x = x
-        self.y = y
-    }
-}
-
 @Model
 public final class SavedCourt {
     @Attribute(.unique) public var remoteID: UUID
+    public var ownerID: UUID?
     public var name: String
-    public var corners: [CourtCorner]
+    public var calibrationData = Data()
     public var placement: String
+    public var lastUsedAt: Date?
+    public var latitude: Double?
+    public var longitude: Double?
+    public var thumbnailFile: String?
     public var createdAt: Date
     public var updatedAt: Date
     public var syncState: SyncState
 
     public init(
         remoteID: UUID = UUID(),
+        ownerID: UUID? = nil,
         name: String,
-        corners: [CourtCorner],
-        placement: String,
+        calibration: CourtCalibration,
+        lastUsedAt: Date? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
         createdAt: Date,
         updatedAt: Date,
         syncState: SyncState = .pendingUpload
     ) {
         self.remoteID = remoteID
+        self.ownerID = ownerID
         self.name = name
-        self.corners = corners
-        self.placement = placement
+        calibrationData = (try? JSONEncoder().encode(calibration)) ?? Data()
+        placement = calibration.placement.rawValue
+        self.lastUsedAt = lastUsedAt
+        self.latitude = latitude
+        self.longitude = longitude
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.syncState = syncState
+    }
+
+    public var calibration: CourtCalibration? {
+        get { try? JSONDecoder().decode(CourtCalibration.self, from: calibrationData) }
+        set {
+            guard let newValue, let data = try? JSONEncoder().encode(newValue) else { return }
+            calibrationData = data
+            placement = newValue.placement.rawValue
+        }
     }
 }
 

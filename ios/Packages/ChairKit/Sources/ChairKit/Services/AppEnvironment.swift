@@ -17,6 +17,7 @@ public struct AppEnvironment: Sendable {
     public var matchRemote: (any MatchRemote)?
     public var profileRemote: (any ProfileRemote)?
     public var inviteRemote: (any InviteRemote)?
+    public var savedCourtRemote: (any SavedCourtRemote)?
 
     public init(
         auth: any AuthService,
@@ -29,7 +30,8 @@ public struct AppEnvironment: Sendable {
         matchDefaults: any MatchDefaultsStore,
         matchRemote: (any MatchRemote)? = nil,
         profileRemote: (any ProfileRemote)? = nil,
-        inviteRemote: (any InviteRemote)? = nil
+        inviteRemote: (any InviteRemote)? = nil,
+        savedCourtRemote: (any SavedCourtRemote)? = nil
     ) {
         self.auth = auth
         self.speechOutput = speechOutput
@@ -42,6 +44,7 @@ public struct AppEnvironment: Sendable {
         self.matchRemote = matchRemote
         self.profileRemote = profileRemote
         self.inviteRemote = inviteRemote
+        self.savedCourtRemote = savedCourtRemote
     }
 
     public static let unavailable = AppEnvironment(

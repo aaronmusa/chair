@@ -18,6 +18,7 @@ struct SettingsView: View {
     @Environment(\.syncCoordinator) private var sync
     @Environment(\.profileRepository) private var profiles
     @Environment(\.matchRepository) private var matches
+    @Environment(\.savedCourtRepository) private var courts
     @Environment(\.umpire) private var umpire
 
     init(viewModel: SettingsViewModel) {
@@ -46,7 +47,7 @@ struct SettingsView: View {
         }
         .navigationDestination(isPresented: $viewModel.isShowingProfile) {
             if let profiles {
-                ProfileView(viewModel: viewModel.makeProfileViewModel(profiles: profiles, matches: matches))
+                ProfileView(viewModel: viewModel.makeProfileViewModel(profiles: profiles, matches: matches, courts: courts))
             }
         }
     }
