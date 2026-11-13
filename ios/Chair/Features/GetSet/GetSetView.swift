@@ -20,6 +20,8 @@ struct GetSetActions {
 
 struct GetSetView: View {
     let presentation: GetSetPresentation
+    var scoreboard: ScoreboardModel?
+    var note: String?
     var actions = GetSetActions()
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -27,10 +29,24 @@ struct GetSetView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.chair.md) {
-                strip
+                if let scoreboard {
+                    ScoreboardView(model: scoreboard, isCompact: true)
+                }
                 CourtView(players: presentation.markers)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.chair.small))
                     .containerRelativeFrame(.vertical, alignment: .center, handleCourtHeight())
+                if let scoreboard {
+                    Text(scoreboard.headline)
+                        .chairFont(.scoreLarge)
+                        .foregroundStyle(Color.chair.ink)
+                        .accessibilityHidden(true)
+                }
                 serveSummary
+                if let note {
+                    Text(note)
+                        .chairFont(.caption)
+                        .foregroundStyle(Color.chair.inkSecondary)
+                }
                 controls
             }
             .padding(Spacing.chair.md)
@@ -38,11 +54,17 @@ struct GetSetView: View {
             .frame(maxWidth: .infinity)
         }
         .safeAreaInset(edge: .bottom) {
-            ChairButton("Play point", size: .large, onTap: actions.onPlayPoint)
-                .accessibilityIdentifier("getSet.playPoint")
-                .frame(maxWidth: columnWidth)
-                .padding(Spacing.chair.md)
-                .background(Color.chair.surface)
+            Button(action: actions.onPlayPoint) {
+                Text("Play point")
+                    .chairFont(.action)
+                    .frame(maxWidth: .infinity, minHeight: 64)
+            }
+            .buttonStyle(ChairButtonStyle(.primary))
+            .accessibilityLabel("Play point")
+            .accessibilityIdentifier("getSet.playPoint")
+            .frame(maxWidth: columnWidth)
+            .padding(Spacing.chair.md)
+            .background(Color.chair.surface)
         }
         .background(Color.chair.surface)
     }
@@ -55,20 +77,9 @@ struct GetSetView: View {
         { length, _ in length * 0.45 }
     }
 
-    private var strip: some View {
-        Text(presentation.strip)
-            .chairFont(.title)
-            .foregroundStyle(Color.chair.ink)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-            .padding(Spacing.chair.sm)
-            .background(Color.chair.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.chair.large))
-            .accessibilityHidden(true)
-    }
-
     private var serveSummary: some View {
         Text(presentation.serveLabel)
-            .chairFont(.headline)
+            .chairFont(.caption)
             .foregroundStyle(Color.chair.ink)
             .multilineTextAlignment(.center)
             .accessibilityLabel(presentation.accessibilitySentence)
@@ -84,19 +95,34 @@ struct GetSetView: View {
 
     @ViewBuilder
     private var controlButtons: some View {
-        ChairButton("Swap server", style: .secondary, onTap: actions.onSwapServer)
-            .disabled(!presentation.canSwapServer)
+        controlButton("Swap server", isEnabled: presentation.canSwapServer, onTap: actions.onSwapServer)
             .accessibilityIdentifier("getSet.swapServer")
         if presentation.isDoubles {
-            ChairButton("Swap receivers", style: .secondary, onTap: actions.onSwapReceivers)
-                .disabled(!presentation.canSwapReceivers)
+            controlButton("Swap receivers", isEnabled: presentation.canSwapReceivers, onTap: actions.onSwapReceivers)
                 .accessibilityIdentifier("getSet.swapReceivers")
         }
-        ChairButton("Swap sides", style: .secondary, onTap: actions.onSwapSides)
-            .disabled(!presentation.canSwapSides)
+        controlButton("Swap sides", isEnabled: presentation.canSwapSides, onTap: actions.onSwapSides)
             .accessibilityIdentifier("getSet.swapSides")
-        ChairButton("Fix score", style: .ghost, onTap: actions.onFixScore)
+        controlButton("Fix score", isEnabled: true, onTap: actions.onFixScore)
             .accessibilityIdentifier("getSet.fixScore")
+    }
+
+    private func controlButton(
+        _ title: String,
+        isEnabled: Bool,
+        onTap: @escaping () -> Void
+    ) -> some View {
+        Button(action: onTap) {
+            Text(title)
+                .chairFont(.action)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .padding(.horizontal, Spacing.chair.xs)
+        }
+        .buttonStyle(ChairButtonStyle(.secondary))
+        .disabled(!isEnabled)
+        .accessibilityLabel(title)
     }
 }
 

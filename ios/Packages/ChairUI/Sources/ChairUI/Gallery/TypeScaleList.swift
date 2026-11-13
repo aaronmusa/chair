@@ -51,6 +51,8 @@ import SwiftUI
             case .caption: "Deuce side"
             case .score: "40"
             case .scoreLarge: "15"
+            case .scoreHero: "15–30"
+            case .action: "Point Musa"
             }
         }
     }

@@ -16,6 +16,8 @@ public enum ChairTextStyle: String, CaseIterable, Sendable {
     case caption
     case score
     case scoreLarge
+    case scoreHero
+    case action
 
     public var pointSize: CGFloat {
         switch self {
@@ -27,6 +29,8 @@ public enum ChairTextStyle: String, CaseIterable, Sendable {
         case .caption: 11
         case .score: 34
         case .scoreLarge: 56
+        case .scoreHero: 96
+        case .action: 22
         }
     }
 }
@@ -55,6 +59,8 @@ private struct ChairFontModifier: ViewModifier {
     let style: ChairTextStyle
 
     @ScaledMetric(relativeTo: .largeTitle) private var scoreLargeSize: CGFloat = 56
+    @ScaledMetric(relativeTo: .largeTitle) private var scoreHeroSize: CGFloat = 96
+    @ScaledMetric(relativeTo: .title2) private var actionSize: CGFloat = 22
     @ScaledMetric(relativeTo: .caption2) private var captionTracking: CGFloat = 11 * 0.04
 
     func body(content: Content) -> some View {
@@ -67,6 +73,8 @@ private struct ChairFontModifier: ViewModifier {
         case .caption: content.font(Font.chair.caption).textCase(.uppercase).tracking(captionTracking)
         case .score: content.font(Font.chair.score)
         case .scoreLarge: content.font(.system(size: scoreLargeSize, weight: .heavy).width(.compressed).monospacedDigit())
+        case .scoreHero: content.font(.system(size: scoreHeroSize, weight: .heavy).width(.compressed).monospacedDigit())
+        case .action: content.font(.system(size: actionSize, weight: .heavy).width(.condensed)).textCase(.uppercase)
         }
     }
 }
