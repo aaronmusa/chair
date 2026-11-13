@@ -1,4 +1,4 @@
-.PHONY: build test test-kit test-all test-footage footage coverage lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots
+.PHONY: build test test-kit test-all test-footage footage coverage lint gallery db-reset test-db functions-serve test-functions db-types hooks bump testflight check-listing shots icon
 
 project := ios/Chair.xcodeproj
 FOOTAGE_SOURCE ?= $(HOME)/Library/Mobile Documents/com~apple~CloudDocs/Chair Footage
@@ -72,3 +72,6 @@ shots:
 	for device in iphone ipad watch; do \
 		xcrun swift ios/Scripts/make-store-shots.swift docs/store-shots/$$device.json docs/store-shots/captures/$$device .build/store-shots/$$device || exit 1; \
 	done
+
+icon:
+	ios/Scripts/render-icon.sh
