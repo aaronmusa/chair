@@ -14,6 +14,9 @@ import ChairKit
 enum MatchStore {
     static func makeContainer(arguments: [String] = ProcessInfo.processInfo.arguments) -> ModelContainer {
         if let container = try? ChairContainer.make(inMemory: arguments.contains("-UseFakes")) {
+            #if DEBUG
+                ScreenshotSeed.seedIfRequested(arguments: arguments, context: container.mainContext)
+            #endif
             return container
         }
         do {
