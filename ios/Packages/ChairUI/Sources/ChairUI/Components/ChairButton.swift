@@ -67,13 +67,26 @@ public struct ChairButton: View {
     }
 }
 
-struct ChairButtonStyle: ButtonStyle {
+public struct ChairButtonStyle: ButtonStyle {
     let style: ChairButton.Style
     let isLoading: Bool
 
+    public init(_ style: ChairButton.Style) {
+        self.style = style
+        isLoading = false
+    }
+
+    init(
+        style: ChairButton.Style,
+        isLoading: Bool
+    ) {
+        self.style = style
+        self.isLoading = isLoading
+    }
+
     @Environment(\.isEnabled) private var isEnabled
 
-    func makeBody(configuration: Configuration) -> some View {
+    public func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: Radius.chair.control)
         return configuration.label
             .foregroundStyle(foreground)

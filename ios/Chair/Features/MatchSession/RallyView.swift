@@ -22,6 +22,7 @@ struct RallyView: View {
     let scoreboard: ScoreboardModel
     let getSet: GetSetPresentation
     let announcement: String
+    var note: String?
     let names: [Side: String]
     var actions = RallyActions()
     var camera: CameraPanelModel?
@@ -64,23 +65,18 @@ struct RallyView: View {
     private var sidePanel: some View {
         VStack(spacing: Spacing.chair.sm) {
             ScrollView {
-                VStack(spacing: Spacing.chair.sm) {
+                VStack(spacing: Spacing.chair.md) {
                     topStrip
-                    AnnouncementStrip(text: announcement)
+                    ScoreHeadline(score: scoreboard.headline, caption: getSet.serveLabel, announcement: announcement, note: note)
                     Button(action: actions.onShowLog) {
                         ScoreboardView(model: scoreboard)
                     }
                     .buttonStyle(.plain)
                     .accessibilityHint("Shows the points in this game")
-                    HStack(alignment: .center, spacing: Spacing.chair.sm) {
-                        CourtView(players: getSet.markers)
-                            .frame(maxHeight: 160)
-                        Text(getSet.serveLabel)
-                            .chairFont(.callout)
-                            .foregroundStyle(Color.chair.ink)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .accessibilityLabel(getSet.accessibilitySentence)
-                    }
+                    CourtView(players: getSet.markers)
+                        .frame(maxHeight: 150)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.chair.small))
+                        .accessibilityLabel(getSet.accessibilitySentence)
                     if dynamicTypeSize.isAccessibilitySize {
                         secondaryButtons
                     }
@@ -98,22 +94,47 @@ struct RallyView: View {
             Spacer()
             Text(scoreboard.setsLead)
         }
-        .chairFont(.callout)
+        .chairFont(.caption)
         .foregroundStyle(Color.chair.inkSecondary)
     }
 
     private var bottomBar: some View {
-        VStack(spacing: Spacing.chair.xs) {
+        VStack(spacing: Spacing.chair.sm) {
             ForEach(Side.allCases, id: \.self) { side in
-                ChairButton("Point \(names[side] ?? side.rawValue)", size: .large, onTap: handlePoint(side))
-                    .accessibilityIdentifier("session.point.\(side.rawValue)")
+                pointButton(side)
             }
             if !dynamicTypeSize.isAccessibilitySize {
-                HStack(spacing: Spacing.chair.xs) { secondaryButtonRow }
+                HStack(spacing: Spacing.chair.sm) { secondaryButtonRow }
             }
         }
         .padding(Spacing.chair.md)
         .background(Color.chair.surface)
+    }
+
+    private func pointButton(_ side: Side) -> some View {
+        let name = names[side] ?? side.rawValue
+        let isServing = scoreboard.rows.first { $0.side == side }?.isServing ?? false
+        return Button(action: handlePoint(side)) {
+            HStack(spacing: Spacing.chair.sm) {
+                Image(systemName: "tennisball.fill")
+                    .foregroundStyle(Color.chair.accent, Color.chair.onButton)
+                    .opacity(isServing ? 1 : 0)
+                Text("Point \(name)")
+                    .chairFont(.action)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .frame(maxWidth: .infinity)
+                Text("+1")
+                    .chairFont(.headline)
+            }
+            .padding(.horizontal, Spacing.chair.lg)
+            .frame(maxWidth: .infinity, minHeight: 64)
+        }
+        .buttonStyle(ChairButtonStyle(.secondary))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Point \(name)")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("session.point.\(side.rawValue)")
     }
 
     private var secondaryButtons: some View {
@@ -122,12 +143,36 @@ struct RallyView: View {
 
     @ViewBuilder
     private var secondaryButtonRow: some View {
-        ChairButton("Fault", style: .secondary, onTap: actions.onFault)
+        actionButton("Fault", systemImage: nil, label: "Fault", onTap: actions.onFault)
             .accessibilityIdentifier("session.fault")
-        ChairButton("Let", style: .secondary, onTap: actions.onLet)
+        actionButton("Let", systemImage: nil, label: "Let", onTap: actions.onLet)
             .accessibilityIdentifier("session.let")
-        ChairButton("Undo last", style: .ghost, onTap: actions.onUndo)
+        actionButton("Undo", systemImage: "arrow.uturn.backward", label: "Undo last", onTap: actions.onUndo)
             .accessibilityIdentifier("session.undo")
+    }
+
+    private func actionButton(
+        _ title: String,
+        systemImage: String?,
+        label: String,
+        onTap: @escaping () -> Void
+    ) -> some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.chair.xxs) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                }
+                Text(title)
+                    .chairFont(.action)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            .frame(maxWidth: .infinity, minHeight: 52)
+        }
+        .buttonStyle(ChairButtonStyle(.secondary))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(.isButton)
     }
 
     private func handlePoint(_ side: Side) -> () -> Void {
@@ -135,18 +180,32 @@ struct RallyView: View {
     }
 }
 
-struct AnnouncementStrip: View {
-    let text: String
+struct ScoreHeadline: View {
+    let score: String
+    let caption: String
+    let announcement: String
+    var note: String?
 
     var body: some View {
-        Text(text)
-            .chairFont(.headline)
-            .foregroundStyle(Color.chair.ink)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .padding(.horizontal, Spacing.chair.sm)
-            .background(Color.chair.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.chair.medium))
-            .accessibilityAddTraits(.updatesFrequently)
-            .accessibilityIdentifier("session.announcement")
+        VStack(spacing: Spacing.chair.xxs) {
+            Text(score)
+                .chairFont(.scoreHero)
+                .foregroundStyle(Color.chair.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .accessibilityLabel(announcement)
+                .accessibilityAddTraits(.updatesFrequently)
+                .accessibilityIdentifier("session.announcement")
+            Text(caption)
+                .chairFont(.caption)
+                .foregroundStyle(Color.chair.ink)
+                .accessibilityHidden(true)
+            if let note {
+                Text(note)
+                    .chairFont(.caption)
+                    .foregroundStyle(Color.chair.inkSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }

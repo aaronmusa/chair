@@ -23,7 +23,7 @@ struct MatchSessionView: View {
 
     @Environment(\.appRouter) private var router
     @Environment(\.appEnvironment) var environment
-    @Environment(\.umpire) private var umpire
+    @Environment(\.umpire) var umpire
     @Environment(\.makeCapture) var makeCapture
     @Environment(\.savedCourtRepository) var courts
 
@@ -38,17 +38,7 @@ struct MatchSessionView: View {
             content
                 .navigationBarTitleDisplayMode(.inline)
                 .safeAreaInset(edge: .top) { umpireHeader }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        if viewModel.phase == .complete {
-                            Button("Done", action: handleDone())
-                                .accessibilityIdentifier("session.done")
-                        } else if viewModel.phase != .finishing {
-                            Button("Pause", systemImage: "pause.circle", action: handlePause())
-                                .accessibilityIdentifier("session.pause")
-                        }
-                    }
-                }
+                .toolbar { matchToolbar }
                 .toolbar {
                     if viewModel.phase == .complete, let summary = viewModel.summary {
                         ToolbarItem(placement: .topBarLeading) {
@@ -138,7 +128,7 @@ struct MatchSessionView: View {
             ContentUnavailableView("Match unavailable", systemImage: "exclamationmark.triangle", description: Text(message))
         case .getSet:
             if let getSet = viewModel.getSet {
-                GetSetView(presentation: getSet.noted(umpire?.stripNote), actions: getSetActions)
+                GetSetView(presentation: getSet, scoreboard: viewModel.scoreboard, note: umpire?.stripNote, actions: getSetActions)
             }
         case .rally:
             if let scoreboard = viewModel.scoreboard, let getSet = viewModel.getSet {
@@ -146,6 +136,7 @@ struct MatchSessionView: View {
                     scoreboard: scoreboard,
                     getSet: getSet,
                     announcement: stripText,
+                    note: umpire?.stripNote,
                     names: [.a: viewModel.name(of: .a), .b: viewModel.name(of: .b)],
                     actions: rallyActions,
                     camera: camera
@@ -253,7 +244,7 @@ struct MatchSessionView: View {
         }
     }
 
-    private func handleDone() -> () -> Void {
+    func handleDone() -> () -> Void {
         { router.presentedMatch = nil }
     }
 
@@ -283,7 +274,7 @@ struct MatchSessionView: View {
     }
 }
 
-private extension MatchSessionView {
+extension MatchSessionView {
     var errorBinding: Binding<Bool> {
         Binding(
             get: { viewModel.errorMessage != nil },
@@ -348,12 +339,11 @@ struct PendingPoint: Identifiable {
     }
 }
 
-private extension MatchSessionView {
+extension MatchSessionView {
     @ViewBuilder
     var umpireHeader: some View {
-        if let umpire, viewModel.isLive {
+        if umpire != nil, viewModel.isLive {
             VStack(spacing: Spacing.chair.xs) {
-                UmpirePill(isMuted: umpire.isMuted, routeName: umpire.routeName, onToggle: handleToggleUmpire())
                 if showsSpeakerTip {
                     SpeakerTip(onDismiss: handleDismissSpeakerTip())
                 }

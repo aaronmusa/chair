@@ -28,11 +28,10 @@ struct GetSetPresentation {
         let formatter = AnnouncementFormatter(names: PlayerNames(names, doubles: state.doublesOrder != nil))
         let score = formatter.score(state)
         let side = preRally.serverCourtSide == .deuce ? "deuce" : "ad"
-        let serve = preRally.serve == .first ? "1st serve" : "2nd serve"
         let spokenServe = preRally.serve == .first ? "first serve" : "second serve"
 
         serverName = Self.name(preRally.server, in: names)
-        serveLabel = "\(serverName) serves · \(side) side · \(serve)"
+        serveLabel = "\(serverName) serves · \(side) court · \(spokenServe)"
         strip = announcements.isEmpty ? score : formatter.text(announcements, after: state)
         accessibilitySentence = "\(serverName) serves from the \(side) side, \(spokenServe). \(score)"
         markers = Self.markers(preRally, names: names, doubles: state.doublesOrder != nil)

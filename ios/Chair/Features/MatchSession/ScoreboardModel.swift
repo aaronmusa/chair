@@ -20,6 +20,12 @@ struct ScoreboardModel: Equatable {
     let setLabel: String
     let setsLead: String
 
+    var headline: String {
+        let server = rows.first(where: \.isServing) ?? rows[0]
+        let receiver = rows.first { $0.side != server.side } ?? rows[0]
+        return "\(server.points)–\(receiver.points)"
+    }
+
     init(
         state: MatchState,
         names: [Side: String]

@@ -31,7 +31,7 @@ final class GetSetPresentationTests: XCTestCase {
         XCTAssertEqual(server.side, aEnd)
         XCTAssertEqual(server.position, .behindBaseline(aEnd, on: .ad, by: 1))
         XCTAssertEqual(presentation.strip, "Fifteen–thirty")
-        XCTAssertEqual(presentation.serveLabel, "Aaron serves · ad side · 1st serve")
+        XCTAssertEqual(presentation.serveLabel, "Aaron serves · ad court · first serve")
     }
 
     func testVoiceOverReadsServerSideAndScoreAsOneSentence() throws {
