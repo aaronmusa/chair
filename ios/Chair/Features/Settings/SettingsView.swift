@@ -40,7 +40,7 @@ struct SettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.chair.surface)
-        .tint(Color.chair.accent)
+        .tint(Color.chair.tint)
         .navigationTitle("Settings")
         .task(handleWatchAccount())
         .onChange(of: umpire?.settings.preferences, handleUmpireSettingsChange())

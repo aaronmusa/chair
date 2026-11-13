@@ -32,7 +32,7 @@ public struct CourtView: View {
             let coordinate = CourtCoordinate(size: proxy.size, orientation: orientation)
             ZStack(alignment: .topLeading) {
                 CourtLines(coordinate: coordinate)
-                    .stroke(Color.chair.court, lineWidth: Stroke.chair.regular)
+                    .stroke(Color.chair.courtLine, lineWidth: Stroke.chair.regular)
                 ForEach(targetZones) { zone in
                     zoneShape(zone, in: coordinate)
                 }
@@ -45,7 +45,7 @@ public struct CourtView: View {
             }
         }
         .aspectRatio(CourtCoordinate.aspectRatio(for: orientation), contentMode: .fit)
-        .background(Color.chair.surface)
+        .background(Color.chair.court)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Court")
         .accessibilityValue(accessibilitySummary)
@@ -57,7 +57,7 @@ public struct CourtView: View {
     ) -> some View {
         let rect = coordinate.rect(zone.from, zone.to)
         return Rectangle()
-            .stroke(Color.chair.ink, style: StrokeStyle(lineWidth: Stroke.chair.thin, dash: [4, 3]))
+            .stroke(Color.chair.courtLine, style: StrokeStyle(lineWidth: Stroke.chair.thin, dash: [4, 3]))
             .frame(width: rect.width, height: rect.height)
             .offset(x: rect.minX, y: rect.minY)
     }
@@ -72,7 +72,7 @@ public struct CourtView: View {
         Group {
             switch mark.call {
             case .in:
-                Circle().fill(Color.chair.ink)
+                Circle().fill(Color.chair.accent)
             case .out:
                 Image(systemName: "xmark")
                     .resizable()
@@ -88,10 +88,10 @@ public struct CourtView: View {
         _ player: PlayerMarker,
         in coordinate: CourtCoordinate
     ) -> some View {
-        let colour = player.side == .near ? Color.chair.playerA : Color.chair.playerB
+        let colour = player.role == .server ? Color.chair.accent : Color.chair.courtLine
         let diameter = markDiameter(coordinate) * (player.role == .partner ? 0.8 : 1)
         return ZStack {
-            Circle().fill(Color.chair.surface)
+            Circle().fill(Color.chair.court)
             if player.role == .receiver {
                 Circle().strokeBorder(colour, lineWidth: Stroke.chair.bold)
             } else {

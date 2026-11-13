@@ -15,7 +15,13 @@ public enum ChairColorToken: String, CaseIterable, Sendable {
     case outline
     case accent
     case accentPressed
+    case onAccent
+    case button
+    case onButton
+    case control
+    case tint
     case court
+    case courtLine
     case playerA
     case playerB
     case success
@@ -35,7 +41,13 @@ public struct ChairColors: Sendable {
     public let outline = ChairColorToken.outline.color
     public let accent = ChairColorToken.accent.color
     public let accentPressed = ChairColorToken.accentPressed.color
+    public let onAccent = ChairColorToken.onAccent.color
+    public let button = ChairColorToken.button.color
+    public let onButton = ChairColorToken.onButton.color
+    public let control = ChairColorToken.control.color
+    public let tint = ChairColorToken.tint.color
     public let court = ChairColorToken.court.color
+    public let courtLine = ChairColorToken.courtLine.color
     public let playerA = ChairColorToken.playerA.color
     public let playerB = ChairColorToken.playerB.color
     public let success = ChairColorToken.success.color

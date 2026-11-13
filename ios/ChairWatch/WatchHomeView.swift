@@ -43,7 +43,7 @@ struct WatchHomeView: View {
             VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
                 Text("Join match")
                     .chairFont(.caption)
-                    .foregroundStyle(Color.chair.accent)
+                    .foregroundStyle(Color.chair.tint)
                 Text(state.title)
                     .chairFont(.headline)
                     .foregroundStyle(Color.chair.ink)

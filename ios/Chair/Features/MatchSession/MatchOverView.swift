@@ -17,7 +17,7 @@ struct MatchOverView: View {
         VStack(spacing: Spacing.chair.md) {
             Image(systemName: "trophy.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(Color.chair.accent)
+                .foregroundStyle(Color.chair.tint)
                 .accessibilityHidden(true)
             Text(text)
                 .chairFont(.display)

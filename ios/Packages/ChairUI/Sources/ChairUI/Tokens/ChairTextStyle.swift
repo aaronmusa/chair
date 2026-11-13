@@ -38,7 +38,7 @@ public struct ChairFonts: Sendable {
     public let body = Font.subheadline
     public let callout = Font.footnote
     public let caption = Font.caption2.weight(.semibold)
-    public let score = Font.largeTitle.bold().monospacedDigit()
+    public let score = Font.largeTitle.weight(.heavy).width(.compressed).monospacedDigit()
 }
 
 public extension Font {
@@ -66,7 +66,7 @@ private struct ChairFontModifier: ViewModifier {
         case .callout: content.font(Font.chair.callout)
         case .caption: content.font(Font.chair.caption).textCase(.uppercase).tracking(captionTracking)
         case .score: content.font(Font.chair.score)
-        case .scoreLarge: content.font(.system(size: scoreLargeSize, weight: .bold).monospacedDigit())
+        case .scoreLarge: content.font(.system(size: scoreLargeSize, weight: .heavy).width(.compressed).monospacedDigit())
         }
     }
 }

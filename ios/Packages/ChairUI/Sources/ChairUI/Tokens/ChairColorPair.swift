@@ -24,9 +24,16 @@ public struct ChairColorPair: Sendable, CustomStringConvertible {
         let onSurfaces = textOnSurfaces.flatMap { text in
             surfaces.map { ChairColorPair(text: text, background: $0, isLargeText: false) }
         }
-        let onAccents = [ChairColorToken.accent, .accentPressed].map {
-            ChairColorPair(text: .surface, background: $0, isLargeText: false)
+        let onControls = [ChairColorToken.ink, .inkSecondary].map {
+            ChairColorPair(text: $0, background: .control, isLargeText: false)
         }
-        return onSurfaces + onAccents
+        let onFills = [
+            ChairColorPair(text: .onAccent, background: .accent, isLargeText: false),
+            ChairColorPair(text: .onAccent, background: .accentPressed, isLargeText: false),
+            ChairColorPair(text: .onButton, background: .button, isLargeText: false),
+            ChairColorPair(text: .surface, background: .danger, isLargeText: false),
+        ]
+        let tints = surfaces.map { ChairColorPair(text: .tint, background: $0, isLargeText: false) }
+        return onSurfaces + onControls + onFills + tints
     }()
 }

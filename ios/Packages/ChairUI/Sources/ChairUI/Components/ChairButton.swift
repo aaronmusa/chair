@@ -12,6 +12,7 @@ public struct ChairButton: View {
         case primary
         case secondary
         case ghost
+        case destructive
     }
 
     public enum Size: CaseIterable, Sendable {
@@ -73,32 +74,37 @@ struct ChairButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        let shape = RoundedRectangle(cornerRadius: Radius.chair.control)
+        return configuration.label
             .foregroundStyle(foreground)
             .tint(foreground)
-            .background(background(isPressed: configuration.isPressed))
-            .overlay {
-                if style == .secondary {
-                    RoundedRectangle(cornerRadius: Radius.chair.large)
-                        .stroke(Color.chair.ink, lineWidth: Stroke.chair.regular)
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: Radius.chair.large))
-            .contentShape(RoundedRectangle(cornerRadius: Radius.chair.large))
-            .opacity(isEnabled || isLoading ? 1 : 0.4)
+            .background(fill(isPressed: configuration.isPressed), in: shape)
+            .clipShape(shape)
+            .shadow(
+                color: .black.opacity(configuration.isPressed ? 0.12 : 0.28),
+                radius: configuration.isPressed ? 1 : 3,
+                y: configuration.isPressed ? 1 : 3
+            )
+            .offset(y: configuration.isPressed ? 1 : 0)
+            .contentShape(shape)
+            .opacity(isEnabled || isLoading ? 1 : 0.35)
     }
 
     private var foreground: Color {
-        style == .primary ? Color.chair.surface : Color.chair.ink
+        switch style {
+        case .primary: Color.chair.onAccent
+        case .secondary: Color.chair.onButton
+        case .ghost: Color.chair.ink
+        case .destructive: Color.chair.surface
+        }
     }
 
-    @ViewBuilder
-    private func background(isPressed: Bool) -> some View {
+    private func fill(isPressed: Bool) -> Color {
         switch style {
-        case .primary:
-            isPressed ? Color.chair.accentPressed : Color.chair.accent
-        case .secondary, .ghost:
-            isPressed ? Color.chair.surfaceRaised : Color.clear
+        case .primary: isPressed ? Color.chair.accentPressed : Color.chair.accent
+        case .secondary: Color.chair.button.opacity(isPressed ? 0.85 : 1)
+        case .ghost: Color.chair.control.opacity(isPressed ? 0.85 : 1)
+        case .destructive: Color.chair.danger.opacity(isPressed ? 0.85 : 1)
         }
     }
 }
@@ -126,6 +132,7 @@ struct ChairButtonStyle: ButtonStyle {
                 ChairButton("Saving", isLoading: true, onTap: {})
                 ChairButton("Calibrate court", style: .secondary, onTap: {})
                 ChairButton("Skip", style: .ghost, onTap: {})
+                ChairButton("End match", style: .destructive, onTap: {})
                 ChairButton("Unavailable", onTap: {})
                     .disabled(true)
             }

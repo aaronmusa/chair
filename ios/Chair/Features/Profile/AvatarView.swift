@@ -16,7 +16,7 @@ struct AvatarView: View {
     var body: some View {
         Text(Self.initials(for: name))
             .font(.system(size: size * 0.4, weight: .semibold, design: .rounded))
-            .foregroundStyle(Color.chair.surface)
+            .foregroundStyle(Color.chair.onAccent)
             .frame(width: size, height: size)
             .background(Circle().fill(Color.chair.accent))
             .accessibilityHidden(true)

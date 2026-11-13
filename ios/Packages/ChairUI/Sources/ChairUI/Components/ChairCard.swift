@@ -23,12 +23,13 @@ public struct ChairCard<Content: View>: View {
         content
             .padding(Spacing.chair.md)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(isRaised ? Color.chair.surfaceRaised : Color.chair.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.chair.large))
+            .background(isRaised ? Color.chair.control : Color.chair.surfaceRaised)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.chair.control))
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.chair.large)
-                    .stroke(Color.chair.outline, lineWidth: Stroke.chair.regular)
+                RoundedRectangle(cornerRadius: Radius.chair.control)
+                    .stroke(Color.chair.outline, lineWidth: isRaised ? 0 : Stroke.chair.thin)
             )
+            .shadow(color: .black.opacity(isRaised ? 0.28 : 0), radius: 3, y: 3)
             .accessibilityElement(children: .contain)
     }
 }

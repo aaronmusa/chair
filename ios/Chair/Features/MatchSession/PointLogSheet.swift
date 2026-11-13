@@ -42,7 +42,7 @@ struct PointLogSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Flip", action: handleFlip(point.index))
                 .buttonStyle(.bordered)
-                .tint(Color.chair.accent)
+                .tint(Color.chair.tint)
                 .accessibilityLabel("Flip point \(point.number)")
                 .accessibilityIdentifier("pointLog.flip.\(point.number)")
         }

@@ -28,7 +28,7 @@ struct RootView: View {
 
     var body: some View {
         content
-            .tint(Color.chair.accent)
+            .tint(Color.chair.tint)
             .onOpenURL(perform: handleOpenURL())
             .task(handleRefreshInvites())
             .onChange(of: sync?.lastSyncedAt, handleSynced())

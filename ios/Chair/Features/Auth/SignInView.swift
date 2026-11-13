@@ -61,7 +61,7 @@ struct SignInView: View {
         VStack(spacing: Spacing.chair.sm) {
             Image(systemName: "tennisball.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(Color.chair.accent)
+                .foregroundStyle(Color.chair.tint)
                 .accessibilityHidden(true)
             Text("Chair")
                 .chairFont(.display)

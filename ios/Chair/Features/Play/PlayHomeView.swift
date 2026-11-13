@@ -55,9 +55,9 @@ struct PlayHomeView: View {
                 Image(systemName: "chevron.right")
                     .accessibilityHidden(true)
             }
-            .foregroundStyle(Color.chair.surface)
+            .foregroundStyle(Color.chair.onAccent)
             .padding(Spacing.chair.md)
-            .background(Color.chair.accent, in: RoundedRectangle(cornerRadius: Radius.chair.large))
+            .background(Color.chair.accent, in: RoundedRectangle(cornerRadius: Radius.chair.control))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("play.resume")
