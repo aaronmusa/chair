@@ -25,11 +25,12 @@ public struct ChairRadius: Sendable {
     public let small: CGFloat = 8
     public let medium: CGFloat = 10
     public let large: CGFloat = 12
+    public let control: CGFloat = 14
     public let card: CGFloat = 16
     public let sheet: CGFloat = 20
 
     public var scale: [(name: String, value: CGFloat)] {
-        [("small", small), ("medium", medium), ("large", large), ("card", card), ("sheet", sheet)]
+        [("small", small), ("medium", medium), ("large", large), ("control", control), ("card", card), ("sheet", sheet)]
     }
 }
 

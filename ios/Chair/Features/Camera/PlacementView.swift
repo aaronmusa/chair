@@ -54,7 +54,7 @@ struct PlacementView: View {
                         .foregroundStyle(Color.chair.ink)
                 } icon: {
                     Image(systemName: "checkmark.circle")
-                        .foregroundStyle(Color.chair.accent)
+                        .foregroundStyle(Color.chair.tint)
                 }
             }
         }
@@ -82,7 +82,7 @@ struct PlacementView: View {
         return Button(action: handleSelect(placement)) {
             HStack(alignment: .firstTextBaseline, spacing: Spacing.chair.sm) {
                 Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(isSelected ? Color.chair.accent : Color.chair.inkSecondary)
+                    .foregroundStyle(isSelected ? Color.chair.tint : Color.chair.inkSecondary)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
                     Text(placement.title)

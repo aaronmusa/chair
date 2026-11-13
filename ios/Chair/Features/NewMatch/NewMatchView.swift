@@ -42,7 +42,7 @@ struct NewMatchView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.chair.surface)
-        .tint(Color.chair.accent)
+        .tint(Color.chair.tint)
         .navigationTitle("New match")
         .safeAreaInset(edge: .bottom) { startBar }
         .sheet(item: $viewModel.pickerSlot) { slot in
@@ -177,7 +177,7 @@ struct NewMatchView: View {
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(Color.chair.accent)
+                        .foregroundStyle(Color.chair.tint)
                         .accessibilityHidden(true)
                 }
             }

@@ -43,14 +43,10 @@ public struct ChairPill: View {
         Text(title)
             .chairFont(.callout)
             .fontWeight(.semibold)
-            .foregroundStyle(isSelected ? Color.chair.surface : Color.chair.ink)
+            .foregroundStyle(isSelected ? Color.chair.onButton : Color.chair.ink)
             .padding(.horizontal, Spacing.chair.md)
             .frame(minHeight: Self.height)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color.chair.accent : Color.clear)
-                    .strokeBorder(isSelected ? Color.chair.accent : Color.chair.outline, lineWidth: Stroke.chair.regular)
-            )
+            .background(Capsule().fill(isSelected ? Color.chair.button : Color.chair.control))
             .contentShape(Capsule())
     }
 }

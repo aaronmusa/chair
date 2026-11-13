@@ -29,7 +29,7 @@ struct ProfileView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.chair.surface)
-        .tint(Color.chair.accent)
+        .tint(Color.chair.tint)
         .navigationTitle("Profile")
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

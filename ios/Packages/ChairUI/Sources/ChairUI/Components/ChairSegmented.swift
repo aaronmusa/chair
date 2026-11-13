@@ -39,10 +39,7 @@ public struct ChairSegmented<Value: Hashable>: View {
             VStack(spacing: Spacing.chair.xxs) { segments }
         }
         .padding(Spacing.chair.xxs)
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.chair.large)
-                .strokeBorder(Color.chair.outline, lineWidth: Stroke.chair.regular)
-        )
+        .background(Color.chair.control, in: RoundedRectangle(cornerRadius: Radius.chair.control))
     }
 
     private var segments: some View {
@@ -58,10 +55,10 @@ public struct ChairSegmented<Value: Hashable>: View {
                 .chairFont(.callout)
                 .fixedSize()
                 .fontWeight(.semibold)
-                .foregroundStyle(isSelected ? Color.chair.surface : Color.chair.ink)
+                .foregroundStyle(isSelected ? Color.chair.onButton : Color.chair.ink)
                 .frame(maxWidth: .infinity, minHeight: 36)
                 .padding(.horizontal, Spacing.chair.xs)
-                .background(isSelected ? Color.chair.accent : Color.clear)
+                .background(isSelected ? Color.chair.button : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.chair.medium))
                 .contentShape(Rectangle())
         }
