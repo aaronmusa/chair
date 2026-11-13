@@ -46,7 +46,10 @@ extension AppEnvironment {
                         homeCourt: "Rizal Memorial",
                         hand: .right,
                         level: .intermediate
-                    ))
+                    ), publicProfiles: ScreenshotSeed.players(arguments))
+                }
+                if arguments.contains(ScreenshotSeed.argument) {
+                    fakes.inviteRemote = FakeInviteRemote(invites: ScreenshotSeed.invites(at: .now))
                 }
                 return fakes
             }
