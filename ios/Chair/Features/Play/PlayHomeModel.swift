@@ -13,12 +13,16 @@ struct PlayHomeModel: Equatable {
     struct Resume: Equatable {
         let matchID: UUID
         let title: String
+        let scoreboard: ScoreboardModel?
     }
 
     struct LastMatch: Equatable {
         let matchID: UUID
         let title: String
         let detail: String
+        let date: String
+        let result: String?
+        let setLine: String
     }
 
     let resume: Resume?
@@ -32,9 +36,7 @@ struct PlayHomeModel: Equatable {
         now: Date
     ) {
         let sorted = records.sorted { $0.playedAt > $1.playedAt }
-        resume = sorted.first { $0.status == .inProgress && !$0.isReadOnly }.map {
-            Resume(matchID: $0.id, title: "Resume match vs \(Self.opponent(in: $0))")
-        }
+        resume = sorted.first { $0.status == .inProgress && !$0.isReadOnly }.map(Self.resume)
         lastMatch = sorted.first { $0.status != .inProgress }.map(Self.lastMatch)
 
         let weekStart = now.addingTimeInterval(-7 * 24 * 60 * 60)
@@ -66,14 +68,34 @@ struct PlayHomeModel: Equatable {
         record.opponentNames.isEmpty ? "Opponent" : record.opponentNames
     }
 
+    private static func resume(_ record: MatchRecord) -> Resume {
+        let state = (try? MatchLog(record: record))?.state
+        return Resume(
+            matchID: record.id,
+            title: "Resume match vs \(opponent(in: record))",
+            scoreboard: state.map { ScoreboardModel(state: $0, names: teamNames(record)) }
+        )
+    }
+
+    private static func teamNames(_ record: MatchRecord) -> [Side: String] {
+        let names = Dictionary(record.players.map { ($0.slot, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let name = { (slot: PlayerSlot) in names[slot] ?? "Player \(slot.rawValue)" }
+        guard record.format == .doubles else { return [.a: name(.a1), .b: name(.b1)] }
+        return [.a: "\(name(.a1)) and \(name(.a2))", .b: "\(name(.b1)) and \(name(.b2))"]
+    }
+
     private static func lastMatch(_ record: MatchRecord) -> LastMatch {
         let sets = record.perspectiveSetLine
         let date = record.playedAt.formatted(date: .abbreviated, time: .omitted)
         let state = record.status == .abandoned ? "Ended early" : sets
+        let winner = (try? MatchLog(record: record)).flatMap(Self.winner)
         return LastMatch(
             matchID: record.id,
             title: "vs \(opponent(in: record))",
-            detail: [date, state].filter { !$0.isEmpty }.joined(separator: " · ")
+            detail: [date, state].filter { !$0.isEmpty }.joined(separator: " · "),
+            date: record.status == .abandoned ? "\(date) · Ended early" : date,
+            result: winner.map { $0 == record.mySide ? "W" : "L" },
+            setLine: record.status == .abandoned ? "" : sets
         )
     }
 }

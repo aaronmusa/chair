@@ -54,15 +54,32 @@ struct MatchListView: View {
     private var list: some View {
         List {
             ForEach(model.sections) { section in
-                Section(section.title) {
+                Section {
                     ForEach(section.rows) { row in
                         Button(action: handleSelect(row)) {
                             MatchRowView(row: row)
                         }
-                        .buttonStyle(.plain)
-                        .listRowBackground(row.id == selection ? Color.chair.surfaceRaised : Color.chair.surface)
+                        .buttonStyle(ChairButtonStyle(.ghost))
+                        .overlay {
+                            if row.id == selection {
+                                RoundedRectangle(cornerRadius: Radius.chair.control)
+                                    .stroke(Color.chair.tint, lineWidth: Stroke.chair.bold)
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(
+                            top: Spacing.chair.xxs,
+                            leading: Spacing.chair.md,
+                            bottom: Spacing.chair.xxs,
+                            trailing: Spacing.chair.md
+                        ))
                         .accessibilityIdentifier("matches.row.\(row.id.uuidString)")
                     }
+                } header: {
+                    Text(section.title)
+                        .chairFont(.caption)
+                        .foregroundStyle(Color.chair.inkSecondary)
                 }
             }
         }
@@ -99,41 +116,54 @@ struct MatchRowView: View {
     let row: MatchListModel.Row
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
-            HStack(alignment: .firstTextBaseline) {
+        HStack(spacing: Spacing.chair.sm) {
+            badge
+            VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
                 Text(row.title)
                     .chairFont(.headline)
                     .foregroundStyle(Color.chair.ink)
-                Spacer(minLength: Spacing.chair.xs)
-                Text(row.badge)
+                Text(row.subtitle)
+                    .chairFont(.caption)
+                    .foregroundStyle(Color.chair.inkSecondary)
+                Text(row.footer)
                     .chairFont(.callout)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(badgeColor)
+                    .foregroundStyle(Color.chair.inkSecondary)
             }
-            Text(row.subtitle)
-                .chairFont(.callout)
-                .foregroundStyle(Color.chair.inkSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
             if !row.setLine.isEmpty {
-                Text(row.setLine)
-                    .chairFont(.body)
-                    .monospacedDigit()
+                SetLineText(setLine: row.setLine)
                     .foregroundStyle(Color.chair.ink)
             }
-            Text(row.footer)
-                .chairFont(.caption)
+            Image(systemName: "chevron.right")
+                .font(Font.chair.callout.weight(.semibold))
                 .foregroundStyle(Color.chair.inkSecondary)
+                .accessibilityHidden(true)
         }
-        .padding(.vertical, Spacing.chair.xs)
+        .padding(Spacing.chair.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel([row.title, row.badge, row.subtitle, row.setLine, row.footer].filter { !$0.isEmpty }.joined(separator: ", "))
     }
 
-    private var badgeColor: Color {
+    @ViewBuilder
+    private var badge: some View {
         switch row.badge {
-        case "W": Color.chair.success
-        case "L": Color.chair.danger
-        default: Color.chair.inkSecondary
+        case "W", "L":
+            ResultBadge(result: row.badge)
+        case "In progress":
+            HStack(spacing: Spacing.chair.xxs) {
+                Circle().fill(Color.chair.onAccent).frame(width: 6, height: 6)
+                Text("Live")
+                    .chairFont(.caption)
+            }
+            .foregroundStyle(Color.chair.onAccent)
+            .padding(.horizontal, Spacing.chair.xs)
+            .frame(minHeight: 28)
+            .background(Color.chair.accent, in: Capsule())
+            .accessibilityHidden(true)
+        default:
+            EmptyView()
         }
     }
 }
