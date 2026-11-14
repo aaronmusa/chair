@@ -150,21 +150,24 @@ struct CalibrationView: View {
                     .accessibilityIdentifier("calibration.ruler")
             #endif
             if let next = viewModel.nextKeypoint, viewModel.keypoints.count >= Homography.minimumPoints {
-                Button("Skip", action: handleSkip(next))
-                    .tint(.white)
+                Button(action: handleSkip(next)) { CalibrationButtonLabel(title: "Skip", systemImage: nil) }
+                    .buttonStyle(ChairButtonStyle(.secondary))
                     .accessibilityIdentifier("calibration.skip")
             }
             if !viewModel.savedCourts.isEmpty {
-                Menu("Saved courts", systemImage: "mappin.and.ellipse") {
+                Menu {
                     ForEach(viewModel.savedCourts) { court in
                         Button(court.name, action: handleUse(court))
                     }
+                } label: {
+                    CalibrationButtonLabel(title: "Saved courts", systemImage: "mappin.and.ellipse")
                 }
-                .tint(.white)
+                .menuStyle(.button)
+                .buttonStyle(ChairButtonStyle(.secondary))
                 .accessibilityIdentifier("calibration.savedCourts")
             }
-            Button("Redo", action: viewModel.redo)
-                .tint(.white)
+            Button(action: viewModel.redo) { CalibrationButtonLabel(title: "Redo", systemImage: nil) }
+                .buttonStyle(ChairButtonStyle(.secondary))
                 .accessibilityIdentifier("calibration.redo")
             ChairButton("Next", onTap: viewModel.finish)
                 .frame(width: 120)
@@ -328,5 +331,23 @@ private extension CalibrationView {
             default: break
             }
         }
+    }
+}
+
+struct CalibrationButtonLabel: View {
+    let title: String
+    let systemImage: String?
+
+    var body: some View {
+        HStack(spacing: Spacing.chair.xxs) {
+            if let systemImage {
+                Image(systemName: systemImage)
+            }
+            Text(title)
+        }
+        .chairFont(.callout)
+        .fontWeight(.semibold)
+        .padding(.horizontal, Spacing.chair.sm)
+        .frame(minHeight: 36)
     }
 }

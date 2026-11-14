@@ -16,6 +16,7 @@ struct CaptureStatus: Equatable {
     let title: String
     let detail: String?
     let offersSettings: Bool
+    let isBlocking: Bool
 
     init?(_ state: CaptureState) {
         switch state {
@@ -27,13 +28,15 @@ struct CaptureStatus: Equatable {
             self.init(
                 symbol: "thermometer.medium",
                 title: "Camera at \(frameRate) fps",
-                detail: "Slowed down to keep the phone cool"
+                detail: "Slowed down to keep the phone cool",
+                isBlocking: false
             )
         case let .interrupted(reason):
             self.init(
                 symbol: "pause.circle",
                 title: Self.title(for: reason),
-                detail: "It picks up again on its own"
+                detail: "It picks up again on its own",
+                isBlocking: false
             )
         case .pausedForHeat:
             self.init(
@@ -63,12 +66,14 @@ struct CaptureStatus: Equatable {
         symbol: String,
         title: String,
         detail: String?,
-        offersSettings: Bool = false
+        offersSettings: Bool = false,
+        isBlocking: Bool = true
     ) {
         self.symbol = symbol
         self.title = title
         self.detail = detail
         self.offersSettings = offersSettings
+        self.isBlocking = isBlocking
     }
 
     private static func title(for reason: CaptureState.Interruption) -> String {
@@ -104,7 +109,15 @@ struct CaptureStatusView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.chair.md)
-            .background(Color.chair.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.chair.large))
+            .padding(.leading, Spacing.chair.xxs)
+            .background(Color.chair.surfaceRaised)
+            .overlay(alignment: .leading) {
+                Rectangle()
+                    .fill(status.isBlocking ? Color.chair.danger : Color.chair.tint)
+                    .frame(width: 4)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: Radius.chair.control))
+            .overlay(RoundedRectangle(cornerRadius: Radius.chair.control).stroke(Color.chair.outline, lineWidth: Stroke.chair.thin))
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("camera.status")
         }
