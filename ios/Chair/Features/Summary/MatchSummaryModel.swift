@@ -29,6 +29,11 @@ struct MatchSummaryModel: Equatable {
         let id: Int
         let context: String
         let detail: String
+        let setAndGame: String
+        let score: String
+        let outcome: String?
+        let winner: String
+        let serverWon: Bool
     }
 
     let matchID: UUID
@@ -159,10 +164,19 @@ struct MatchSummaryModel: Equatable {
         names: [Side: String]
     ) -> PointRow {
         let score = Self.score(point.scoreBefore, server: point.server)
-        let context = "Set \(point.set) · Game \(point.game) · \(score)"
+        let setAndGame = "Set \(point.set) · Game \(point.game)"
         let how = [point.outcome?.title, point.ending?.rawValue].compactMap(\.self).joined(separator: ", ")
         let winner = names[point.winner] ?? point.winner.rawValue
-        return PointRow(id: point.number, context: context, detail: how.isEmpty ? "Point \(winner)" : "\(how) · \(winner)")
+        return PointRow(
+            id: point.number,
+            context: "\(setAndGame) · \(score)",
+            detail: how.isEmpty ? "Point \(winner)" : "\(how) · \(winner)",
+            setAndGame: setAndGame,
+            score: score,
+            outcome: how.isEmpty ? nil : how,
+            winner: winner,
+            serverWon: point.winner == point.server
+        )
     }
 
     private static func score(
@@ -172,9 +186,19 @@ struct MatchSummaryModel: Equatable {
         switch game {
         case let .standard(a, b):
             let (first, second) = server == .a ? (a, b) : (b, a)
-            return "\(first.label)–\(second.label)"
+            return "\(number(first))–\(number(second))"
         case let .tiebreak(a, b, _):
             return server == .a ? "\(a)–\(b)" : "\(b)–\(a)"
+        }
+    }
+
+    private static func number(_ score: GameScore) -> String {
+        switch score {
+        case .love: "0"
+        case .fifteen: "15"
+        case .thirty: "30"
+        case .forty: "40"
+        case .advantage: "AD"
         }
     }
 }
