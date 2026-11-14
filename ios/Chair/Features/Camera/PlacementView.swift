@@ -94,9 +94,16 @@ struct PlacementView: View {
                 }
                 Spacer(minLength: 0)
             }
+            .padding(Spacing.chair.md)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ChairButtonStyle(.ghost))
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: Radius.chair.control)
+                    .stroke(Color.chair.tint, lineWidth: Stroke.chair.bold)
+            }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityIdentifier("placement.option.\(placement.rawValue)")

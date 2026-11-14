@@ -78,6 +78,7 @@ struct SavedCourtsView: View {
                     row(court)
                 }
                 .buttonStyle(.plain)
+                .listRowBackground(Color.chair.control)
                 .accessibilityIdentifier("savedCourts.row")
             }
             .onDelete(perform: handleDelete())
