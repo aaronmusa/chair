@@ -52,7 +52,7 @@ struct ScoreFixSheet: View {
                         }
                     }
                 }
-                .listRowBackground(Color.chair.surfaceRaised)
+                .listRowBackground(Color.chair.control)
             }
             .scrollContentBackground(.hidden)
             .background(Color.chair.surface)
@@ -65,6 +65,9 @@ struct ScoreFixSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Apply", action: handleApply())
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.chair.accent)
+                        .foregroundStyle(Color.chair.onAccent)
                         .accessibilityIdentifier("scoreFix.apply")
                 }
             }

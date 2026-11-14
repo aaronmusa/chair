@@ -20,35 +20,66 @@ struct OutcomeSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.chair.md) {
-                Text("Point \(winnerName)")
-                    .chairFont(.title)
-                    .foregroundStyle(Color.chair.ink)
-                Text("How did it end?")
-                    .chairFont(.headline)
-                    .foregroundStyle(Color.chair.inkSecondary)
-                FlowLayout(spacing: Spacing.chair.xs) {
+                VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+                    Text("Point \(winnerName)")
+                        .chairFont(.caption)
+                        .foregroundStyle(Color.chair.tint)
+                    Text("How did it end?")
+                        .chairFont(.title)
+                        .foregroundStyle(Color.chair.ink)
+                }
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: Spacing.chair.sm), GridItem(.flexible())], spacing: Spacing.chair.sm) {
                     ForEach(PointOutcome.recordable, id: \.self) { outcome in
-                        ChairPill(outcome.title, onTap: handleChoose(outcome))
-                            .disabled(!Self.isEnabled(outcome, serverWinning: isServerWinning))
-                            .opacity(Self.isEnabled(outcome, serverWinning: isServerWinning) ? 1 : 0.4)
-                            .accessibilityIdentifier("outcome.\(outcome.rawValue)")
+                        let isEnabled = Self.isEnabled(outcome, serverWinning: isServerWinning)
+                        Button(action: handleChoose(outcome)) {
+                            Text(outcome.title)
+                                .chairFont(.action)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                                .frame(maxWidth: .infinity, minHeight: 56)
+                                .padding(.horizontal, Spacing.chair.xs)
+                        }
+                        .buttonStyle(ChairButtonStyle(.secondary))
+                        .disabled(!isEnabled)
+                        .accessibilityLabel(outcome.title)
+                        .accessibilityIdentifier("outcome.\(outcome.rawValue)")
                     }
                 }
                 Text("Ball")
-                    .chairFont(.headline)
+                    .chairFont(.caption)
                     .foregroundStyle(Color.chair.inkSecondary)
-                HStack(spacing: Spacing.chair.xs) {
-                    ChairPill("Out", isSelected: ending == .out, onTap: handleToggle(.out))
+                HStack(spacing: Spacing.chair.sm) {
+                    endingButton("Out", ending: .out)
                         .accessibilityIdentifier("outcome.out")
-                    ChairPill("Net", isSelected: ending == .net, onTap: handleToggle(.net))
+                    endingButton("Net", ending: .net)
                         .accessibilityIdentifier("outcome.net")
                 }
-                ChairButton("Skip", style: .ghost, onTap: handleChoose(nil))
-                    .accessibilityIdentifier("outcome.skip")
+                Button(action: handleChoose(nil)) {
+                    Text("Skip")
+                        .chairFont(.action)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                }
+                .buttonStyle(ChairButtonStyle(.ghost))
+                .accessibilityLabel("Skip")
+                .accessibilityIdentifier("outcome.skip")
             }
             .padding(Spacing.chair.md)
         }
         .background(Color.chair.surface)
+    }
+
+    private func endingButton(
+        _ title: String,
+        ending value: PointEnding
+    ) -> some View {
+        Button(action: handleToggle(value)) {
+            Text(title)
+                .chairFont(.action)
+                .frame(maxWidth: .infinity, minHeight: 48)
+        }
+        .buttonStyle(ChairButtonStyle(ending == value ? .primary : .ghost))
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(ending == value ? .isSelected : [])
     }
 
     static func isEnabled(
