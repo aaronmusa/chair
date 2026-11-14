@@ -29,10 +29,10 @@ struct WatchEndMatchPage: View {
             } else {
                 Button(action: handleToggle()) {
                     Text("End match")
-                        .chairFont(.headline)
-                        .foregroundStyle(Color.chair.danger)
+                        .chairFont(.action)
+                        .foregroundStyle(Color.chair.surface)
                         .frame(maxWidth: .infinity, minHeight: 52)
-                        .background(Color.chair.surfaceRaised, in: .capsule)
+                        .background(Color.chair.danger, in: .capsule)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("watch.endMatch")
@@ -48,9 +48,9 @@ struct WatchEndMatchPage: View {
         Button(action: handleEnd(choice)) {
             Text(title)
                 .chairFont(.headline)
-                .foregroundStyle(choice == .finishAsIs ? Color.chair.ink : Color.chair.danger)
+                .foregroundStyle(choice == .finishAsIs ? Color.chair.onButton : Color.chair.surface)
                 .frame(maxWidth: .infinity, minHeight: 44)
-                .background(Color.chair.surfaceRaised, in: .capsule)
+                .background(choice == .finishAsIs ? Color.chair.button : Color.chair.danger, in: .capsule)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
