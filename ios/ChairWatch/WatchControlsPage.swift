@@ -33,14 +33,14 @@ struct WatchControlsPage: View {
     ) -> some View {
         Button(action: handleSend(action)) {
             Text(title)
-                .chairFont(.headline)
-                .foregroundStyle(Color.chair.ink)
+                .chairFont(.action)
+                .foregroundStyle(Color.chair.onButton)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.7)
                 .padding(.horizontal, Spacing.chair.xxs)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .frame(minHeight: 60)
-                .background(Color.chair.surfaceRaised, in: .rect(cornerRadius: Radius.chair.card))
+                .background(Color.chair.button, in: .rect(cornerRadius: Radius.chair.card))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
