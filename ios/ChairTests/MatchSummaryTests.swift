@@ -35,7 +35,7 @@ final class MatchSummaryTests: XCTestCase {
         XCTAssertEqual(model.rows.first { $0.title == "Aces" }, .init(title: "Aces", a: "1", b: "0"))
         XCTAssertEqual(model.rows.first { $0.title == "Unforced errors" }, .init(title: "Unforced errors", a: "1", b: "0"))
         XCTAssertEqual(model.points.map(\.detail), ["Ace · Aaron", "Unforced error · Juan"])
-        XCTAssertEqual(model.points.first?.context, "Set 1 · Game 1 · Love–Love")
+        XCTAssertEqual(model.points.first?.context, "Set 1 · Game 1 · 0–0")
     }
 
     func testAFinishedMatchReadsTheWinnerAndShares() throws {

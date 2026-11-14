@@ -14,9 +14,9 @@ struct MatchOverView: View {
     let text: String
 
     var body: some View {
-        VStack(spacing: Spacing.chair.md) {
-            Image(systemName: "trophy.fill")
-                .font(.system(size: 56))
+        VStack(spacing: Spacing.chair.sm) {
+            Text("Match over")
+                .chairFont(.caption)
                 .foregroundStyle(Color.chair.tint)
                 .accessibilityHidden(true)
             Text(text)
@@ -27,6 +27,14 @@ struct MatchOverView: View {
         }
         .padding(Spacing.chair.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.chair.surface)
+        .background {
+            ZStack {
+                Color.chair.surface
+                CourtView()
+                    .opacity(0.12)
+                    .padding(Spacing.chair.xl)
+                    .accessibilityHidden(true)
+            }
+        }
     }
 }
