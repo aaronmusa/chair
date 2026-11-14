@@ -16,7 +16,7 @@ public final class KeepAlivePlayer {
     public init() {}
 
     public var isRunning: Bool {
-        player?.isPlaying ?? false
+        player != nil
     }
 
     public var playerVolume: Float? {

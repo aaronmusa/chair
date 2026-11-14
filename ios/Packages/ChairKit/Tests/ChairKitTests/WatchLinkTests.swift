@@ -37,7 +37,7 @@ final class WatchLinkTests: XCTestCase {
         pair.watchSession.setReachable(true)
 
         try await waitUntil { pair.watch.pendingInputCount == 0 }
-        let arrived = await pair.received.value(after: .milliseconds(100))
+        let arrived = await pair.received.value(count: inputs.count)
         XCTAssertEqual(arrived.map(\.id), inputs.map(\.id))
     }
 
@@ -50,6 +50,7 @@ final class WatchLinkTests: XCTestCase {
 
         session.receive(.input(input))
         session.receive(.input(input))
+        _ = await received.value(count: 1)
         let applied = await received.value(after: .milliseconds(100))
         await phone.acknowledge(input.id)
 
@@ -70,7 +71,7 @@ final class WatchLinkTests: XCTestCase {
         }
         session.receive(.input(first))
 
-        let applied = await received.value(after: .milliseconds(200))
+        let applied = await received.value(count: WatchLink.appliedIDLimit + 2)
         XCTAssertEqual(applied.count, WatchLink.appliedIDLimit + 2)
         XCTAssertEqual(applied.last, first)
     }
@@ -118,7 +119,7 @@ final class WatchLinkTests: XCTestCase {
         session.setReachable(true)
         session.setReachable(false)
 
-        let seen = await changes.value(after: .milliseconds(100))
+        let seen = await changes.value(count: 2)
         XCTAssertEqual(seen, [true, false])
         XCTAssertFalse(link.isReachable)
     }

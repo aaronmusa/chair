@@ -55,9 +55,13 @@ final class HomographyTests: XCTestCase {
     func testExtraNoisyKeypointsAreAveragedByLeastSquares() throws {
         let camera = PinholeCamera.netPost
         var generator = SeededGenerator(seed: 3)
-        let noisy = camera.keypoints(CourtKeypoint.defaultSet(for: .netPost)).mapValues { pixel in
-            CGPoint(x: pixel.x + .random(in: -1 ... 1, using: &generator), y: pixel.y + .random(in: -1 ... 1, using: &generator))
-        }
+        let exact = camera.keypoints(CourtKeypoint.defaultSet(for: .netPost))
+        let noisy = Dictionary(uniqueKeysWithValues: exact.sorted { $0.key.rawValue < $1.key.rawValue }.map { keypoint, pixel in
+            (
+                keypoint,
+                CGPoint(x: pixel.x + .random(in: -1 ... 1, using: &generator), y: pixel.y + .random(in: -1 ... 1, using: &generator))
+            )
+        })
 
         let homography = try XCTUnwrap(Homography(noisy))
 
