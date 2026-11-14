@@ -28,4 +28,15 @@ final class StreamCollector<Element: Sendable> {
         try? await Task.sleep(for: delay)
         return items
     }
+
+    func value(
+        count: Int,
+        timeout: Duration = .seconds(5)
+    ) async -> [Element] {
+        let deadline = ContinuousClock.now + timeout
+        while items.count < count, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        return items
+    }
 }

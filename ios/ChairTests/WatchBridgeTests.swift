@@ -179,7 +179,8 @@ final class WatchBridgeTests: XCTestCase {
 
         await screen.apply(.fault)
         await screen.apply(.fault)
-        for _ in 0 ..< 50 where !subject.session.sent.contains(where: \.isState) {
+        let announcement = WatchMessage.announcement(text: screen.spokenText)
+        for _ in 0 ..< 500 where subject.session.sent.last != announcement {
             try await Task.sleep(for: .milliseconds(10))
         }
 
