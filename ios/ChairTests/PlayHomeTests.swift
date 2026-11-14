@@ -30,7 +30,11 @@ final class PlayHomeTests: XCTestCase {
 
         let model = PlayHomeModel(records: [match.record], now: now)
 
-        XCTAssertEqual(model.resume, .init(matchID: match.remoteID, title: "Resume match vs Juan"))
+        let resume = try XCTUnwrap(model.resume)
+        XCTAssertEqual(resume.matchID, match.remoteID)
+        XCTAssertEqual(resume.title, "Resume match vs Juan")
+        XCTAssertEqual(resume.scoreboard?.headline, "15–0")
+        XCTAssertEqual(resume.scoreboard?.rows.map(\.name), ["Aaron", "Juan"])
         XCTAssertNil(model.lastMatch)
     }
 

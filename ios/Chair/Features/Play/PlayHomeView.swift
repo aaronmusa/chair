@@ -45,37 +45,50 @@ struct PlayHomeView: View {
     }
 
     private func resumeBanner(_ resume: PlayHomeModel.Resume) -> some View {
-        Button(action: handleOpen(resume.matchID)) {
-            HStack(spacing: Spacing.chair.sm) {
-                Image(systemName: "play.fill")
-                    .accessibilityHidden(true)
-                Text(resume.title)
-                    .chairFont(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right")
-                    .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: Spacing.chair.sm) {
+            if let scoreboard = resume.scoreboard {
+                HStack(spacing: Spacing.chair.xs) {
+                    Circle()
+                        .fill(Color.chair.tint)
+                        .frame(width: 8, height: 8)
+                    Text("Live · \(scoreboard.setLabel.components(separatedBy: " · ").first ?? "")")
+                }
+                .chairFont(.caption)
+                .foregroundStyle(Color.chair.ink)
+                .accessibilityHidden(true)
+                ScoreboardView(model: scoreboard)
             }
-            .foregroundStyle(Color.chair.onAccent)
-            .padding(Spacing.chair.md)
-            .background(Color.chair.accent, in: RoundedRectangle(cornerRadius: Radius.chair.control))
+            Button(action: handleOpen(resume.matchID)) {
+                Label("Resume match", systemImage: "play.fill")
+                    .chairFont(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+            }
+            .buttonStyle(ChairButtonStyle(.primary))
+            .accessibilityLabel(resume.title)
+            .accessibilityIdentifier("play.resume")
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("play.resume")
     }
 
     private var newMatchCard: some View {
-        ChairCard(isRaised: true) {
-            VStack(alignment: .leading, spacing: Spacing.chair.sm) {
-                Text("New match")
-                    .chairFont(.title)
-                    .foregroundStyle(Color.chair.ink)
-                Text("Pick the players and rules, and Chair keeps score.")
-                    .chairFont(.body)
-                    .foregroundStyle(Color.chair.inkSecondary)
-                ChairButton("New match", size: .large, onTap: actions.onNewMatch)
-                    .accessibilityIdentifier("play.newMatch")
+        Button(action: actions.onNewMatch) {
+            HStack(spacing: Spacing.chair.sm) {
+                Image(systemName: "plus")
+                    .font(Font.chair.title)
+                VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+                    Text("New match")
+                        .chairFont(.title)
+                    Text("Pick players and rules, and Chair keeps score")
+                        .chairFont(.callout)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(Spacing.chair.md)
         }
+        .buttonStyle(ChairButtonStyle(model.resume == nil ? .primary : .secondary))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("New match")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("play.newMatch")
     }
 
     private var shortcuts: some View {
@@ -98,46 +111,68 @@ struct PlayHomeView: View {
         onTap: @escaping () -> Void
     ) -> some View {
         Button(action: onTap) {
-            ChairCard {
+            HStack(spacing: Spacing.chair.xs) {
                 Label(title, systemImage: systemImage)
                     .chairFont(.headline)
-                    .foregroundStyle(Color.chair.ink)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(Font.chair.callout.weight(.semibold))
+                    .accessibilityHidden(true)
             }
+            .padding(Spacing.chair.md)
+            .frame(minHeight: 56)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ChairButtonStyle(.ghost))
         .accessibilityIdentifier(identifier)
     }
 
     private func lastMatchCard(_ lastMatch: PlayHomeModel.LastMatch) -> some View {
-        Button(action: handleOpen(lastMatch.matchID)) {
-            ChairCard {
-                VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
-                    Text("Last match")
-                        .chairFont(.callout)
-                        .foregroundStyle(Color.chair.inkSecondary)
-                    Text(lastMatch.title)
-                        .chairFont(.headline)
-                        .foregroundStyle(Color.chair.ink)
-                    Text(lastMatch.detail)
-                        .chairFont(.body)
-                        .foregroundStyle(Color.chair.ink)
+        VStack(alignment: .leading, spacing: Spacing.chair.xs) {
+            sectionLabel("Last match")
+            Button(action: handleOpen(lastMatch.matchID)) {
+                HStack(spacing: Spacing.chair.sm) {
+                    VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+                        Text(lastMatch.title)
+                            .chairFont(.headline)
+                        Text(lastMatch.date)
+                            .chairFont(.caption)
+                            .foregroundStyle(Color.chair.inkSecondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    if let result = lastMatch.result {
+                        ResultBadge(result: result)
+                    }
+                    SetLineText(setLine: lastMatch.setLine)
+                    Image(systemName: "chevron.right")
+                        .font(Font.chair.callout.weight(.semibold))
+                        .accessibilityHidden(true)
                 }
+                .padding(Spacing.chair.md)
             }
+            .buttonStyle(ChairButtonStyle(.ghost))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Last match, \(lastMatch.title), \(lastMatch.detail)")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("play.lastMatch")
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("play.lastMatch")
     }
 
     private var thisWeek: some View {
         VStack(alignment: .leading, spacing: Spacing.chair.xs) {
-            Text("This week")
-                .chairFont(.headline)
-                .foregroundStyle(Color.chair.ink)
+            sectionLabel("This week")
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: Spacing.chair.sm) { tiles }
                 VStack(spacing: Spacing.chair.sm) { tiles }
             }
         }
+    }
+
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title)
+            .chairFont(.caption)
+            .foregroundStyle(Color.chair.inkSecondary)
+            .accessibilityAddTraits(.isHeader)
     }
 
     @ViewBuilder
@@ -152,16 +187,18 @@ struct PlayHomeView: View {
         value: String,
         identifier: String
     ) -> some View {
-        ChairCard(isRaised: true) {
-            VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+        ChairCard {
+            VStack(spacing: Spacing.chair.xxs) {
                 Text(value)
-                    .chairFont(.score)
-                    .monospacedDigit()
+                    .chairFont(.scoreLarge)
                     .foregroundStyle(Color.chair.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Text(title)
-                    .chairFont(.callout)
+                    .chairFont(.caption)
                     .foregroundStyle(Color.chair.inkSecondary)
             }
+            .frame(maxWidth: .infinity)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
@@ -171,5 +208,35 @@ struct PlayHomeView: View {
 
     private func handleOpen(_ matchID: UUID) -> () -> Void {
         { actions.onOpenMatch(matchID) }
+    }
+}
+
+struct ResultBadge: View {
+    let result: String
+
+    var body: some View {
+        Text(result)
+            .chairFont(.headline)
+            .foregroundStyle(result == "L" ? Color.chair.surface : Color.chair.onButton)
+            .frame(minWidth: 32, minHeight: 28)
+            .background(result == "L" ? Color.chair.danger : Color.chair.button, in: RoundedRectangle(cornerRadius: Radius.chair.small))
+            .accessibilityHidden(true)
+    }
+}
+
+struct SetLineText: View {
+    let setLine: String
+
+    var body: some View {
+        HStack(spacing: Spacing.chair.sm) {
+            ForEach(Array(setLine.split(separator: " ").enumerated()), id: \.offset) { _, set in
+                Text(set)
+                    .chairFont(.title)
+                    .fontWidth(.compressed)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(setLine)
     }
 }
