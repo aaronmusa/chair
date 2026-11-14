@@ -59,13 +59,20 @@ struct SignInView: View {
 
     private var mark: some View {
         VStack(spacing: Spacing.chair.sm) {
-            Image(systemName: "tennisball.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(Color.chair.tint)
+            AppIconArt()
+                .frame(width: 96, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: 22))
                 .accessibilityHidden(true)
-            Text("Chair")
-                .chairFont(.display)
-                .foregroundStyle(Color.chair.ink)
+            VStack(spacing: Spacing.chair.xxs) {
+                Text("Chair")
+                    .chairFont(.scoreLarge)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Color.chair.ink)
+                Capsule()
+                    .fill(Color.chair.tint)
+                    .frame(width: 120, height: 4)
+                    .accessibilityHidden(true)
+            }
         }
         .accessibilityElement(children: .combine)
     }

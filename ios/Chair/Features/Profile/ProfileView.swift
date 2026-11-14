@@ -25,7 +25,7 @@ struct ProfileView: View {
                 qrSection
                 accountSection
             }
-            .listRowBackground(Color.chair.surfaceRaised)
+            .listRowBackground(Color.chair.control)
         }
         .scrollContentBackground(.hidden)
         .background(Color.chair.surface)
@@ -141,6 +141,8 @@ struct ProfileView: View {
             Button("Sign out", action: handleSignOut())
                 .accessibilityIdentifier("profile.signOut")
             Button("Delete account", role: .destructive, action: viewModel.requestDelete)
+                .foregroundStyle(Color.chair.surface)
+                .listRowBackground(Color.chair.danger)
                 .accessibilityIdentifier("profile.delete")
         }
         .disabled(viewModel.isWorking)

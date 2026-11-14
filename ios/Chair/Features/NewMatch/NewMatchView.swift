@@ -102,10 +102,16 @@ struct NewMatchView: View {
             .accessibilityLabel("Linked to @\(profile.handle), pending")
             .accessibilityIdentifier("newMatch.link.\(slot.rawValue)")
         } else {
-            Button("Link", action: handleRequestLink(slot))
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Link \(viewModel.label(for: slot)) to a Chair player")
-                .accessibilityIdentifier("newMatch.link.\(slot.rawValue)")
+            Button(action: handleRequestLink(slot)) {
+                Text("Link")
+                    .chairFont(.callout)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, Spacing.chair.sm)
+                    .frame(minHeight: 32)
+            }
+            .buttonStyle(ChairButtonStyle(.secondary))
+            .accessibilityLabel("Link \(viewModel.label(for: slot)) to a Chair player")
+            .accessibilityIdentifier("newMatch.link.\(slot.rawValue)")
         }
     }
 
