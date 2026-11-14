@@ -41,13 +41,16 @@ struct MatchLinksList: View {
                     LinkChip(status: row.status)
                     Spacer()
                     if row.status == .none {
-                        Button("Link", action: handleRequestLink(row.slot))
+                        smallButton("Link", style: .secondary, onTap: handleRequestLink(row.slot))
                             .accessibilityLabel("Link \(row.name) to a Chair player")
                     } else {
-                        Button("Unlink", role: .destructive, action: handleUnlink(row.slot))
+                        smallButton("Unlink", style: .destructive, onTap: handleUnlink(row.slot))
                             .accessibilityLabel("Unlink \(row.name)")
                     }
                 }
+                .padding(.horizontal, Spacing.chair.md)
+                .padding(.vertical, Spacing.chair.xs)
+                .background(Color.chair.control, in: RoundedRectangle(cornerRadius: Radius.chair.control))
                 .accessibilityIdentifier("summary.link.\(row.slot.rawValue)")
             }
         }
@@ -78,5 +81,20 @@ struct MatchLinksList: View {
 
     private func handleSignedIn() -> () -> Void {
         { [viewModel] in viewModel.isShowingSignIn = false }
+    }
+
+    private func smallButton(
+        _ title: String,
+        style: ChairButton.Style,
+        onTap: @escaping () -> Void
+    ) -> some View {
+        Button(action: onTap) {
+            Text(title)
+                .chairFont(.callout)
+                .fontWeight(.semibold)
+                .padding(.horizontal, Spacing.chair.sm)
+                .frame(minHeight: 32)
+        }
+        .buttonStyle(ChairButtonStyle(style))
     }
 }

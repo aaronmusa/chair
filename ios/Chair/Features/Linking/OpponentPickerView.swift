@@ -47,7 +47,7 @@ struct OpponentPickerView: View {
                         }
                     }
                 }
-                .listRowBackground(Color.chair.surfaceRaised)
+                .listRowBackground(Color.chair.control)
             }
             .scrollContentBackground(.hidden)
             .background(Color.chair.surface)
