@@ -50,11 +50,11 @@ struct WatchSetStartView: View {
         Button(action: handlePick(isSecond)) {
             Text(name)
                 .chairFont(.headline)
-                .foregroundStyle(Color.chair.ink)
+                .foregroundStyle(Color.chair.onButton)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity, minHeight: 52)
-                .background(Color.chair.surfaceRaised, in: .capsule)
+                .background(Color.chair.button, in: .rect(cornerRadius: Radius.chair.control))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)

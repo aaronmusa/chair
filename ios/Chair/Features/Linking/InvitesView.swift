@@ -33,10 +33,11 @@ struct InvitesView: View {
                             .foregroundStyle(Color.chair.danger)
                     }
                 }
-                .listRowBackground(Color.chair.surfaceRaised)
+                .listRowBackground(Color.chair.control)
             }
             .scrollContentBackground(.hidden)
             .background(Color.chair.surface)
+            .tint(Color.chair.tint)
             .navigationTitle("Invites")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -50,12 +51,18 @@ struct InvitesView: View {
 
     private func row(_ invite: Invite) -> some View {
         VStack(alignment: .leading, spacing: Spacing.chair.xs) {
-            Text("@\(invite.ownerHandle) linked you to a match")
-                .chairFont(.headline)
-                .foregroundStyle(Color.chair.ink)
-            Text(Self.detail(invite))
-                .chairFont(.callout)
-                .foregroundStyle(Color.chair.inkSecondary)
+            HStack(spacing: Spacing.chair.sm) {
+                AvatarView(name: invite.ownerHandle, size: 40)
+                VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+                    Text("@\(invite.ownerHandle) linked you to a match")
+                        .chairFont(.headline)
+                        .foregroundStyle(Color.chair.ink)
+                    Text(Self.detail(invite))
+                        .chairFont(.callout)
+                        .foregroundStyle(Color.chair.inkSecondary)
+                }
+            }
+            .accessibilityElement(children: .combine)
             HStack(spacing: Spacing.chair.sm) {
                 ChairButton("Accept", onTap: handleAccept(invite))
                     .accessibilityIdentifier("invites.accept.\(invite.matchID)")
@@ -97,14 +104,18 @@ struct InvitesBanner: View {
     var body: some View {
         if !center.invites.isEmpty {
             Button(action: handleOpen()) {
-                Label(center.bannerText, systemImage: "person.badge.plus")
-                    .chairFont(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.chair.md)
-                    .background(RoundedRectangle(cornerRadius: Radius.chair.medium).fill(Color.chair.surfaceRaised))
+                HStack(spacing: Spacing.chair.xs) {
+                    Label(center.bannerText, systemImage: "person.badge.plus")
+                        .chairFont(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right")
+                        .font(Font.chair.callout.weight(.semibold))
+                        .accessibilityHidden(true)
+                }
+                .padding(Spacing.chair.md)
+                .frame(minHeight: 56)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.chair.ink)
+            .buttonStyle(ChairButtonStyle(.ghost))
             .accessibilityIdentifier("invites.banner")
         }
     }

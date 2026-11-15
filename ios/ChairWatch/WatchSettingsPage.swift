@@ -44,11 +44,11 @@ private struct WatchSwitchStyle: ToggleStyle {
                     .foregroundStyle(Color.chair.ink)
                 Spacer(minLength: Spacing.chair.xs)
                 Capsule()
-                    .fill(configuration.isOn ? Color.chair.success : Color.chair.surfaceRaised)
+                    .fill(configuration.isOn ? Color.chair.accent : Color.chair.control)
                     .frame(width: 44, height: 26)
                     .overlay(alignment: configuration.isOn ? .trailing : .leading) {
                         Circle()
-                            .fill(Color.chair.ink)
+                            .fill(configuration.isOn ? Color.chair.onAccent : Color.chair.ink)
                             .padding(3)
                     }
             }

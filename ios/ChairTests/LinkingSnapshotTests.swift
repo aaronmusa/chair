@@ -53,4 +53,16 @@ final class LinkingSnapshotTests: XCTestCase {
             )
         }
     }
+
+    func testScanOverlay() {
+        let overlay = QRScanOverlay {}
+            .background(Color.chair.surface)
+        for (name, style) in [("light", UIUserInterfaceStyle.light), ("dark", .dark)] {
+            assertSnapshot(
+                of: UIHostingController(rootView: overlay),
+                as: .image(on: .iPhone13, traits: UITraitCollection(userInterfaceStyle: style)),
+                named: name
+            )
+        }
+    }
 }

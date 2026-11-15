@@ -22,11 +22,7 @@ struct PublicProfileView: View {
             Group {
                 if let profile = viewModel.profile {
                     header(profile)
-                    Section {
-                        LabeledContent("Level", value: profile.level?.title ?? "Not set")
-                        LabeledContent("Matches with you", value: "\(viewModel.matchesWithYou)")
-                            .accessibilityIdentifier("publicProfile.matchesWithYou")
-                    }
+                    stats(profile)
                 } else if viewModel.isMissing {
                     Text("No player with the handle @\(viewModel.handle)")
                         .chairFont(.body)
@@ -36,10 +32,11 @@ struct PublicProfileView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .listRowBackground(Color.chair.surfaceRaised)
+            .listRowBackground(Color.chair.control)
         }
         .scrollContentBackground(.hidden)
         .background(Color.chair.surface)
+        .tint(Color.chair.tint)
         .navigationTitle("@\(viewModel.handle)")
         .task(handleLoad())
     }
@@ -59,6 +56,34 @@ struct PublicProfileView: View {
             }
             .accessibilityElement(children: .combine)
         }
+    }
+
+    private func stats(_ profile: PublicProfile) -> some View {
+        Section {
+            HStack(spacing: Spacing.chair.md) {
+                stat("\(viewModel.matchesWithYou)", label: "Matches with you")
+                    .accessibilityIdentifier("publicProfile.matchesWithYou")
+                stat(profile.level?.title ?? "Not set", label: "Level")
+            }
+        }
+    }
+
+    private func stat(
+        _ value: String,
+        label: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.chair.xxs) {
+            Text(value)
+                .chairFont(.scoreLarge)
+                .foregroundStyle(Color.chair.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            Text(label)
+                .chairFont(.caption)
+                .foregroundStyle(Color.chair.inkSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 
     private func handleLoad() -> @MainActor @Sendable () async -> Void {
