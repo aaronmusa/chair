@@ -61,6 +61,7 @@ struct OpponentPickerView: View {
             .sheet(isPresented: $isScanning) {
                 QRScannerView(onScan: handleScanned())
                     .ignoresSafeArea()
+                    .overlay { QRScanOverlay(onCancel: handleScanCancel()) }
             }
         }
         .onAppear(perform: handlePicking(true))
@@ -101,6 +102,10 @@ struct OpponentPickerView: View {
 
     private func handleScan() -> () -> Void {
         { isScanning = true }
+    }
+
+    private func handleScanCancel() -> () -> Void {
+        { isScanning = false }
     }
 
     private func handleScanned() -> (String) -> Void {
